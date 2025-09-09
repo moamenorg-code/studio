@@ -18,14 +18,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from '@/lib/utils';
 import CustomerDialog from './CustomerDialog';
@@ -84,6 +76,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
   const [serviceCharge, setServiceCharge] = React.useState(0);
   const [isCustomerDialogOpen, setCustomerDialogOpen] = React.useState(false);
   const [popoverOpen, setPopoverOpen] = React.useState(false)
+  const [searchQuery, setSearchQuery] = React.useState("");
 
   const updateQuantity = (id: number, delta: number) => {
     const updater = (currentCart: CartItem[]) => {
@@ -148,6 +141,14 @@ const CartPanel: React.FC<CartPanelProps> = ({
   const isDelivery = orderType === 'delivery';
   const customerRequired = isDelivery && selectedCustomerId === null;
 
+  const filteredCustomers = React.useMemo(() => {
+    if (!searchQuery) return customers;
+    return customers.filter(c => 
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      c.phone.includes(searchQuery)
+    );
+  }, [customers, searchQuery]);
+
   return (
     <>
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
@@ -204,38 +205,46 @@ const CartPanel: React.FC<CartPanelProps> = ({
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                            <Command>
-                                <CommandInput placeholder={UI_TEXT.searchCustomer[language]} />
-                                  <CommandList>
-                                      <CommandEmpty>{UI_TEXT.noCustomerFound[language]}</CommandEmpty>
-                                      <CommandGroup>
-                                          {!isDelivery && (
-                                              <CommandItem onSelect={() => handleSelectCustomer(null)}>
-                                                  <Check className={cn( "mr-2 h-4 w-4", selectedCustomerId === null ? "opacity-100" : "opacity-0" )}/>
-                                                  {UI_TEXT.walkInCustomer[language]}
-                                              </CommandItem>
-                                          )}
-                                          {customers.map((customer) => (
-                                          <CommandItem
-                                              key={customer.id}
-                                              value={`${customer.name} ${customer.phone}`}
-                                              onSelect={() => handleSelectCustomer(customer.id)}
-                                          >
-                                              <Check
-                                              className={cn(
-                                                  "mr-2 h-4 w-4",
-                                                  selectedCustomerId === customer.id ? "opacity-100" : "opacity-0"
-                                              )}
-                                              />
-                                              <div className="flex flex-col">
-                                                  <span>{customer.name}</span>
-                                                  <span className="text-xs text-muted-foreground" dir="ltr">{customer.phone}</span>
-                                              </div>
-                                          </CommandItem>
-                                          ))}
-                                      </CommandGroup>
-                                  </CommandList>
-                            </Command>
+                            <div className="p-2">
+                              <Input
+                                placeholder={UI_TEXT.searchCustomer[language]}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full"
+                              />
+                            </div>
+                            <ScrollArea className="h-48">
+                                <div className='p-1'>
+                                {!isDelivery && (
+                                  <button
+                                    onClick={() => handleSelectCustomer(null)}
+                                    className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent"
+                                  >
+                                    <Check className={cn( "mr-2 h-4 w-4", selectedCustomerId === null ? "opacity-100" : "opacity-0" )}/>
+                                    {UI_TEXT.walkInCustomer[language]}
+                                  </button>
+                                )}
+                                {filteredCustomers.length === 0 && <p className="p-4 text-center text-sm text-muted-foreground">{UI_TEXT.noCustomerFound[language]}</p>}
+                                {filteredCustomers.map((customer) => (
+                                  <button
+                                    key={customer.id}
+                                    onClick={() => handleSelectCustomer(customer.id)}
+                                    className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent"
+                                  >
+                                    <Check
+                                      className={cn(
+                                          "mr-2 h-4 w-4",
+                                          selectedCustomerId === customer.id ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    <div className="flex flex-col items-start">
+                                      <span>{customer.name}</span>
+                                      <span className="text-xs text-muted-foreground" dir="ltr">{customer.phone}</span>
+                                    </div>
+                                  </button>
+                                ))}
+                                </div>
+                            </ScrollArea>
                         </PopoverContent>
                     </Popover>
                     {customerRequired && <p className="text-sm text-destructive">{UI_TEXT.customerRequired[language]}</p>}
