@@ -76,20 +76,22 @@ const Header: React.FC<HeaderProps> = ({
                 <span className="sr-only">{UI_TEXT.menu[language]}</span>
             </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[250px]">
-            <ScrollArea className="h-auto max-h-[400px]">
-                {availableViews.map(({ value, label, icon: Icon }) => (
-                <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="py-2.5 text-base">
-                    <Icon className={language === 'ar' ? 'ms-3 h-5 w-5' : 'me-3 h-5 w-5'} />
-                    <span className="flex-1">{UI_TEXT[label][language]}</span>
-                </DropdownMenuItem>
-                ))}
-            </ScrollArea>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={onLogout} className="py-2.5 text-base text-destructive">
-                <LogOut className={language === 'ar' ? 'ms-3 h-5 w-5' : 'me-3 h-5 w-5'} />
-                <span className="flex-1">{HEADER_UI_TEXT.logout[language]}</span>
-            </DropdownMenuItem>
+            <DropdownMenuContent align="start" className="w-[250px] p-0">
+                <ScrollArea className="h-auto max-h-[70vh]">
+                    <div className="p-1">
+                        {availableViews.map(({ value, label, icon: Icon }) => (
+                        <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="py-2.5 text-base">
+                            <Icon className={language === 'ar' ? 'ms-3 h-5 w-5' : 'me-3 h-5 w-5'} />
+                            <span className="flex-1">{UI_TEXT[label][language]}</span>
+                        </DropdownMenuItem>
+                        ))}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={onLogout} className="py-2.5 text-base text-destructive">
+                            <LogOut className={language === 'ar' ? 'ms-3 h-5 w-5' : 'me-3 h-5 w-5'} />
+                            <span className="flex-1">{HEADER_UI_TEXT.logout[language]}</span>
+                        </DropdownMenuItem>
+                    </div>
+                </ScrollArea>
             </DropdownMenuContent>
         </DropdownMenu>
          <DropdownMenu>
