@@ -46,6 +46,7 @@ import CustomerManagementTab from "@/components/pos/CustomerManagementTab";
 import SupplierManagementTab from "@/components/pos/SupplierManagementTab";
 import PurchaseManagementTab from "@/components/pos/PurchaseManagementTab";
 import InventoryManagementTab from "@/components/pos/InventoryManagementTab";
+import FloatingCartBar from "@/components/pos/FloatingCartBar";
 
 
 type Language = "en" | "ar";
@@ -90,6 +91,7 @@ export default function POSPage() {
   
   const [isPaymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   const [isSmartRoundupOpen, setSmartRoundupOpen] = React.useState(false);
+  const [isCartSheetOpen, setCartSheetOpen] = React.useState(false);
 
   const { toast } = useToast();
 
@@ -125,6 +127,7 @@ export default function POSPage() {
     setSales(prevSales => [newSale, ...prevSales]);
     setCart([]);
     setPaymentDialogOpen(false);
+    setCartSheetOpen(false);
     toast({
       title: UI_TEXT.transactionSuccess[language],
       description: UI_TEXT.transactionSuccessDesc[language](newSale.id),
@@ -148,6 +151,8 @@ export default function POSPage() {
   };
   
   const ActiveViewIcon = VIEW_OPTIONS.find(v => v.value === activeView)?.icon || ShoppingBag;
+
+  const subtotal = React.useMemo(() => cart.reduce((acc, item) => acc + item.price * item.quantity, 0), [cart]);
 
   return (
     <div className="flex h-screen flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -180,33 +185,20 @@ export default function POSPage() {
             </DropdownMenu>
         </div>
 
-        <div className="flex-1">
+        <div className="flex-1 pb-20"> {/* Add padding to bottom to avoid overlap with floating bar */}
           {activeView === 'sales' && (
-            <div className="grid h-full grid-cols-1 gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle>{UI_TEXT.products[language]}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="h-[calc(100%-4rem)] overflow-auto">
-                    <ProductGrid
-                      products={products}
-                      onAddToCart={addToCart}
-                      language={language}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-              <div className="lg:col-span-1">
-                 <CartPanel
-                    cart={cart}
-                    setCart={setCart}
-                    clearCart={clearCart}
-                    onProcessPayment={() => setPaymentDialogOpen(true)}
-                    language={language}
-                  />
-              </div>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>{UI_TEXT.products[language]}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProductGrid
+                  products={products}
+                  onAddToCart={addToCart}
+                  language={language}
+                />
+              </CardContent>
+            </Card>
           )}
 
           {activeView === 'dashboard' && <DashboardTab sales={sales} language={language} />}
@@ -248,6 +240,24 @@ export default function POSPage() {
         </div>
       </main>
 
+      {activeView === 'sales' && cart.length > 0 && (
+          <FloatingCartBar 
+            cart={cart}
+            language={language}
+            onOpenCart={() => setCartSheetOpen(true)}
+          />
+      )}
+
+      <CartPanel
+        isOpen={isCartSheetOpen}
+        onOpenChange={setCartSheetOpen}
+        cart={cart}
+        setCart={setCart}
+        clearCart={clearCart}
+        onProcessPayment={() => setPaymentDialogOpen(true)}
+        language={language}
+      />
+      
       <PaymentDialog
         isOpen={isPaymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
