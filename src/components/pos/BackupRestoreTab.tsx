@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '../ui/separator';
-import { HardDrive, Save, Upload, Cloud, AlertTriangle } from 'lucide-react';
+import { HardDrive, Save, Upload, Cloud, AlertTriangle, DatabaseZap } from 'lucide-react';
 import type { Language, AppData } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -21,6 +21,7 @@ type BackupRestoreTabProps = {
   language: Language;
   getAppData: () => AppData;
   onRestore: (data: AppData) => void;
+  onSeedData: () => void;
 };
 
 const UI_TEXT = {
@@ -41,9 +42,14 @@ const UI_TEXT = {
   backupSuccessDesc: { en: (filename: string) => `Data saved to ${filename}`, ar: (filename: string) => `تم حفظ البيانات في ${filename}`},
   restoreError: { en: 'Restore Failed', ar: 'فشل الاستعادة' },
   restoreErrorDesc: { en: 'Invalid backup file format.', ar: 'تنسيق ملف النسخ الاحتياطي غير صالح.'},
+  seedData: { en: 'Seed Data', ar: 'تهيئة البيانات الأولية' },
+  seedDataDesc: { en: 'Populate the database with initial sample data. Use only on a fresh installation.', ar: 'املأ قاعدة البيانات بالبيانات النموذجية الأولية. استخدم هذا الخيار فقط عند التثبيت الجديد.' },
+  seedButton: { en: 'Seed Sample Data', ar: 'تهيئة البيانات' },
+  seedConfirmTitle: { en: 'Seed Database?', ar: 'تهيئة قاعدة البيانات؟' },
+  seedConfirmDesc: { en: 'This will add sample data to your collections. It is recommended to do this only once on an empty database. This may overwrite existing data if IDs match.', ar: 'سيؤدي هذا إلى إضافة بيانات نموذجية إلى مجموعاتك. يوصى بالقيام بذلك مرة واحدة فقط على قاعدة بيانات فارغة. قد يؤدي هذا إلى الكتابة فوق البيانات الموجودة إذا تطابقت المعرفات.'},
 };
 
-const BackupRestoreTab: React.FC<BackupRestoreTabProps> = ({ language, getAppData, onRestore }) => {
+const BackupRestoreTab: React.FC<BackupRestoreTabProps> = ({ language, getAppData, onRestore, onSeedData }) => {
   const { toast } = useToast();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -105,6 +111,44 @@ const BackupRestoreTab: React.FC<BackupRestoreTabProps> = ({ language, getAppDat
         <CardDescription>{UI_TEXT.description[language]}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
+
+        {/* Seed Data */}
+         <Card>
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <DatabaseZap className="w-8 h-8 text-primary" />
+              <div>
+                <CardTitle>{UI_TEXT.seedData[language]}</CardTitle>
+                <CardDescription>{UI_TEXT.seedDataDesc[language]}</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="default">
+                  <DatabaseZap className="me-2 h-4 w-4" />
+                  {UI_TEXT.seedButton[language]}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <AlertTriangle />{UI_TEXT.seedConfirmTitle[language]}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {UI_TEXT.seedConfirmDesc[language]}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{UI_TEXT.cancel[language]}</AlertDialogCancel>
+                  <AlertDialogAction onClick={onSeedData}>{UI_TEXT.continue[language]}</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardContent>
+        </Card>
+
         {/* Local Backup */}
         <Card>
           <CardHeader>

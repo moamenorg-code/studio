@@ -11,8 +11,12 @@ import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
 import UserManagement from './UserManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserCog, Store, Cloud, HardDrive } from 'lucide-react';
+import { UserCog, Store, Cloud, HardDrive, DatabaseZap } from 'lucide-react';
 import BackupRestoreTab from './BackupRestoreTab';
+import { db } from '@/lib/firebase';
+import { writeBatch, doc, collection } from 'firebase/firestore';
+import { products as initialProducts, categories as initialCategories, rawMaterials as initialRawMaterials, recipes as initialRecipes, roles as initialRoles, users as initialUsers, customers as initialCustomers, deliveryReps as initialDeliveryReps, suppliers as initialSuppliers, tables as initialTables } from '@/lib/data';
+
 
 type Language = 'en' | 'ar';
 
@@ -48,6 +52,8 @@ const UI_TEXT = {
   saveSuccess: { en: 'Settings saved successfully!', ar: 'تم حفظ الإعدادات بنجاح!' },
   general: { en: 'General', ar: 'عام' },
   backupRestore: { en: 'Backup & Restore', ar: 'النسخ الاحتياطي والاستعادة' },
+  seedSuccess: { en: 'Database seeded successfully!', ar: 'تمت تهيئة قاعدة البيانات بنجاح!' },
+  seedError: { en: 'Error seeding database', ar: 'خطأ في تهيئة قاعدة البيانات' },
 };
 
 interface SettingsTabProps {
@@ -221,6 +227,77 @@ const GeneralSettingsTab: React.FC<Pick<SettingsTabProps, 'settings' | 'onSettin
 
 const SettingsTab: React.FC<SettingsTabProps> = (props) => {
   const { language, users, onUsersChange, roles, onRolesChange } = props;
+  const { toast } = useToast();
+
+  const handleSeedData = async () => {
+    try {
+        const batch = writeBatch(db);
+
+        initialProducts.forEach(product => {
+            const docRef = doc(db, "products", String(product.id));
+            batch.set(docRef, product);
+        });
+        
+        initialCategories.forEach(category => {
+            const docRef = doc(collection(db, "categories"), String(category.id));
+            batch.set(docRef, category);
+        });
+
+        initialRawMaterials.forEach(material => {
+            const docRef = doc(collection(db, "raw_materials"), String(material.id));
+            batch.set(docRef, material);
+        });
+
+        initialRecipes.forEach(recipe => {
+            const docRef = doc(collection(db, "recipes"), String(recipe.id));
+            batch.set(docRef, recipe);
+        });
+
+        initialRoles.forEach(role => {
+            const docRef = doc(collection(db, "roles"), String(role.id));
+            batch.set(docRef, role);
+        });
+
+        initialUsers.forEach(user => {
+            const docRef = doc(collection(db, "users"), String(user.id));
+            batch.set(docRef, user);
+        });
+
+        initialCustomers.forEach(customer => {
+            const docRef = doc(collection(db, "customers"), String(customer.id));
+            batch.set(docRef, customer);
+        });
+
+        initialDeliveryReps.forEach(rep => {
+            const docRef = doc(collection(db, "delivery_reps"), String(rep.id));
+            batch.set(docRef, rep);
+        });
+        
+        initialSuppliers.forEach(supplier => {
+            const docRef = doc(collection(db, "suppliers"), String(supplier.id));
+            batch.set(docRef, supplier);
+        });
+        
+        initialTables.forEach(table => {
+            const docRef = doc(collection(db, "tables"), String(table.id));
+            batch.set(docRef, table);
+        });
+
+        await batch.commit();
+
+        toast({
+            title: UI_TEXT.seedSuccess[language],
+        });
+
+    } catch (error) {
+        console.error("Error seeding data:", error);
+        toast({
+            variant: "destructive",
+            title: UI_TEXT.seedError[language],
+            description: String(error),
+        });
+    }
+  }
 
   return (
     <Card>
@@ -252,6 +329,7 @@ const SettingsTab: React.FC<SettingsTabProps> = (props) => {
                     language={language}
                     getAppData={props.getAppData}
                     onRestore={props.onRestore}
+                    onSeedData={handleSeedData}
                 />
             </TabsContent>
          </Tabs>
