@@ -18,9 +18,10 @@ import {
   Briefcase,
   Wallet,
   Receipt,
+  Settings as SettingsIcon,
 } from "lucide-react";
 
-import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry } from "@/lib/types";
+import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings } from "@/lib/types";
 import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries } from "@/lib/data";
 
 import { Button } from "@/components/ui/button";
@@ -56,10 +57,11 @@ import FloatingCartBar from "@/components/pos/FloatingCartBar";
 import ShiftsManagementTab from "@/components/pos/ShiftsManagementTab";
 import ExpensesTab from "@/components/pos/ExpensesTab";
 import CashDrawerTab from "@/components/pos/CashDrawerTab";
+import SettingsTab from "@/components/pos/SettingsTab";
 
 
 type Language = "en" | "ar";
-type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "suppliers" | "purchases" | "inventory" | "shifts" | "expenses" | "cash_drawer";
+type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "suppliers" | "purchases" | "inventory" | "shifts" | "expenses" | "cash_drawer" | "settings";
 
 const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
@@ -74,6 +76,7 @@ const UI_TEXT = {
   shifts: { en: "Shifts", ar: "الشفتات" },
   expenses: { en: "Expenses", ar: "المصروفات" },
   cashDrawer: { en: "Cash Drawer", ar: "الخزينة" },
+  settings: { en: "Settings", ar: "الإعدادات" },
   transactionSuccess: { en: "Transaction successful!", ar: "تمت العملية بنجاح!" },
   transactionSuccessDesc: { en: (id: string) => `Sale ID: ${id}`, ar: (id: string) => `رقم الفاتورة: ${id}`},
   quickServeLite: { en: "QuickServe Lite", ar: "كويك سيرف لايت" },
@@ -93,6 +96,7 @@ const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: Reac
     { value: 'shifts', label: 'shifts', icon: Briefcase },
     { value: 'expenses', label: 'expenses', icon: Receipt },
     { value: 'cash_drawer', label: 'cashDrawer', icon: Wallet },
+    { value: 'settings', label: 'settings', icon: SettingsIcon },
 ];
 
 export default function POSPage() {
@@ -112,6 +116,16 @@ export default function POSPage() {
   const [isPaymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   const [isSmartRoundupOpen, setSmartRoundupOpen] = React.useState(false);
   const [isCartSheetOpen, setCartSheetOpen] = React.useState(false);
+
+  const [settings, setSettings] = React.useState<Settings>({
+    storeName: "QuickServe Lite",
+    address: "123 Main Street, Riyadh",
+    phone: "011-123-4567",
+    currency: "SAR",
+    taxRate: 15,
+    receiptHeader: "Thank you for your business!",
+    receiptFooter: "Please come again!",
+  });
 
   const { toast } = useToast();
 
@@ -182,6 +196,10 @@ export default function POSPage() {
     setCashDrawerEntries(updatedEntries);
   };
 
+  const handleSettingsUpdate = (updatedSettings: Settings) => {
+    setSettings(updatedSettings);
+  };
+
   const filteredProducts = React.useMemo(() => {
     if (!searchQuery) return products;
     const lowercasedQuery = searchQuery.toLowerCase();
@@ -232,6 +250,8 @@ export default function POSPage() {
         return <ExpensesTab expenses={expenses} onExpensesChange={handleExpensesUpdate} language={language} />;
       case 'cash_drawer':
         return <CashDrawerTab entries={cashDrawerEntries} onEntriesChange={handleCashDrawerUpdate} language={language} />;
+      case 'settings':
+        return <SettingsTab settings={settings} onSettingsChange={handleSettingsUpdate} language={language} />;
       default:
         return null;
     }
@@ -240,7 +260,7 @@ export default function POSPage() {
   return (
     <div className="flex h-screen flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Header
-        appName={UI_TEXT.quickServeLite[language]}
+        appName={settings.storeName}
         language={language}
         setLanguage={setLanguage}
         onOpenSmartRoundup={() => setSmartRoundupOpen(true)}

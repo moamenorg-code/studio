@@ -85,3 +85,13 @@ export interface Shift {
     totalExpenses: number;
     status: 'open' | 'closed';
 }
+
+export interface Settings {
+    storeName: string;
+    address: string;
+    phone: string;
+    currency: string;
+    taxRate: number;
+    receiptHeader: string;
+    receiptFooter: string;
+}
