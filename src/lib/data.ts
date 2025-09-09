@@ -1,4 +1,4 @@
-import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry } from './types';
+import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry, Recipe } from './types';
 
 export const products: Product[] = [
   {
@@ -7,6 +7,7 @@ export const products: Product[] = [
     nameAr: "اسبريسو",
     price: 25.00,
     barcode: "860001",
+    recipeId: 1,
   },
   {
     id: 2,
@@ -14,6 +15,7 @@ export const products: Product[] = [
     nameAr: "لاتيه",
     price: 35.50,
     barcode: "860002",
+    recipeId: 2,
   },
   {
     id: 3,
@@ -21,6 +23,7 @@ export const products: Product[] = [
     nameAr: "كرواسون",
     price: 22.75,
     barcode: "860003",
+    recipeId: 3,
   },
   {
     id: 4,
@@ -49,6 +52,7 @@ export const products: Product[] = [
     nameAr: "كابتشينو",
     price: 32.00,
     barcode: "860007",
+    recipeId: 2,
   },
   {
     id: 8,
@@ -83,6 +87,13 @@ export const rawMaterials: RawMaterial[] = [
     { id: 4, name: 'Flour', nameAr: 'دقيق', unit: 'kg', stock: 150 },
     { id: 5, name: 'Butter', nameAr: 'زبدة', unit: 'kg', stock: 40 },
     { id: 6, name: 'Eggs', nameAr: 'بيض', unit: 'piece', stock: 300 },
+    { id: 7, name: 'Dough', nameAr: 'عجينة', unit: 'piece', stock: 50 },
+];
+
+export const recipes: Recipe[] = [
+    { id: 1, name: "Espresso Shot", items: [{ rawMaterialId: 1, quantity: 0.02 }] },
+    { id: 2, name: "Steamed Milk", items: [{ rawMaterialId: 1, quantity: 0.02 }, { rawMaterialId: 2, quantity: 0.2 }] },
+    { id: 3, name: "Croissant Recipe", items: [{ rawMaterialId: 7, quantity: 1 }] },
 ];
 
 export const expenses: Expense[] = [];

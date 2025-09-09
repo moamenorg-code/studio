@@ -4,6 +4,7 @@ export interface Product {
   nameAr: string;
   price: number;
   barcode?: string;
+  recipeId?: number;
 }
 
 export interface CartItem extends Product {
@@ -59,6 +60,17 @@ export interface RawMaterial {
     nameAr: string;
     unit: string; // e.g., kg, liter, piece
     stock: number;
+}
+
+export interface RecipeItem {
+    rawMaterialId: number;
+    quantity: number;
+}
+
+export interface Recipe {
+    id: number;
+    name: string;
+    items: RecipeItem[];
 }
 
 export interface Expense {

@@ -61,7 +61,7 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onS
   };
 
   const handleSave = () => {
-    if (formData.name && formData.nameAr && formData.price! > 0) {
+    if (formData.name && formData.nameAr && formData.price! >= 0) {
       onSave(formData as Product);
       onOpenChange(false);
     }

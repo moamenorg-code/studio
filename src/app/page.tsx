@@ -19,10 +19,11 @@ import {
   Wallet,
   Receipt,
   Settings as SettingsIcon,
+  BookCopy,
 } from "lucide-react";
 
-import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings } from "@/lib/types";
-import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries } from "@/lib/data";
+import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings, Recipe } from "@/lib/types";
+import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes } from "@/lib/data";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -48,14 +49,13 @@ import PaymentDialog from "@/components/pos/PaymentDialog";
 import SmartRoundupDialog from "@/components/pos/SmartRoundupDialog";
 import SalesHistoryTab from "@/components/pos/SalesHistoryTab";
 import DashboardTab from "@/components/pos/DashboardTab";
-import ProductManagementTab from "@/components/pos/ProductManagementTab";
+import ProductsAndRecipesTab from "@/components/pos/ProductsAndRecipesTab";
 import CustomerManagementTab from "@/components/pos/CustomerManagementTab";
-import PurchaseManagementTab from "@/components/pos/PurchaseManagementTab";
+import PurchasesAndSuppliersTab from "@/components/pos/PurchasesAndSuppliersTab";
 import InventoryManagementTab from "@/components/pos/InventoryManagementTab";
 import FloatingCartBar from "@/components/pos/FloatingCartBar";
 import ShiftsManagementTab from "@/components/pos/ShiftsManagementTab";
 import SettingsTab from "@/components/pos/SettingsTab";
-import PurchasesAndSuppliersTab from "@/components/pos/PurchasesAndSuppliersTab";
 
 
 type Language = "en" | "ar";
@@ -66,7 +66,7 @@ const UI_TEXT = {
   salesHistory: { en: "Sales History", ar: "سجل المبيعات" },
   dashboard: { en: "Dashboard", ar: "لوحة التحكم" },
   products: { en: "Products", ar: "المنتجات" },
-  manageProducts: { en: "Manage Products", ar: "إدارة المنتجات" },
+  productsAndRecipes: { en: "Products & Recipes", ar: "المنتجات والوصفات" },
   customers: { en: "Customers", ar: "العملاء" },
   purchases: { en: "Purchases & Suppliers", ar: "المشتريات والموردين" },
   inventory: { en: "Inventory", ar: "المخزون" },
@@ -85,7 +85,7 @@ const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: Reac
     { value: 'sales', label: 'sales', icon: ShoppingBag },
     { value: 'dashboard', label: 'dashboard', icon: AreaChart },
     { value: 'history', label: 'salesHistory', icon: History },
-    { value: 'products', label: 'manageProducts', icon: ClipboardList },
+    { value: 'products', label: 'productsAndRecipes', icon: ClipboardList },
     { value: 'inventory', label: 'inventory', icon: Archive },
     { value: 'customers', label: 'customers', icon: Users },
     { value: 'purchases', label: 'purchases', icon: Truck },
@@ -101,6 +101,7 @@ export default function POSPage() {
   const [customers, setCustomers] = React.useState<Customer[]>(initialCustomers);
   const [suppliers, setSuppliers] = React.useState<Supplier[]>(initialSuppliers);
   const [rawMaterials, setRawMaterials] = React.useState<RawMaterial[]>(initialRawMaterials);
+  const [recipes, setRecipes] = React.useState<Recipe[]>(initialRecipes);
   const [shifts, setShifts] = React.useState<Shift[]>(initialShifts);
   const [expenses, setExpenses] = React.useState<Expense[]>(initialExpenses);
   const [cashDrawerEntries, setCashDrawerEntries] = React.useState<CashDrawerEntry[]>(initialCashDrawerEntries);
@@ -162,6 +163,24 @@ export default function POSPage() {
       customer: selectedCustomer,
     };
     setSales(prevSales => [newSale, ...prevSales]);
+
+    // Deduct stock from raw materials based on recipes
+    const updatedRawMaterials = [...rawMaterials];
+    newSale.items.forEach(cartItem => {
+        if (cartItem.recipeId) {
+            const recipe = recipes.find(r => r.id === cartItem.recipeId);
+            if (recipe) {
+                recipe.items.forEach(recipeItem => {
+                    const materialIndex = updatedRawMaterials.findIndex(m => m.id === recipeItem.rawMaterialId);
+                    if (materialIndex !== -1) {
+                        updatedRawMaterials[materialIndex].stock -= recipeItem.quantity * cartItem.quantity;
+                    }
+                });
+            }
+        }
+    });
+    setRawMaterials(updatedRawMaterials);
+
     setCart([]);
     setSelectedCustomerId(null);
     setPaymentDialogOpen(false);
@@ -186,6 +205,10 @@ export default function POSPage() {
 
   const handleRawMaterialUpdate = (updatedRawMaterials: RawMaterial[]) => {
     setRawMaterials(updatedRawMaterials);
+  };
+
+  const handleRecipesUpdate = (updatedRecipes: Recipe[]) => {
+    setRecipes(updatedRecipes);
   };
   
   const handleShiftsUpdate = (updatedShifts: Shift[]) => {
@@ -218,14 +241,14 @@ export default function POSPage() {
     switch(activeView) {
       case 'sales':
         return (
-          <Card>
-            <CardHeader>
+          <Card className="shadow-none border-none">
+            <CardHeader className="p-4 pt-0">
               <CardTitle>{UI_TEXT.products[language]}</CardTitle>
               <CardDescription>
                   {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 pt-0">
               <ProductGrid
                 products={filteredProducts}
                 onAddToCart={addToCart}
@@ -239,7 +262,14 @@ export default function POSPage() {
       case 'history':
         return <SalesHistoryTab sales={sales} language={language} />;
       case 'products':
-        return <ProductManagementTab products={products} onProductsChange={handleProductUpdate} language={language} />;
+        return <ProductsAndRecipesTab 
+                    products={products} 
+                    onProductsChange={handleProductUpdate} 
+                    recipes={recipes}
+                    onRecipesChange={handleRecipesUpdate}
+                    rawMaterials={rawMaterials}
+                    language={language} 
+               />;
       case 'inventory':
         return <InventoryManagementTab rawMaterials={rawMaterials} onRawMaterialsChange={handleRawMaterialUpdate} language={language} />;
       case 'customers':
@@ -273,20 +303,20 @@ export default function POSPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="flex h-screen flex-col bg-muted/40" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Header
         appName={settings.storeName}
         language={language}
         setLanguage={setLanguage}
         onOpenSmartRoundup={() => setSmartRoundupOpen(true)}
       />
-      <main className="flex flex-1 flex-col overflow-auto p-4 sm:p-6">
-        <div className="mb-4 flex items-center gap-4">
+      <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 sm:p-6">
+        <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex-shrink-0">
-                  <Menu className={language === 'ar' ? 'ml-2 h-5 w-5' : 'mr-2 h-5 w-5'} />
-                  <span>{UI_TEXT.menu[language]}</span>
+                <Button variant="outline" size="sm" className="flex-shrink-0">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">{UI_TEXT.menu[language]}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-[250px]">
