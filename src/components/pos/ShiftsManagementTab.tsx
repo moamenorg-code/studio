@@ -113,12 +113,12 @@ const ShiftsManagementTab: React.FC<ShiftsManagementTabProps> = ({
             <Button onClick={handleOpenDialog} className="w-full sm:w-auto" variant={activeShift ? 'destructive' : 'default'}>
               {activeShift ? (
                 <>
-                  <StopCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                  <StopCircle className="me-2 h-4 w-4" />
                   {UI_TEXT.endShift[language]}
                 </>
               ) : (
                 <>
-                  <PlayCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                  <PlayCircle className="me-2 h-4 w-4" />
                   {UI_TEXT.startShift[language]}
                 </>
               )}

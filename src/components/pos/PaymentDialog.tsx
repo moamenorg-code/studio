@@ -133,11 +133,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           
           <div className="grid grid-cols-2 gap-4 pt-4">
               <Button size="lg" onClick={() => handlePayment('cash')} className="bg-green-600 text-white hover:bg-green-700">
-                  <Wallet className={language === 'ar' ? "ml-2 h-5 w-5" : "mr-2 h-5 w-5"} />
+                  <Wallet className="me-2 h-5 w-5" />
                   {UI_TEXT.cash[language]}
               </Button>
               <Button size="lg" onClick={() => handlePayment('card')}>
-                  <CreditCard className={language === 'ar' ? "ml-2 h-5 w-5" : "mr-2 h-5 w-5"} />
+                  <CreditCard className="me-2 h-5 w-5" />
                   {UI_TEXT.card[language]}
               </Button>
           </div>

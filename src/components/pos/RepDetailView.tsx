@@ -43,7 +43,7 @@ const RepDetailView: React.FC<RepDetailViewProps> = ({ repData, onBack, language
             <CardDescription>{UI_TEXT.repDetails[language]}</CardDescription>
           </div>
           <Button variant="outline" onClick={onBack}>
-            <ArrowLeft className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+            <ArrowLeft className="me-2 h-4 w-4" />
             {UI_TEXT.backToDashboard[language]}
           </Button>
         </div>

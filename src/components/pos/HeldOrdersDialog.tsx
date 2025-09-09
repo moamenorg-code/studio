@@ -71,5 +71,3 @@ const HeldOrdersDialog: React.FC<HeldOrdersDialogProps> = ({ isOpen, onOpenChang
 };
 
 export default HeldOrdersDialog;
-
-    

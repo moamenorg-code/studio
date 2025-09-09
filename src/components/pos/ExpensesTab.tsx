@@ -72,7 +72,7 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({ expenses, onExpensesChange, l
               <CardDescription>{UI_TEXT.trackExpenses[language]}</CardDescription>
             </div>
             <Button onClick={() => setDialogOpen(true)} className="w-full sm:w-auto">
-              <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+              <PlusCircle className="me-2 h-4 w-4" />
               {UI_TEXT.addExpense[language]}
             </Button>
           </div>

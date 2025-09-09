@@ -23,7 +23,7 @@ const ProductCard: React.FC<{ product: Product; onAddToCart: (product: Product) 
       </CardContent>
       <CardFooter className="p-2 pt-0">
         <Button className="w-full" onClick={() => onAddToCart(product)} size="sm">
-          <PlusCircle className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />
+          <PlusCircle className="me-2 h-4 w-4" />
           {UI_TEXT.addToCart[language]}
         </Button>
       </CardFooter>

@@ -145,17 +145,15 @@ const Header: React.FC<HeaderProps> = ({
             <ScrollArea className="h-auto max-h-[400px]">
                 {availableViews.map(({ value, label, icon: Icon }) => (
                 <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
-                    {language === 'en' && <Icon className="mr-3 h-5 w-5" />}
-                    <span className="flex-1 text-right">{UI_TEXT[label][language]}</span>
-                    {language === 'ar' && <Icon className="ml-3 h-5 w-5" />}
+                    <Icon className="h-5 w-5" />
+                    <span className="flex-1 text-start mx-3">{UI_TEXT[label][language]}</span>
                 </DropdownMenuItem>
                 ))}
             </ScrollArea>
              <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={onLogout} className="text-base py-2.5 text-destructive">
-                {language === 'en' && <LogOut className="mr-3 h-5 w-5" />}
-                <span className="flex-1 text-right">{HEADER_UI_TEXT.logout[language]}</span>
-                {language === 'ar' && <LogOut className="ml-3 h-5 w-5" />}
+                <LogOut className="h-5 w-5" />
+                <span className="flex-1 text-start mx-3">{HEADER_UI_TEXT.logout[language]}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

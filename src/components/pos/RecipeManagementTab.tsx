@@ -80,7 +80,7 @@ const RecipeManagementTab: React.FC<RecipeManagementTabProps> = ({ recipes, onRe
               <CardDescription>{UI_TEXT.manageYourRecipes[language]}</CardDescription>
             </div>
             <Button onClick={handleAddRecipe} className="w-full sm:w-auto">
-              <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+              <PlusCircle className="me-2 h-4 w-4" />
               {UI_TEXT.addRecipe[language]}
             </Button>
           </div>

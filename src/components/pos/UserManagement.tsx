@@ -150,7 +150,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
         <div className="rounded-md border mt-4">
             <div className="p-4 flex justify-end">
                 <Button size="sm" onClick={handleAddUser}>
-                    <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                    <PlusCircle className="me-2 h-4 w-4" />
                     {UI_TEXT.addUser[language]}
                 </Button>
             </div>
@@ -218,7 +218,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
          <div className="rounded-md border mt-4">
             <div className="p-4 flex justify-end">
                  <Button size="sm" onClick={handleAddRole}>
-                    <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                    <PlusCircle className="me-2 h-4 w-4" />
                     {UI_TEXT.addRole[language]}
                 </Button>
             </div>

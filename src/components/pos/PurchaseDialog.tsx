@@ -158,11 +158,11 @@ const PurchaseDialog: React.FC<PurchaseDialogProps> = ({ isOpen, onOpenChange, o
                 <Label>{UI_TEXT.invoiceItems[language]}</Label>
                 <div className='flex gap-2'>
                     <Button variant="outline" size="sm" onClick={handleBarcodeScan}>
-                        <ScanLine className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />
+                        <ScanLine className="me-2 h-4 w-4" />
                         {UI_TEXT.addByBarcode[language]}
                     </Button>
                     <Button variant="outline" size="sm" onClick={handleAddItem}>
-                        <PlusCircle className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />
+                        <PlusCircle className="me-2 h-4 w-4" />
                         {UI_TEXT.addItem[language]}
                     </Button>
                 </div>

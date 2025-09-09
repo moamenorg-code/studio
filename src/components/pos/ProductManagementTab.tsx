@@ -109,10 +109,10 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
             </div>
             <div className="flex w-full sm:w-auto flex-col sm:flex-row gap-2">
                  <div className="relative">
-                    <Search className={`absolute ${language === 'ar' ? 'right-10' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
+                    <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder={UI_TEXT.searchPlaceholder[language]}
-                        className={`${language === 'ar' ? 'pr-16' : 'pl-10'}`}
+                        className="ps-10"
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                     />
@@ -120,14 +120,14 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
                         variant="ghost" 
                         size="icon" 
                         onClick={() => onOpenBarcodeScanner(setSearchQuery)} 
-                        className={`absolute ${language === 'ar' ? 'right-2' : 'left-auto right-2'} top-1/2 -translate-y-1/2 h-8 w-8`}
+                        className="absolute end-1 top-1/2 -translate-y-1/2 h-8 w-8"
                         aria-label="Scan Barcode"
                       >
                         <ScanLine className="h-5 w-5" />
                     </Button>
                 </div>
                 <Button onClick={handleAddProduct} className="w-full sm:w-auto">
-                <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                <PlusCircle className="me-2 h-4 w-4" />
                 {UI_TEXT.addProduct[language]}
                 </Button>
             </div>

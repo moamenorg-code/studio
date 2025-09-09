@@ -74,7 +74,7 @@ const SupplierManagementTab: React.FC<SupplierManagementTabProps> = ({ suppliers
               <CardDescription>{UI_TEXT.manageYourSuppliers[language]}</CardDescription>
             </div>
             <Button onClick={handleAddSupplier} className="w-full sm:w-auto">
-              <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+              <PlusCircle className="me-2 h-4 w-4" />
               {UI_TEXT.addSupplier[language]}
             </Button>
           </div>

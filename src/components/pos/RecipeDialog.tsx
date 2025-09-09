@@ -131,7 +131,7 @@ const RecipeDialog: React.FC<RecipeDialogProps> = ({ isOpen, onOpenChange, onSav
               </div>
             </ScrollArea>
             <Button variant="outline" size="sm" onClick={handleAddItem} className="mt-2">
-              <PlusCircle className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />
+              <PlusCircle className="me-2 h-4 w-4" />
               {UI_TEXT.addItem[language]}
             </Button>
           </div>

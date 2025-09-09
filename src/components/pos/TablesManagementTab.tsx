@@ -132,24 +132,24 @@ const TableCard: React.FC<TableCardProps> = ({ table, isActive, onSelect, onOpen
         >
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-7 w-7" onClick={(e) => e.stopPropagation()}>
+                    <Button size="icon" variant="ghost" className="absolute top-2 end-2 h-7 w-7" onClick={(e) => e.stopPropagation()}>
                         <Edit className="h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenuItem onClick={() => onEdit(table)}>
-                        <Edit className="h-4 w-4 mr-2" />
+                        <Edit className="h-4 w-4 me-2" />
                         {UI_TEXT.editTable[language]}
                     </DropdownMenuItem>
                     {isOccupied && (
                         <DropdownMenuItem onClick={() => onTransfer(table)}>
-                           <ArrowRightLeft className="h-4 w-4 mr-2" />
+                           <ArrowRightLeft className="h-4 w-4 me-2" />
                             {UI_TEXT.transferTable[language]}
                         </DropdownMenuItem>
                     )}
                     <Separator />
                     <DropdownMenuItem onClick={() => onDelete(table.id)} className="text-destructive">
-                        <Edit className="h-4 w-4 mr-2" />
+                        <Edit className="h-4 w-4 me-2" />
                         {UI_TEXT.delete[language]}
                     </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -315,7 +315,7 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
                 language={language}
               >
               <Button size="sm" className="w-full sm:w-auto" onClick={handleAdd}>
-                  <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                  <PlusCircle className="me-2 h-4 w-4" />
                   {UI_TEXT.addTable[language]}
               </Button>
             </TableDialog>

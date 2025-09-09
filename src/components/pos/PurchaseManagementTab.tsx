@@ -88,16 +88,16 @@ const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers
             </div>
              <div className="flex w-full sm:w-auto flex-col sm:flex-row gap-2">
                 <div className="relative">
-                    <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
+                    <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder={UI_TEXT.searchPlaceholder[language]}
-                        className={`${language === 'ar' ? 'pr-10' : 'pl-10'}`}
+                        className="ps-10"
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                     />
                 </div>
                 <Button onClick={handleAddPurchase} className="w-full sm:w-auto">
-                <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                <PlusCircle className="me-2 h-4 w-4" />
                 {UI_TEXT.addPurchase[language]}
                 </Button>
             </div>

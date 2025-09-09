@@ -191,7 +191,7 @@ const SplitBillDialog: React.FC<SplitBillDialogProps> = ({ isOpen, onOpenChange,
                 </ScrollArea>
                 <div className="mt-4">
                     <Button variant="outline" className="w-full" onClick={handleAddNewSplit} disabled={splits.length >= 3}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
+                        <PlusCircle className="me-2 h-4 w-4" />
                         {UI_TEXT.addBill[language]}
                     </Button>
                 </div>

@@ -250,7 +250,7 @@ const DeliveryRepsTab: React.FC<DeliveryRepsTabProps> = ({ reps, onRepsChange, s
                         variant={"outline"}
                         className={cn("justify-start text-left font-normal", !date && "text-muted-foreground")}
                     >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        <CalendarIcon className="me-2 h-4 w-4" />
                         {date?.from ? (
                         date.to ? (
                             <>
@@ -278,7 +278,7 @@ const DeliveryRepsTab: React.FC<DeliveryRepsTabProps> = ({ reps, onRepsChange, s
                 </Popover>
 
                 <Button onClick={handleAddRep} className="w-full sm:w-auto">
-                    <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                    <PlusCircle className="me-2 h-4 w-4" />
                     {UI_TEXT.addRep[language]}
                 </Button>
             </div>
