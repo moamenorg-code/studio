@@ -152,18 +152,18 @@ export default function POSPage() {
         <div className="mb-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full justify-between sm:w-[250px]">
+                <Button variant="outline" className="w-full justify-between sm:w-[300px] text-lg py-6">
                     <div className="flex items-center">
-                        <ActiveViewIcon className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                        <ActiveViewIcon className={language === 'ar' ? 'ml-3 h-5 w-5' : 'mr-3 h-5 w-5'} />
                         <span>{UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}</span>
                     </div>
-                  <ChevronDown className={language === 'ar' ? 'mr-auto h-4 w-4' : 'ml-auto h-4 w-4'} />
+                  <ChevronDown className={language === 'ar' ? 'mr-auto h-5 w-5' : 'ml-auto h-5 w-5'} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-full sm:w-[250px]">
+              <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-full sm:w-[300px]">
                 {VIEW_OPTIONS.map(({ value, label, icon: Icon }) => (
-                  <DropdownMenuItem key={value} onSelect={() => setActiveView(value)}>
-                    <Icon className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                  <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-lg py-3">
+                    <Icon className={language === 'ar' ? 'ml-3 h-5 w-5' : 'mr-3 h-5 w-5'} />
                     <span>{UI_TEXT[label][language]}</span>
                   </DropdownMenuItem>
                 ))}
