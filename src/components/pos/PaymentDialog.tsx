@@ -39,7 +39,7 @@ const UI_TEXT = {
     selectCustomer: { en: 'Select a customer', ar: 'اختر عميل' },
     walkInCustomer: { en: 'Walk-in Customer', ar: 'عميل عابر' },
     addCustomer: { en: 'Add Customer', ar: 'إضافة عميل' },
-    searchCustomer: { en: 'Search customer...', ar: 'ابحث عن عميل...' },
+    searchCustomer: { en: 'Search customer...', ar: 'ابحث عن عميل بالاسم أو الهاتف...' },
     noCustomerFound: { en: 'No customer found.', ar: 'لم يتم العثور على عميل.' },
 };
 
@@ -168,7 +168,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                                 {customers.map((customer) => (
                                 <CommandItem
                                     key={customer.id}
-                                    value={customer.name}
+                                    value={`${customer.name} ${customer.phone}`}
                                     onSelect={() => handleSelectCustomer(customer.id)}
                                 >
                                     <Check
@@ -177,7 +177,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                                         selectedCustomerId === customer.id ? "opacity-100" : "opacity-0"
                                     )}
                                     />
-                                    {customer.name}
+                                    <div className="flex flex-col">
+                                        <span>{customer.name}</span>
+                                        <span className="text-xs text-muted-foreground" dir="ltr">{customer.phone}</span>
+                                    </div>
                                 </CommandItem>
                                 ))}
                             </CommandGroup>
