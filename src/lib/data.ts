@@ -90,6 +90,9 @@ export const products: Product[] = [
 export const customers: Customer[] = [
     { id: 1, name: "Ahmad Mahmoud", phone: "0501234567", address: "Riyadh, Saudi Arabia" },
     { id: 2, name: "Fatima Al-Ali", phone: "0557654321", address: "Jeddah, Saudi Arabia" },
+    { id: 3, name: "Youssef Khaled", phone: "0531234568", address: "Dammam, Saudi Arabia" },
+    { id: 4, name: "Sara Abdullah", phone: "0547654322", address: "Khobar, Saudi Arabia" },
+    { id: 5, name: "Omar Hassan", phone: "0561112233", address: "Mecca, Saudi Arabia" },
 ];
 
 export const suppliers: Supplier[] = [
