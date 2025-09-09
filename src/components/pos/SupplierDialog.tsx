@@ -37,14 +37,16 @@ const SupplierDialog: React.FC<SupplierDialogProps> = ({ isOpen, onOpenChange, o
   const [formData, setFormData] = React.useState<Partial<Supplier>>({});
 
   React.useEffect(() => {
-    if (supplier) {
-      setFormData(supplier);
-    } else {
-      setFormData({
-        name: '',
-        phone: '',
-        address: '',
-      });
+    if (isOpen) {
+      if (supplier) {
+        setFormData(supplier);
+      } else {
+        setFormData({
+          name: '',
+          phone: '',
+          address: '',
+        });
+      }
     }
   }, [supplier, isOpen]);
 
@@ -60,6 +62,7 @@ const SupplierDialog: React.FC<SupplierDialogProps> = ({ isOpen, onOpenChange, o
     // Basic validation
     if (formData.name && formData.phone) {
       onSave(formData as Supplier);
+      onOpenChange(false);
     }
   };
 
