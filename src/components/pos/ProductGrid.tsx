@@ -33,7 +33,7 @@ const ProductCard: React.FC<{ product: Product; onAddToCart: (product: Product) 
 
 const ProductGrid: React.FC<ProductGridProps> = ({ products, onAddToCart, language }) => {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       {products.map((product) => (
         <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} language={language} />
       ))}

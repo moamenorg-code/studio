@@ -67,7 +67,7 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 sm:px-6 shrink-0">
       <h1 className="text-xl font-bold text-primary">{appName}</h1>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" dir="ltr">
         <Button
           variant="outline"
           size="sm"
@@ -95,7 +95,7 @@ const Header: React.FC<HeaderProps> = ({
             {HEADER_UI_TEXT.smartRoundup[language]}
           </span>
         </Button>
-        <DropdownMenu>
+        <DropdownMenu dir={language === 'ar' ? 'rtl' : 'ltr'}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2">
               <Languages className="h-4 w-4" />
@@ -104,7 +104,7 @@ const Header: React.FC<HeaderProps> = ({
               </span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
+          <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => setLanguage('en')}>
               {HEADER_UI_TEXT.english[language]}
             </DropdownMenuItem>
@@ -134,7 +134,7 @@ const Header: React.FC<HeaderProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <DropdownMenu>
+        <DropdownMenu dir={language === 'ar' ? 'rtl' : 'ltr'}>
             <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon" className="h-9 w-9" disabled={!isShiftOpen}>
                 <Menu className="h-5 w-5" />
@@ -145,15 +145,15 @@ const Header: React.FC<HeaderProps> = ({
             <ScrollArea className="h-auto max-h-[400px]">
                 {availableViews.map(({ value, label, icon: Icon }) => (
                 <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
-                    <Icon className="h-5 w-5" />
-                    <span className="flex-1 text-start mx-3">{UI_TEXT[label][language]}</span>
+                    <Icon className={language === 'ar' ? 'ml-3 h-5 w-5' : 'mr-3 h-5 w-5'} />
+                    <span className="flex-1">{UI_TEXT[label][language]}</span>
                 </DropdownMenuItem>
                 ))}
             </ScrollArea>
              <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={onLogout} className="text-base py-2.5 text-destructive">
-                <LogOut className="h-5 w-5" />
-                <span className="flex-1 text-start mx-3">{HEADER_UI_TEXT.logout[language]}</span>
+                <LogOut className={language === 'ar' ? 'ml-3 h-5 w-5' : 'mr-3 h-5 w-5'} />
+                <span className="flex-1">{HEADER_UI_TEXT.logout[language]}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
