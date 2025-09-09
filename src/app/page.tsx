@@ -152,7 +152,7 @@ export default function POSPage() {
         <div className="mb-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full justify-between sm:w-auto">
+                <Button variant="outline" className="w-full justify-between sm:w-[250px]">
                     <div className="flex items-center">
                         <ActiveViewIcon className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
                         <span>{UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}</span>
@@ -160,7 +160,7 @@ export default function POSPage() {
                   <ChevronDown className={language === 'ar' ? 'mr-auto h-4 w-4' : 'ml-auto h-4 w-4'} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-full sm:w-[200px]">
+              <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-full sm:w-[250px]">
                 {VIEW_OPTIONS.map(({ value, label, icon: Icon }) => (
                   <DropdownMenuItem key={value} onSelect={() => setActiveView(value)}>
                     <Icon className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
