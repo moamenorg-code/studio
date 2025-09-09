@@ -8,7 +8,6 @@ import {
   SheetHeader,
   SheetTitle,
   SheetFooter,
-  SheetClose,
 } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,17 +18,13 @@ type Language = 'en' | 'ar';
 
 const UI_TEXT = {
     currentOrder: { en: 'Current Order', ar: 'الطلب الحالي' },
-    item: { en: 'Item', ar: 'الصنف' },
-    qty: { en: 'Qty', ar: 'الكمية' },
-    price: { en: 'Price', ar: 'السعر' },
-    total: { en: 'Total', ar: 'الإجمالي' },
+    noItems: { en: 'No items in cart.', ar: 'لا توجد أصناف في السلة.' },
     subtotal: { en: 'Subtotal', ar: 'المجموع الفرعي' },
     discount: { en: 'Discount (%)', ar: 'الخصم (%)' },
     serviceCharge: { en: 'Service Charge', ar: 'رسوم الخدمة' },
     finalTotal: { en: 'Final Total', ar: 'الإجمالي النهائي' },
     clearCart: { en: 'Clear Cart', ar: 'إفراغ السلة' },
     pay: { en: 'Pay', ar: 'الدفع' },
-    noItems: { en: 'No items in cart.', ar: 'لا توجد أصناف في السلة.' },
 };
 
 interface CartPanelProps {
@@ -47,15 +42,26 @@ const CartPanel: React.FC<CartPanelProps> = ({ isOpen, onOpenChange, cart, setCa
   const [serviceCharge, setServiceCharge] = React.useState(0);
 
   const updateQuantity = (id: number, delta: number) => {
-    setCart(cart =>
-      cart.map(item =>
-        item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
-      ).filter(item => item.quantity > 0)
-    );
+    setCart(currentCart => {
+      const newCart = currentCart.map(item =>
+        item.id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item
+      );
+      const filteredCart = newCart.filter(item => item.quantity > 0);
+      if (filteredCart.length === 0) {
+        onOpenChange(false);
+      }
+      return filteredCart;
+    });
   };
   
   const removeItem = (id: number) => {
-      setCart(cart => cart.filter(item => item.id !== id));
+    setCart(currentCart => {
+      const newCart = currentCart.filter(item => item.id !== id);
+      if (newCart.length === 0) {
+        onOpenChange(false);
+      }
+      return newCart;
+    });
   };
 
   const subtotal = React.useMemo(() => cart.reduce((acc, item) => acc + item.price * item.quantity, 0), [cart]);
@@ -72,9 +78,8 @@ const CartPanel: React.FC<CartPanelProps> = ({ isOpen, onOpenChange, cart, setCa
       if (cart.length === 0) {
           setOverallDiscount(0);
           setServiceCharge(0);
-          onOpenChange(false); // Close sheet if cart becomes empty
       }
-  }, [cart, onOpenChange]);
+  }, [cart]);
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
@@ -97,12 +102,12 @@ const CartPanel: React.FC<CartPanelProps> = ({ isOpen, onOpenChange, cart, setCa
                             <p className="text-sm text-muted-foreground">{item.price.toFixed(2)}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, -1)}><MinusCircle className="h-4 w-4" /></Button>
-                            <span>{item.quantity}</span>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, 1)}><PlusCircle className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, -1)}><MinusCircle className="h-4 w-4" /></Button>
+                            <span className="w-6 text-center">{item.quantity}</span>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, 1)}><PlusCircle className="h-4 w-4" /></Button>
                         </div>
-                        <p className="w-16 text-end font-medium">{(item.price * item.quantity).toFixed(2)}</p>
-                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeItem(item.id)}><Trash2 className="h-4 w-4" /></Button>
+                        <p className="w-20 text-end font-medium">{(item.price * item.quantity).toFixed(2)}</p>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeItem(item.id)}><Trash2 className="h-4 w-4" /></Button>
                         </div>
                     ))}
                     </div>
@@ -148,7 +153,7 @@ const CartPanel: React.FC<CartPanelProps> = ({ isOpen, onOpenChange, cart, setCa
                     <Button variant="outline" onClick={clearCart}>
                         <XCircle className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />{UI_TEXT.clearCart[language]}
                     </Button>
-                    <Button onClick={onProcessPayment} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                    <Button onClick={onProcessPayment} className="bg-green-600 text-white hover:bg-green-700">
                         {UI_TEXT.pay[language]}
                     </Button>
                 </div>

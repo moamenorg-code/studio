@@ -29,7 +29,7 @@ const UI_TEXT = {
 interface ProductDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (product: Product) => void;
+  onSave: (product: Omit<Product, 'id'> | Product) => void;
   product: Product | null;
   language: Language;
 }
@@ -38,15 +38,17 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onS
   const [formData, setFormData] = React.useState<Partial<Product>>({});
 
   React.useEffect(() => {
-    if (product) {
-      setFormData(product);
-    } else {
-      setFormData({
-        name: '',
-        nameAr: '',
-        price: 0,
-        barcode: '',
-      });
+    if (isOpen) {
+        if (product) {
+          setFormData(product);
+        } else {
+          setFormData({
+            name: '',
+            nameAr: '',
+            price: 0,
+            barcode: '',
+          });
+        }
     }
   }, [product, isOpen]);
 
@@ -59,43 +61,35 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onS
   };
 
   const handleSave = () => {
-    // Basic validation
     if (formData.name && formData.nameAr && formData.price! > 0) {
       onSave(formData as Product);
+      onOpenChange(false);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{product ? UI_TEXT.editProduct[language] : UI_TEXT.addProduct[language]}</DialogTitle>
           <DialogDescription>{UI_TEXT.productInfo[language]}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-end">
-              {UI_TEXT.nameEn[language]}
-            </Label>
-            <Input id="name" name="name" value={formData.name} onChange={handleChange} className="col-span-3" />
+          <div className="space-y-2">
+            <Label htmlFor="name">{UI_TEXT.nameEn[language]}</Label>
+            <Input id="name" name="name" value={formData.name || ''} onChange={handleChange} />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="nameAr" className="text-end">
-              {UI_TEXT.nameAr[language]}
-            </Label>
-            <Input id="nameAr" name="nameAr" value={formData.nameAr} onChange={handleChange} className="col-span-3" dir="rtl" />
+          <div className="space-y-2">
+            <Label htmlFor="nameAr">{UI_TEXT.nameAr[language]}</Label>
+            <Input id="nameAr" name="nameAr" value={formData.nameAr || ''} onChange={handleChange} dir="rtl" />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="price" className="text-end">
-              {UI_TEXT.price[language]}
-            </Label>
-            <Input id="price" name="price" type="number" value={formData.price} onChange={handleChange} className="col-span-3" dir="ltr" />
+          <div className="space-y-2">
+            <Label htmlFor="price">{UI_TEXT.price[language]}</Label>
+            <Input id="price" name="price" type="number" value={formData.price || ''} onChange={handleChange} dir="ltr" />
           </div>
-           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="barcode" className="text-end">
-              {UI_TEXT.barcode[language]}
-            </Label>
-            <Input id="barcode" name="barcode" value={formData.barcode || ''} onChange={handleChange} className="col-span-3" dir="ltr" />
+           <div className="space-y-2">
+            <Label htmlFor="barcode">{UI_TEXT.barcode[language]}</Label>
+            <Input id="barcode" name="barcode" value={formData.barcode || ''} onChange={handleChange} dir="ltr" />
           </div>
         </div>
         <DialogFooter>

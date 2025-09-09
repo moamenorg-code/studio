@@ -11,6 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import CustomerDialog from './CustomerDialog';
 
 type Language = 'en' | 'ar';
@@ -53,11 +54,11 @@ const CustomerManagementTab: React.FC<CustomerManagementTabProps> = ({ customers
   };
   
   const handleSaveCustomer = (customer: Customer) => {
-    if (editingCustomer) {
-      onCustomersChange(customers.map(c => (c.id === customer.id ? customer : c)));
+    if (editingCustomer && 'id' in customer) {
+        onCustomersChange(customers.map(c => (c.id === customer.id ? customer : c)));
     } else {
-      const newCustomer = { ...customer, id: Date.now() };
-      onCustomersChange([...customers, newCustomer]);
+        const newCustomer = { ...customer, id: Date.now() };
+        onCustomersChange([...customers, newCustomer]);
     }
     setDialogOpen(false);
   };
@@ -66,62 +67,64 @@ const CustomerManagementTab: React.FC<CustomerManagementTabProps> = ({ customers
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle>{UI_TEXT.manageCustomers[language]}</CardTitle>
               <CardDescription>{UI_TEXT.manageYourCustomers[language]}</CardDescription>
             </div>
-            <Button onClick={handleAddCustomer}>
+            <Button onClick={handleAddCustomer} className="w-full sm:w-auto">
               <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
               {UI_TEXT.addCustomer[language]}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{UI_TEXT.name[language]}</TableHead>
-                <TableHead>{UI_TEXT.phone[language]}</TableHead>
-                <TableHead>{UI_TEXT.address[language]}</TableHead>
-                <TableHead>
-                  <span className="sr-only">{UI_TEXT.actions[language]}</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {customers.length > 0 ? (
-                customers.map(customer => (
-                  <TableRow key={customer.id}>
-                    <TableCell className="font-medium">{customer.name}</TableCell>
-                    <TableCell dir="ltr">{customer.phone}</TableCell>
-                    <TableCell>{customer.address}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
-                          <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDeleteCustomer(customer.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+          <ScrollArea className="h-[calc(100vh-22rem)]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{UI_TEXT.name[language]}</TableHead>
+                  <TableHead>{UI_TEXT.phone[language]}</TableHead>
+                  <TableHead className="hidden md:table-cell">{UI_TEXT.address[language]}</TableHead>
+                  <TableHead>
+                    <span className="sr-only">{UI_TEXT.actions[language]}</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {customers.length > 0 ? (
+                  customers.map(customer => (
+                    <TableRow key={customer.id}>
+                      <TableCell className="font-medium">{customer.name}</TableCell>
+                      <TableCell dir="ltr">{customer.phone}</TableCell>
+                      <TableCell className="hidden md:table-cell">{customer.address}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
+                            <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteCustomer(customer.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      {UI_TEXT.noCustomers[language]}
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
-                    {UI_TEXT.noCustomers[language]}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         </CardContent>
       </Card>
       <CustomerDialog 

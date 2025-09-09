@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { BarChart, LineChart, PieChart } from 'lucide-react';
 import {
   Bar,
   BarChart as RechartsBarChart,
@@ -15,13 +14,12 @@ import {
   YAxis,
   Cell,
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sale } from '@/lib/types';
 
 type Language = 'en' | 'ar';
 
 const UI_TEXT = {
-  dashboard: { en: 'Dashboard', ar: 'لوحة التحكم' },
   salesOverview: { en: 'Sales Overview', ar: 'نظرة عامة على المبيعات' },
   topSelling: { en: 'Top Selling Products', ar: 'المنتجات الأكثر مبيعًا' },
   salesByDay: { en: 'Sales by Day', ar: 'المبيعات حسب اليوم' },
@@ -35,7 +33,29 @@ interface DashboardTabProps {
   language: Language;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+
+const CustomTooltip = ({ active, payload, label, language }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg border bg-background p-2 shadow-sm">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col space-y-1">
+            <span className="text-[0.70rem] uppercase text-muted-foreground">
+              {label}
+            </span>
+            <span className="font-bold text-muted-foreground">
+              {payload[0].value.toFixed(2)}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
 
 const DashboardTab: React.FC<DashboardTabProps> = ({ sales, language }) => {
   const totalSales = React.useMemo(() => sales.reduce((sum, sale) => sum + sale.finalTotal, 0), [sales]);
@@ -78,7 +98,7 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ sales, language }) => {
   }, [sales, language]);
 
   return (
-    <div className="grid gap-6 p-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 md:gap-6 p-4 md:grid-cols-2 lg:grid-cols-3">
       <Card>
         <CardHeader>
           <CardTitle>{UI_TEXT.totalSales[language]}</CardTitle>
@@ -104,48 +124,47 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ sales, language }) => {
         </CardContent>
       </Card>
 
-      <Card className="md:col-span-2">
+      <Card className="md:col-span-2 lg:col-span-3">
         <CardHeader>
           <CardTitle>{UI_TEXT.salesByDay[language]}</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
             <RechartsLineChart data={salesByDay}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" reversed={language === 'ar'} />
-              <YAxis orientation={language === 'ar' ? 'right' : 'left'} />
-              <Tooltip />
-              <Line type="monotone" dataKey="sales" stroke="#8884d8" activeDot={{ r: 8 }} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="name" reversed={language === 'ar'} tickLine={false} axisLine={false} />
+              <YAxis orientation={language === 'ar' ? 'right' : 'left'} tickLine={false} axisLine={false} />
+              <Tooltip content={<CustomTooltip language={language} />} />
+              <Line type="monotone" dataKey="sales" stroke="hsl(var(--primary))" strokeWidth={2} activeDot={{ r: 8 }} />
             </RechartsLineChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="md:col-span-2 lg:col-span-3">
         <CardHeader>
           <CardTitle>{UI_TEXT.topSelling[language]}</CardTitle>
         </CardHeader>
         <CardContent>
            <ResponsiveContainer width="100%" height={300}>
-            <RechartsPieChart>
-              <Pie
-                data={topSellingProducts}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="quantity"
-                nameKey="name"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              >
-                {topSellingProducts.map((entry, index) => (
+            <RechartsBarChart data={topSellingProducts} layout="vertical" margin={{ right: language === 'ar' ? 20 : 0, left: language === 'ar' ? 0 : 20 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+              <XAxis type="number" hide />
+              <YAxis 
+                type="category" 
+                dataKey="name" 
+                width={80} 
+                tickLine={false} 
+                axisLine={false} 
+                orientation={language === 'ar' ? 'right' : 'left'}
+              />
+              <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} />
+              <Bar dataKey="quantity" layout="vertical" radius={[0, 4, 4, 0]}>
+                 {topSellingProducts.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </RechartsPieChart>
+              </Bar>
+            </RechartsBarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>

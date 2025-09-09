@@ -30,7 +30,6 @@ interface PaymentDialogProps {
 }
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({ isOpen, onOpenChange, cart, onConfirm, language }) => {
-  // These would come from the CartPanel state in a real app
   const [overallDiscount] = React.useState(0);
   const [serviceCharge] = React.useState(0);
 
@@ -59,19 +58,19 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({ isOpen, onOpenChange, car
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>{UI_TEXT.payment[language]}</DialogTitle>
           <DialogDescription>
             {UI_TEXT.selectPayment[language]}
           </DialogDescription>
         </DialogHeader>
-        <div className="my-8 text-center">
-            <p className="text-muted-foreground">{UI_TEXT.totalAmountDue[language]}</p>
+        <div className="my-6 text-center">
+            <p className="text-sm text-muted-foreground">{UI_TEXT.totalAmountDue[language]}</p>
             <p className="text-4xl font-bold text-primary">{finalTotal.toFixed(2)}</p>
         </div>
         <DialogFooter className="grid grid-cols-2 gap-4">
-          <Button size="lg" onClick={() => handlePayment('cash')} className="bg-accent text-accent-foreground hover:bg-accent/90">
+          <Button size="lg" onClick={() => handlePayment('cash')} className="bg-green-600 text-white hover:bg-green-700">
             <Wallet className={language === 'ar' ? "ml-2 h-5 w-5" : "mr-2 h-5 w-5"} />
             {UI_TEXT.cash[language]}
           </Button>

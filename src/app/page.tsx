@@ -9,7 +9,6 @@ import {
   History,
   ClipboardList,
   AreaChart,
-  ChevronDown,
   Users,
   Building,
   Truck,
@@ -68,7 +67,6 @@ const UI_TEXT = {
   transactionSuccess: { en: "Transaction successful!", ar: "تمت العملية بنجاح!" },
   transactionSuccessDesc: { en: (id: string) => `Sale ID: ${id}`, ar: (id: string) => `رقم الفاتورة: ${id}`},
   quickServeLite: { en: "QuickServe Lite", ar: "كويك سيرف لايت" },
-  view: { en: "View", ar: "عرض" },
   searchPlaceholder: { en: "Search by name or barcode...", ar: "ابحث بالاسم أو الباركود..." },
   menu: { en: "Menu", ar: "القائمة" },
 };
@@ -155,10 +153,6 @@ export default function POSPage() {
   const handleRawMaterialUpdate = (updatedRawMaterials: RawMaterial[]) => {
     setRawMaterials(updatedRawMaterials);
   };
-  
-  const ActiveViewIcon = VIEW_OPTIONS.find(v => v.value === activeView)?.icon || ShoppingBag;
-
-  const subtotal = React.useMemo(() => cart.reduce((acc, item) => acc + item.price * item.quantity, 0), [cart]);
 
   const filteredProducts = React.useMemo(() => {
     if (!searchQuery) return products;
@@ -170,6 +164,44 @@ export default function POSPage() {
     );
   }, [products, searchQuery]);
 
+  const renderActiveView = () => {
+    switch(activeView) {
+      case 'sales':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>{UI_TEXT.products[language]}</CardTitle>
+              <CardDescription>
+                  {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ProductGrid
+                products={filteredProducts}
+                onAddToCart={addToCart}
+                language={language}
+              />
+            </CardContent>
+          </Card>
+        );
+      case 'dashboard':
+        return <DashboardTab sales={sales} language={language} />;
+      case 'history':
+        return <SalesHistoryTab sales={sales} language={language} />;
+      case 'products':
+        return <ProductManagementTab products={products} onProductsChange={handleProductUpdate} language={language} />;
+      case 'inventory':
+        return <InventoryManagementTab rawMaterials={rawMaterials} onRawMaterialsChange={handleRawMaterialUpdate} language={language} />;
+      case 'customers':
+        return <CustomerManagementTab customers={customers} onCustomersChange={handleCustomerUpdate} language={language} />;
+      case 'suppliers':
+        return <SupplierManagementTab suppliers={suppliers} onSuppliersChange={handleSupplierUpdate} language={language} />;
+      case 'purchases':
+        return <PurchaseManagementTab suppliers={suppliers} language={language} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="flex h-screen flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -180,10 +212,10 @@ export default function POSPage() {
         onOpenSmartRoundup={() => setSmartRoundupOpen(true)}
       />
       <main className="flex flex-1 flex-col overflow-auto p-4 sm:p-6">
-        <div className="mb-4 flex items-center gap-4">
+        <div className="mb-4 flex flex-col sm:flex-row items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-auto">
+                <Button variant="outline" className="w-full sm:w-auto flex-shrink-0">
                   <Menu className={language === 'ar' ? 'ml-2 h-5 w-5' : 'mr-2 h-5 w-5'} />
                   <span>{UI_TEXT.menu[language]}</span>
                 </Button>
@@ -193,7 +225,7 @@ export default function POSPage() {
                   <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
                     {language === 'en' && <Icon className="mr-3 h-5 w-5" />}
                     <span className="flex-1 text-right">{UI_TEXT[label][language]}</span>
-                    {language === 'ar' && <Icon className="mr-3 h-5 w-5" />}
+                    {language === 'ar' && <Icon className="ml-3 h-5 w-5" />}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -212,61 +244,8 @@ export default function POSPage() {
             )}
         </div>
 
-        <div className="flex-1 pb-20"> {/* Add padding to bottom to avoid overlap with floating bar */}
-          {activeView === 'sales' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{UI_TEXT.products[language]}</CardTitle>
-                <CardDescription>
-                    {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ProductGrid
-                  products={filteredProducts}
-                  onAddToCart={addToCart}
-                  language={language}
-                />
-              </CardContent>
-            </Card>
-          )}
-
-          {activeView === 'dashboard' && <DashboardTab sales={sales} language={language} />}
-          {activeView === 'history' && <SalesHistoryTab sales={sales} language={language} />}
-          {activeView === 'products' && (
-            <ProductManagementTab 
-              products={products}
-              onProductsChange={handleProductUpdate}
-              language={language} 
-            />
-          )}
-          {activeView === 'inventory' && (
-            <InventoryManagementTab
-              rawMaterials={rawMaterials}
-              onRawMaterialsChange={handleRawMaterialUpdate}
-              language={language}
-            />
-          )}
-          {activeView === 'customers' && (
-            <CustomerManagementTab
-              customers={customers}
-              onCustomersChange={handleCustomerUpdate}
-              language={language}
-            />
-          )}
-          {activeView === 'suppliers' && (
-            <SupplierManagementTab
-              suppliers={suppliers}
-              onSuppliersChange={handleSupplierUpdate}
-              language={language}
-            />
-          )}
-          {activeView === 'purchases' && (
-            <PurchaseManagementTab
-              suppliers={suppliers}
-              language={language}
-            />
-          )}
+        <div className="flex-1 pb-24 sm:pb-28"> 
+          {renderActiveView()}
         </div>
       </main>
 

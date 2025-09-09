@@ -11,6 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import ProductDialog from './ProductDialog';
 
 type Language = 'en' | 'ar';
@@ -51,11 +52,11 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
     onProductsChange(products.filter(p => p.id !== productId));
   };
   
-  const handleSaveProduct = (product: Product) => {
-    if (editingProduct) {
-      onProductsChange(products.map(p => (p.id === product.id ? product : p)));
+  const handleSaveProduct = (productData: Omit<Product, 'id'> | Product) => {
+    if ('id' in productData && editingProduct) {
+      onProductsChange(products.map(p => (p.id === productData.id ? productData : p)));
     } else {
-      const newProduct = { ...product, id: Date.now() };
+      const newProduct = { ...productData, id: Date.now() };
       onProductsChange([...products, newProduct]);
     }
     setDialogOpen(false);
@@ -66,60 +67,62 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle>{UI_TEXT.manageProducts[language]}</CardTitle>
               <CardDescription>{UI_TEXT.manageYourProducts[language]}</CardDescription>
             </div>
-            <Button onClick={handleAddProduct}>
+            <Button onClick={handleAddProduct} className="w-full sm:w-auto">
               <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
               {UI_TEXT.addProduct[language]}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{UI_TEXT.name[language]}</TableHead>
-                <TableHead className="text-end">{UI_TEXT.price[language]}</TableHead>
-                <TableHead>
-                  <span className="sr-only">{UI_TEXT.actions[language]}</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {products.length > 0 ? (
-                products.map(product => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">{language === 'ar' ? product.nameAr : product.name}</TableCell>
-                    <TableCell className="text-end">{product.price.toFixed(2)}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
-                          <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEditProduct(product)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+          <ScrollArea className="h-[calc(100vh-22rem)]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{UI_TEXT.name[language]}</TableHead>
+                  <TableHead className="text-end">{UI_TEXT.price[language]}</TableHead>
+                  <TableHead>
+                    <span className="sr-only">{UI_TEXT.actions[language]}</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {products.length > 0 ? (
+                  products.map(product => (
+                    <TableRow key={product.id}>
+                      <TableCell className="font-medium">{language === 'ar' ? product.nameAr : product.name}</TableCell>
+                      <TableCell className="text-end">{product.price.toFixed(2)}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
+                            <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEditProduct(product)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} className="h-24 text-center">
+                      {UI_TEXT.noProducts[language]}
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={3} className="h-24 text-center">
-                    {UI_TEXT.noProducts[language]}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         </CardContent>
       </Card>
       <ProductDialog 

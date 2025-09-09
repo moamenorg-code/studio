@@ -11,7 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-// import RawMaterialDialog from './RawMaterialDialog'; // Will be created later
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Language = 'en' | 'ar';
 
@@ -40,13 +40,11 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
 
   const handleAdd = () => {
     setEditingRawMaterial(null);
-    // setDialogOpen(true); // Will be enabled when dialog is created
     alert("Functionality to add raw materials will be implemented soon.");
   };
 
   const handleEdit = (material: RawMaterial) => {
     setEditingRawMaterial(material);
-    // setDialogOpen(true);
     alert("Functionality to edit raw materials will be implemented soon.");
   };
 
@@ -68,71 +66,66 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle>{UI_TEXT.manageInventory[language]}</CardTitle>
               <CardDescription>{UI_TEXT.manageRawMaterials[language]}</CardDescription>
             </div>
-            <Button onClick={handleAdd}>
+            <Button onClick={handleAdd} className="w-full sm:w-auto">
               <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
               {UI_TEXT.addRawMaterial[language]}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{UI_TEXT.name[language]}</TableHead>
-                <TableHead>{UI_TEXT.stock[language]}</TableHead>
-                <TableHead>{UI_TEXT.unit[language]}</TableHead>
-                <TableHead>
-                  <span className="sr-only">{UI_TEXT.actions[language]}</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rawMaterials.length > 0 ? (
-                rawMaterials.map(material => (
-                  <TableRow key={material.id}>
-                    <TableCell className="font-medium">{language === 'ar' ? material.nameAr : material.name}</TableCell>
-                    <TableCell>{material.stock}</TableCell>
-                    <TableCell>{material.unit}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
-                          <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEdit(material)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(material.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+          <ScrollArea className="h-[calc(100vh-22rem)]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{UI_TEXT.name[language]}</TableHead>
+                  <TableHead>{UI_TEXT.stock[language]}</TableHead>
+                  <TableHead>{UI_TEXT.unit[language]}</TableHead>
+                  <TableHead>
+                    <span className="sr-only">{UI_TEXT.actions[language]}</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rawMaterials.length > 0 ? (
+                  rawMaterials.map(material => (
+                    <TableRow key={material.id}>
+                      <TableCell className="font-medium">{language === 'ar' ? material.nameAr : material.name}</TableCell>
+                      <TableCell>{material.stock}</TableCell>
+                      <TableCell>{material.unit}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
+                            <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEdit(material)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDelete(material.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      {UI_TEXT.noRawMaterials[language]}
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
-                    {UI_TEXT.noRawMaterials[language]}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         </CardContent>
       </Card>
-      {/* <RawMaterialDialog 
-        isOpen={isDialogOpen}
-        onOpenChange={setDialogOpen}
-        onSave={handleSave}
-        rawMaterial={editingRawMaterial}
-        language={language}
-      /> */}
     </>
   );
 };

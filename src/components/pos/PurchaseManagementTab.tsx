@@ -4,7 +4,7 @@ import type { Purchase, Supplier } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '../ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Language = 'en' | 'ar';
 
@@ -39,48 +39,50 @@ const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <CardTitle>{UI_TEXT.managePurchases[language]}</CardTitle>
               <CardDescription>{UI_TEXT.manageYourPurchases[language]}</CardDescription>
             </div>
-            <Button onClick={handleAddPurchase}>
+            <Button onClick={handleAddPurchase} className="w-full sm:w-auto">
               <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
               {UI_TEXT.addPurchase[language]}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{UI_TEXT.invoiceId[language]}</TableHead>
-                <TableHead>{UI_TEXT.supplier[language]}</TableHead>
-                <TableHead>{UI_TEXT.date[language]}</TableHead>
-                <TableHead className="text-end">{UI_TEXT.total[language]}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {purchases.length > 0 ? (
-                purchases.map(purchase => (
-                  <TableRow key={purchase.id}>
-                    <TableCell className="font-medium">{purchase.id}</TableCell>
-                    <TableCell>{getSupplierName(purchase.supplierId)}</TableCell>
-                    <TableCell>
-                      {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US').format(purchase.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-end">{purchase.total.toFixed(2)}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
+          <ScrollArea className="h-[calc(100vh-22rem)]">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
-                    {UI_TEXT.noPurchases[language]}
-                  </TableCell>
+                  <TableHead>{UI_TEXT.invoiceId[language]}</TableHead>
+                  <TableHead>{UI_TEXT.supplier[language]}</TableHead>
+                  <TableHead>{UI_TEXT.date[language]}</TableHead>
+                  <TableHead className="text-end">{UI_TEXT.total[language]}</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {purchases.length > 0 ? (
+                  purchases.map(purchase => (
+                    <TableRow key={purchase.id}>
+                      <TableCell className="font-medium">{purchase.id}</TableCell>
+                      <TableCell>{getSupplierName(purchase.supplierId)}</TableCell>
+                      <TableCell>
+                        {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US').format(purchase.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-end">{purchase.total.toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      {UI_TEXT.noPurchases[language]}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         </CardContent>
       </Card>
     </>

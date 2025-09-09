@@ -28,17 +28,14 @@ const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ cart, language, onOpe
     setIsClient(true);
   }, []);
 
-
   if (itemCount === 0 || !isClient) {
     return null;
   }
-  
-  const { motion: Motion } = require('framer-motion');
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="container mx-auto max-w-4xl p-2 sm:p-4">
-        <Motion.div
+        <motion.div
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 100, damping: 20 }}
@@ -69,7 +66,7 @@ const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ cart, language, onOpe
             </div>
             <ArrowRight className={`h-6 w-6 text-primary-foreground/80 transition-transform duration-300 group-hover:translate-x-1 ${language === 'ar' ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
           </div>
-        </Motion.div>
+        </motion.div>
       </div>
     </div>
   );
