@@ -15,6 +15,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import ProductDialog from './ProductDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '../ui/input';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 type Language = 'en' | 'ar';
 
@@ -35,21 +38,24 @@ const UI_TEXT = {
   selectRecipe: { en: 'Select a recipe', ar: 'اختر وصفة' },
   selectCategory: { en: 'Select a category', ar: 'اختر فئة' },
   searchPlaceholder: { en: 'Search by name or barcode...', ar: 'ابحث بالاسم أو الباركود...' },
+  saveSuccess: { en: 'Product saved successfully', ar: 'تم حفظ المنتج بنجاح' },
+  deleteSuccess: { en: 'Product deleted successfully', ar: 'تم حذف المنتج بنجاح' },
+  error: { en: 'An error occurred', ar: 'حدث خطأ' },
 };
 
 interface ProductManagementTabProps {
   products: Product[];
-  onProductsChange: (products: Product[]) => void;
   recipes: Recipe[];
   categories: Category[];
   language: Language;
   onOpenBarcodeScanner: (onDetect: (barcode: string) => void) => void;
 }
 
-const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, onProductsChange, recipes, categories, language, onOpenBarcodeScanner }) => {
+const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, recipes, categories, language, onOpenBarcodeScanner }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const [editingProduct, setEditingProduct] = React.useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
+  const { toast } = useToast();
 
   const handleAddProduct = () => {
     setEditingProduct(null);
@@ -61,30 +67,50 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
     setDialogOpen(true);
   };
 
-  const handleDeleteProduct = (productId: string) => {
-    onProductsChange(products.filter(p => p.id !== productId));
-  };
-  
-  const handleSaveProduct = (productData: Omit<Product, 'id'> | Product) => {
-    let updatedProduct: Product;
-    if ('id' in productData && editingProduct) {
-      updatedProduct = productData;
-      onProductsChange(products.map(p => (p.id === updatedProduct.id ? updatedProduct : p)));
-    } else {
-      updatedProduct = { ...productData, id: String(Date.now()) }; // Firestore IDs are strings
-      onProductsChange([...products, updatedProduct]);
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      await deleteDoc(doc(db, 'products', productId));
+      toast({ title: UI_TEXT.deleteSuccess[language] });
+    } catch (error) {
+      console.error("Error deleting product: ", error);
+      toast({ variant: 'destructive', title: UI_TEXT.error[language], description: String(error) });
     }
-    setDialogOpen(false);
   };
   
-  const handleRecipeChange = (productId: string, recipeId: string) => {
-      const newRecipeId = recipeId === 'none' ? undefined : Number(recipeId);
-      onProductsChange(products.map(p => p.id === productId ? {...p, recipeId: newRecipeId} : p));
+  const handleSaveProduct = async (productData: Omit<Product, 'id'> | Product) => {
+    try {
+      if ('id' in productData) {
+        const { id, ...dataToUpdate } = productData;
+        await updateDoc(doc(db, 'products', id), dataToUpdate);
+      } else {
+        await addDoc(collection(db, 'products'), productData);
+      }
+      toast({ title: UI_TEXT.saveSuccess[language] });
+      setDialogOpen(false);
+    } catch (error) {
+      console.error("Error saving product: ", error);
+      toast({ variant: 'destructive', title: UI_TEXT.error[language], description: String(error) });
+    }
+  };
+  
+  const handleRecipeChange = async (productId: string, recipeIdStr: string) => {
+      const newRecipeId = recipeIdStr === 'none' ? undefined : Number(recipeIdStr);
+      try {
+        await updateDoc(doc(db, 'products', productId), { recipeId: newRecipeId || null });
+      } catch (error) {
+        console.error("Error updating recipe: ", error);
+        toast({ variant: 'destructive', title: UI_TEXT.error[language], description: String(error) });
+      }
   }
 
-  const handleCategoryChange = (productId: string, categoryId: string) => {
-      const newCategoryId = categoryId === 'none' ? undefined : Number(categoryId);
-      onProductsChange(products.map(p => p.id === productId ? {...p, categoryId: newCategoryId} : p));
+  const handleCategoryChange = async (productId: string, categoryIdStr: string) => {
+      const newCategoryId = categoryIdStr === 'none' ? undefined : Number(categoryIdStr);
+      try {
+        await updateDoc(doc(db, 'products', productId), { categoryId: newCategoryId || null });
+      } catch (error) {
+        console.error("Error updating category: ", error);
+        toast({ variant: 'destructive', title: UI_TEXT.error[language], description: String(error) });
+      }
   }
   
   const filteredProducts = React.useMemo(() => {

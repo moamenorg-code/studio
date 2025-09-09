@@ -426,10 +426,6 @@ const handleHoldOrder = () => {
     });
   };
 
-  const handleProductUpdate = (updatedProducts: Product[]) => {
-    setProducts(updatedProducts);
-  };
-
   const handleCustomerUpdate = (updatedCustomers: Customer[]) => {
     setCustomers(updatedCustomers);
   };
@@ -591,7 +587,6 @@ const handleHoldOrder = () => {
       case 'products':
         return <ProductsAndRecipesTab 
                     products={products} 
-                    onProductsChange={handleProductUpdate} 
                     recipes={recipes}
                     onRecipesChange={handleRecipesUpdate}
                     rawMaterials={rawMaterials}

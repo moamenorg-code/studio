@@ -19,7 +19,6 @@ const UI_TEXT = {
 
 interface ProductsAndRecipesTabProps {
   products: Product[];
-  onProductsChange: (products: Product[]) => void;
   recipes: Recipe[];
   onRecipesChange: (recipes: Recipe[]) => void;
   rawMaterials: RawMaterial[];
@@ -31,7 +30,6 @@ interface ProductsAndRecipesTabProps {
 
 const ProductsAndRecipesTab: React.FC<ProductsAndRecipesTabProps> = ({ 
     products,
-    onProductsChange,
     recipes,
     onRecipesChange,
     rawMaterials,
@@ -56,7 +54,6 @@ const ProductsAndRecipesTab: React.FC<ProductsAndRecipesTabProps> = ({
           <TabsContent value="products">
             <ProductManagementTab 
               products={products}
-              onProductsChange={onProductsChange}
               recipes={recipes}
               categories={categories}
               language={language}
