@@ -1,4 +1,4 @@
-import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry, Recipe, Category, Table, DeliveryRep, Role, User } from './types';
+import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry, Recipe, Category, Table, DeliveryRep, Role, User, Permission } from './types';
 
 export const categories: Category[] = [
     { id: 1, name: "Hot Drinks", nameAr: "مشروبات ساخنة" },
@@ -149,6 +149,7 @@ export const roles: Role[] = [
             access_delivery: true,
             access_shifts: true,
             access_settings: true,
+            access_tables: true,
         }
     },
     {
@@ -164,6 +165,7 @@ export const roles: Role[] = [
             access_delivery: false,
             access_shifts: true,
             access_settings: false,
+            access_tables: true,
         }
     }
 ];

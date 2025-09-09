@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
-import type { ActiveView, Language } from '@/lib/types';
+import type { ActiveView, Language, Permission } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
 
 const HEADER_UI_TEXT = {
@@ -33,6 +33,7 @@ interface HeaderProps {
   setActiveView: (view: ActiveView) => void;
   enableTables: boolean;
   isShiftOpen: boolean;
+  hasPermission: (permission: Permission) => boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -46,8 +47,18 @@ const Header: React.FC<HeaderProps> = ({
   setActiveView,
   enableTables,
   isShiftOpen,
+  hasPermission,
 }) => {
   const { setTheme } = useTheme();
+
+  const availableViews = React.useMemo(() => {
+    return VIEW_OPTIONS.filter(v => {
+      if (v.value === 'tables' && !enableTables) return false;
+      if (!v.permission) return true; // Sales view has no permission check
+      return hasPermission(v.permission);
+    })
+  }, [enableTables, hasPermission]);
+
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 sm:px-6 shrink-0">
@@ -128,7 +139,7 @@ const Header: React.FC<HeaderProps> = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[250px]">
             <ScrollArea className="h-[400px]">
-                {VIEW_OPTIONS.filter(v => v.value !== 'tables' || enableTables).map(({ value, label, icon: Icon }) => (
+                {availableViews.map(({ value, label, icon: Icon }) => (
                 <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
                     {language === 'en' && <Icon className="mr-3 h-5 w-5" />}
                     <span className="flex-1 text-right">{UI_TEXT[label][language]}</span>

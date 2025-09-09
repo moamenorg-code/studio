@@ -11,7 +11,7 @@ import {
   Briefcase,
   Settings as SettingsIcon,
 } from 'lucide-react';
-import type { ActiveView } from './types';
+import type { ActiveView, Permission } from './types';
 
 export const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
@@ -48,20 +48,22 @@ export const UI_TEXT = {
   noActiveShift: { en: 'No Active Shift', ar: 'لا يوجد شفت نشط' },
   noActiveShiftDesc: { en: 'You must start a new shift to use the POS.', ar: 'يجب أن تبدأ شفتًا جديدًا لاستخدام نقطة البيع.' },
   switchOrder: { en: 'Switch Order', ar: 'تغيير الطلب' },
+  unauthorized: { en: 'Unauthorized Access', ar: 'وصول غير مصرح به' },
+  unauthorizedDesc: { en: 'You do not have permission to view this page.', ar: 'ليس لديك الصلاحية لعرض هذه الصفحة.' },
 };
 
-export const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType }[] = [
+export const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType, permission?: Permission }[] = [
     { value: 'sales', label: 'sales', icon: ShoppingBag },
-    { value: 'dashboard', label: 'dashboard', icon: AreaChart },
-    { value: 'history', label: 'salesHistory', icon: History },
-    { value: 'products', label: 'productsAndRecipes', icon: ClipboardList },
-    { value: 'inventory', label: 'inventory', icon: Archive },
-    { value: 'tables', label: 'tables', icon: TableIcon },
-    { value: 'customers', label: 'customers', icon: Users },
-    { value: 'purchases', label: 'purchases', icon: Truck },
-    { value: 'deliveryReps', label: 'deliveryReps', icon: NotebookText },
-    { value: 'shifts', label: 'shifts', icon: Briefcase },
-    { value: 'settings', label: 'settings', icon: SettingsIcon },
+    { value: 'dashboard', label: 'dashboard', icon: AreaChart, permission: 'access_dashboard' },
+    { value: 'history', label: 'salesHistory', icon: History, permission: 'access_sales_history' },
+    { value: 'products', label: 'productsAndRecipes', icon: ClipboardList, permission: 'access_products' },
+    { value: 'inventory', label: 'inventory', icon: Archive, permission: 'access_inventory' },
+    { value: 'tables', label: 'tables', icon: TableIcon, permission: 'access_tables' },
+    { value: 'customers', label: 'customers', icon: Users, permission: 'access_customers' },
+    { value: 'purchases', label: 'purchases', icon: Truck, permission: 'access_purchases' },
+    { value: 'deliveryReps', label: 'deliveryReps', icon: NotebookText, permission: 'access_delivery' },
+    { value: 'shifts', label: 'shifts', icon: Briefcase, permission: 'access_shifts' },
+    { value: 'settings', label: 'settings', icon: SettingsIcon, permission: 'access_settings' },
 ];
 
 export const PERMISSIONS_LIST: { key: Permission, text: { en: string, ar: string }}[] = [

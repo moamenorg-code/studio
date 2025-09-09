@@ -1,11 +1,11 @@
 import * as React from 'react';
-import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role } from '@/lib/types';
+import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, Permission } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Briefcase, RefreshCcw } from 'lucide-react';
+import { Search, Briefcase, RefreshCcw, ShieldAlert } from 'lucide-react';
 import Header from './Header';
 import SalesView from './SalesView';
 import DashboardTab from './DashboardTab';
@@ -60,6 +60,9 @@ const POSLayout: React.FC = () => {
   const [takeawayOrders, setTakeawayOrders] = React.useState<any[]>([]);
   const [deliveryOrders, setDeliveryOrders] = React.useState<any[]>([]);
   const [heldOrders, setHeldOrders] = React.useState<HeldOrder[]>([]);
+
+  // TODO: Replace with a proper login/user selection mechanism
+  const [currentUser, setCurrentUser] = React.useState<User | null>(users.find(u => u.id === 1) || null);
 
 
   const [settings, setSettings] = React.useState<Settings>({
@@ -149,6 +152,22 @@ const POSLayout: React.FC = () => {
     document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
   }, [language]);
 
+  const hasPermission = React.useCallback((permission: Permission): boolean => {
+    if (!currentUser) return false;
+    const userRole = roles.find(r => r.id === currentUser.roleId);
+    if (!userRole) return false;
+    return userRole.permissions[permission] || false;
+  }, [currentUser, roles]);
+
+  const handleSetActiveView = (view: ActiveView) => {
+    const viewOption = VIEW_OPTIONS.find(v => v.value === view);
+    if (viewOption?.permission && !hasPermission(viewOption.permission)) {
+        setActiveView('unauthorized');
+    } else {
+        setActiveView(view);
+    }
+  };
+
   const addToCart = (product: Product) => {
     if (!activeOrder) {
          toast({
@@ -176,7 +195,7 @@ const POSLayout: React.FC = () => {
 
   const handleSelectTable = (id: number) => {
     setActiveOrder({ type: 'dine-in', id });
-    setActiveView('sales');
+    handleSetActiveView('sales');
   }
 
   const handleNewTakeawayOrder = () => {
@@ -248,10 +267,8 @@ const handleHoldOrder = () => {
     }
     
     if (activeOrder.type === 'dine-in') {
-        // Don't clear cart for dine-in, just close the sheet.
         setCartSheetOpen(false);
     } else {
-        // Clear active takeaway/delivery order after holding
         clearCart();
     }
     
@@ -281,7 +298,7 @@ const handleHoldOrder = () => {
     
     setActiveOrder({ type: orderType, id: orderId });
     setHeldOrders(prev => prev.filter(o => o.id !== heldOrder.id));
-    setActiveView('sales');
+    handleSetActiveView('sales');
     setHeldOrdersOpen(false);
     setCartSheetOpen(true);
   }
@@ -397,7 +414,7 @@ const handleHoldOrder = () => {
   const handleShiftsUpdate = (updatedShifts: Shift[]) => {
     setShifts(updatedShifts);
     if (updatedShifts.some(s => s.status === 'open') && !activeShift) {
-      setActiveView('sales');
+      handleSetActiveView('sales');
     }
   };
 
@@ -458,7 +475,7 @@ const handleHoldOrder = () => {
                     onAddToCart={addToCart}
                     onNewTakeawayOrder={handleNewTakeawayOrder}
                     onNewDeliveryOrder={handleNewDeliveryOrder}
-                    onSetActiveView={setActiveView}
+                    onSetActiveView={handleSetActiveView}
                     tablesEnabled={settings.enableTables}
                 />;
       case 'dashboard':
@@ -532,6 +549,16 @@ const handleHoldOrder = () => {
                   onRolesChange={handleRolesUpdate}
                   language={language} 
                 />;
+      case 'unauthorized':
+        return (
+            <div className="flex h-full items-center justify-center">
+                <Alert variant="destructive" className="max-w-md text-center">
+                    <ShieldAlert className="mx-auto h-8 w-8 mb-4" />
+                    <AlertTitle>{UI_TEXT.unauthorized[language]}</AlertTitle>
+                    <AlertDescription>{UI_TEXT.unauthorizedDesc[language]}</AlertDescription>
+                </Alert>
+            </div>
+        );
       default:
         return null;
     }
@@ -557,9 +584,10 @@ const handleHoldOrder = () => {
         onOpenHeldOrders={() => setHeldOrdersOpen(true)}
         heldOrdersCount={heldOrders.length}
         activeView={activeView}
-        setActiveView={setActiveView}
+        setActiveView={handleSetActiveView}
         enableTables={settings.enableTables}
         isShiftOpen={!!activeShift}
+        hasPermission={hasPermission}
       />
       <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
         <div className="flex items-center gap-4 shrink-0">
@@ -598,7 +626,7 @@ const handleHoldOrder = () => {
              </>
            ) : (
             <h1 className="text-xl font-semibold flex-1">
-              {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}
+              {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)?.label || 'unauthorized']?.[language]}
             </h1>
            )}
         </div>

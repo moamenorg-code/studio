@@ -182,7 +182,7 @@ export interface User {
 
 
 export type Language = "en" | "ar";
-export type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings" | "tables" | "deliveryReps";
+export type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings" | "tables" | "deliveryReps" | "unauthorized";
 
 export interface ActiveOrder {
   type: OrderType;
