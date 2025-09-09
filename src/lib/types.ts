@@ -44,3 +44,11 @@ export interface Purchase {
     total: number;
     createdAt: Date;
 }
+
+export interface RawMaterial {
+    id: number;
+    name: string;
+    nameAr: string;
+    unit: string; // e.g., kg, liter, piece
+    stock: number;
+}

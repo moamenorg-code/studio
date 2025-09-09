@@ -13,10 +13,11 @@ import {
   Users,
   Building,
   Truck,
+  Archive,
 } from "lucide-react";
 
-import type { CartItem, Product, Sale, Customer, Supplier } from "@/lib/types";
-import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers } from "@/lib/data";
+import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial } from "@/lib/types";
+import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials } from "@/lib/data";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,10 +45,11 @@ import ProductManagementTab from "@/components/pos/ProductManagementTab";
 import CustomerManagementTab from "@/components/pos/CustomerManagementTab";
 import SupplierManagementTab from "@/components/pos/SupplierManagementTab";
 import PurchaseManagementTab from "@/components/pos/PurchaseManagementTab";
+import InventoryManagementTab from "@/components/pos/InventoryManagementTab";
 
 
 type Language = "en" | "ar";
-type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "suppliers" | "purchases";
+type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "suppliers" | "purchases" | "inventory";
 
 const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
@@ -58,6 +60,7 @@ const UI_TEXT = {
   customers: { en: "Customers", ar: "العملاء" },
   suppliers: { en: "Suppliers", ar: "الموردين" },
   purchases: { en: "Purchases", ar: "المشتريات" },
+  inventory: { en: "Inventory", ar: "المخزون" },
   transactionSuccess: { en: "Transaction successful!", ar: "تمت العملية بنجاح!" },
   transactionSuccessDesc: { en: (id: string) => `Sale ID: ${id}`, ar: (id: string) => `رقم الفاتورة: ${id}`},
   quickServeLite: { en: "QuickServe Lite", ar: "كويك سيرف لايت" },
@@ -69,6 +72,7 @@ const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: Reac
     { value: 'dashboard', label: 'dashboard', icon: AreaChart },
     { value: 'history', label: 'salesHistory', icon: History },
     { value: 'products', label: 'manageProducts', icon: ClipboardList },
+    { value: 'inventory', label: 'inventory', icon: Archive },
     { value: 'customers', label: 'customers', icon: Users },
     { value: 'suppliers', label: 'suppliers', icon: Building },
     { value: 'purchases', label: 'purchases', icon: Truck },
@@ -81,6 +85,7 @@ export default function POSPage() {
   const [products, setProducts] = React.useState<Product[]>(initialProducts);
   const [customers, setCustomers] = React.useState<Customer[]>(initialCustomers);
   const [suppliers, setSuppliers] = React.useState<Supplier[]>(initialSuppliers);
+  const [rawMaterials, setRawMaterials] = React.useState<RawMaterial[]>(initialRawMaterials);
   const [activeView, setActiveView] = React.useState<ActiveView>("sales");
   
   const [isPaymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
@@ -136,6 +141,10 @@ export default function POSPage() {
   
   const handleSupplierUpdate = (updatedSuppliers: Supplier[]) => {
     setSuppliers(updatedSuppliers);
+  };
+
+  const handleRawMaterialUpdate = (updatedRawMaterials: RawMaterial[]) => {
+    setRawMaterials(updatedRawMaterials);
   };
   
   const ActiveViewIcon = VIEW_OPTIONS.find(v => v.value === activeView)?.icon || ShoppingBag;
@@ -207,6 +216,13 @@ export default function POSPage() {
               products={products}
               onProductsChange={handleProductUpdate}
               language={language} 
+            />
+          )}
+          {activeView === 'inventory' && (
+            <InventoryManagementTab
+              rawMaterials={rawMaterials}
+              onRawMaterialsChange={handleRawMaterialUpdate}
+              language={language}
             />
           )}
           {activeView === 'customers' && (

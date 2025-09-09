@@ -1,4 +1,4 @@
-import type { Product, Customer, Supplier, Purchase } from './types';
+import type { Product, Customer, Supplier, Purchase, RawMaterial } from './types';
 
 export const products: Product[] = [
   {
@@ -83,4 +83,13 @@ export const customers: Customer[] = [
 export const suppliers: Supplier[] = [
     { id: 1, name: "Modern Mills", phone: "011-234-5678", address: "Industrial City, Riyadh" },
     { id: 2, name: "Fresh Vegetables Co.", phone: "012-345-6789", address: "Central Market, Jeddah" },
+];
+
+export const rawMaterials: RawMaterial[] = [
+    { id: 1, name: 'Coffee Beans', nameAr: 'حبوب البن', unit: 'kg', stock: 50 },
+    { id: 2, name: 'Milk', nameAr: 'حليب', unit: 'liter', stock: 100 },
+    { id: 3, name: 'Sugar', nameAr: 'سكر', unit: 'kg', stock: 200 },
+    { id: 4, name: 'Flour', nameAr: 'دقيق', unit: 'kg', stock: 150 },
+    { id: 5, name: 'Butter', nameAr: 'زبدة', unit: 'kg', stock: 40 },
+    { id: 6, name: 'Eggs', nameAr: 'بيض', unit: 'piece', stock: 300 },
 ];
