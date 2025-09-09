@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { MinusCircle, PlusCircle, Trash2, XCircle, UserPlus } from 'lucide-react';
+import { MinusCircle, PlusCircle, Trash2, XCircle, UserPlus, UserCheck } from 'lucide-react';
 import type { CartItem, Customer, OrderType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -41,6 +41,7 @@ const UI_TEXT = {
     searchCustomer: { en: 'Search customer...', ar: 'ابحث عن عميل بالاسم أو الهاتف...' },
     noCustomerFound: { en: 'No customer found.', ar: 'لم يتم العثور على عميل.' },
     customerRequired: { en: 'Customer is required for delivery orders.', ar: 'العميل مطلوب لطلبات التوصيل.' },
+    confirmCustomer: { en: 'Confirm Customer & Add Items', ar: 'تأكيد العميل وإضافة الأصناف' },
 };
 
 interface CartPanelProps {
@@ -84,7 +85,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
         item.id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item
       );
       const filteredCart = newCart.filter(item => item.quantity > 0);
-      if (filteredCart.length === 0) {
+      if (filteredCart.length === 0 && orderType !== 'delivery') {
         onOpenChange(false);
       }
       return filteredCart;
@@ -95,7 +96,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
   const removeItem = (id: number) => {
      const updater = (currentCart: CartItem[]) => {
       const newCart = currentCart.filter(item => item.id !== id);
-      if (newCart.length === 0) {
+      if (newCart.length === 0 && orderType !== 'delivery') {
         onOpenChange(false);
       }
       return newCart;
@@ -122,7 +123,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
 
   const handleSelectCustomer = (customerId: number | null) => {
       onSelectCustomer(customerId);
-      setPopoverOpen(false)
+      setPopoverOpen(false);
   }
 
   const handleSaveCustomer = (customer: Customer) => {
@@ -145,7 +146,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
     if (!searchQuery) return customers;
     return customers.filter(c => 
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      c.phone.includes(searchQuery)
+      (c.phone && c.phone.includes(searchQuery))
     );
   }, [customers, searchQuery]);
 
@@ -250,7 +251,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
                     {customerRequired && <p className="text-sm text-destructive">{UI_TEXT.customerRequired[language]}</p>}
                 </div>
                 
-                {cart.length > 0 && (
+                {cart.length > 0 ? (
                 <>
                     <div className="space-y-2">
                         <div className="flex justify-between">
@@ -294,6 +295,13 @@ const CartPanel: React.FC<CartPanelProps> = ({
                         </Button>
                     </div>
                 </>
+                ) : (
+                  isDelivery && selectedCustomerId && (
+                    <Button onClick={() => onOpenChange(false)}>
+                      <UserCheck className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                      {UI_TEXT.confirmCustomer[language]}
+                    </Button>
+                  )
                 )}
             </SheetFooter>
             )}

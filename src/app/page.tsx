@@ -99,7 +99,7 @@ const UI_TEXT = {
   selectOrderTypePrompt: { en: 'Select an Order Type', ar: 'اختر نوع الطلب' },
   selectOrderTypePromptDesc: { en: 'Please select an order type to begin.', ar: 'يرجى اختيار نوع الطلب للبدء.' },
   quickServe: { en: "Quick Serve", ar: "خدمة سريعة" },
-  dineIn: { en: "Dine-in", ar: "طاولات" },
+  dineIn: { en: "Dine-in", ar: "صالة" },
   takeaway: { en: "Takeaway", ar: "سفري" },
   delivery: { en: "Delivery", ar: "توصيل" },
   customerRequired: { en: 'Customer Required', ar: 'العميل مطلوب' },
@@ -121,7 +121,6 @@ const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: Reac
 
 export default function POSPage() {
   const [language, setLanguage] = React.useState<Language>("ar");
-  const [cart, setCart] = React.useState<CartItem[]>([]);
   const [sales, setSales] = React.useState<Sale[]>([]);
   const [products, setProducts] = React.useState<Product[]>(initialProducts);
   const [customers, setCustomers] = React.useState<Customer[]>(initialCustomers);
@@ -141,8 +140,6 @@ export default function POSPage() {
   const [isSmartRoundupOpen, setSmartRoundupOpen] = React.useState(false);
   const [isCartSheetOpen, setCartSheetOpen] = React.useState(false);
   
-  const [selectedCustomerId, setSelectedCustomerId] = React.useState<number | null>(null);
-
   const [activeOrder, setActiveOrder] = React.useState<{ type: OrderType; id: number } | null>(null);
   const [takeawayOrders, setTakeawayOrders] = React.useState<any[]>([]);
   const [deliveryOrders, setDeliveryOrders] = React.useState<any[]>([]);
