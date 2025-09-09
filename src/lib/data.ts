@@ -1,4 +1,4 @@
-import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry, Recipe, Category, Table } from './types';
+import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry, Recipe, Category, Table, DeliveryRep } from './types';
 
 export const categories: Category[] = [
     { id: 1, name: "Hot Drinks", nameAr: "مشروبات ساخنة" },
@@ -93,7 +93,17 @@ export const customers: Customer[] = [
     { id: 3, name: "Youssef Khaled", phone: "0531234568", address: "Dammam, Saudi Arabia" },
     { id: 4, name: "Sara Abdullah", phone: "0547654322", address: "Khobar, Saudi Arabia" },
     { id: 5, name: "Omar Hassan", phone: "0561112233", address: "Mecca, Saudi Arabia" },
+    { id: 6, name: "Layla Murad", phone: "0598765432", address: "Riyadh, Saudi Arabia" },
+    { id: 7, name: "Khaled Al-Faisal", phone: "0587654321", address: "Jeddah, Saudi Arabia" },
+    { id: 8, name: "Noura Saad", phone: "0576543210", address: "Dammam, Saudi Arabia" },
 ];
+
+export const deliveryReps: DeliveryRep[] = [
+    { id: 1, name: "Khalid Ahmed", phone: "0512345678", commissionRate: 10 },
+    { id: 2, name: "Mohammed Ali", phone: "0523456789", commissionRate: 12 },
+    { id: 3, name: "Fahad Saleh", phone: "0534567890", commissionRate: 10 },
+];
+
 
 export const suppliers: Supplier[] = [
     { id: 1, name: "Modern Mills", phone: "011-234-5678", address: "Industrial City, Riyadh" },

@@ -24,11 +24,13 @@ import {
   Table as TableIcon,
   Zap,
   Package,
-  Bike
+  Bike,
+  UserCheck,
+  NotebookText
 } from "lucide-react";
 
-import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings, Recipe, Category, Table, OrderType, HeldOrder } from "@/lib/types";
-import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables } from "@/lib/data";
+import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings, Recipe, Category, Table, HeldOrder, DeliveryRep } from "@/lib/types";
+import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps } from "@/lib/data";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -65,10 +67,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import DeliveryRepsTab from "@/components/pos/DeliveryRepsTab";
 
 
 type Language = "en" | "ar";
-export type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings" | "tables";
+export type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings" | "tables" | "deliveryReps";
 
 export const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
@@ -84,6 +87,7 @@ export const UI_TEXT = {
   cashDrawer: { en: "Cash Drawer", ar: "الخزينة" },
   settings: { en: "Settings", ar: "الإعدادات" },
   tables: { en: "Tables", ar: "الطاولات" },
+  deliveryReps: { en: "Delivery Reps", ar: "مندوبي التوصيل" },
   transactionSuccess: { en: "Transaction successful!", ar: "تمت العملية بنجاح!" },
   transactionSuccessDesc: { en: (id: string) => `Sale ID: ${id}`, ar: (id: string) => `رقم الفاتورة: ${id}`},
   orderHeld: { en: 'Order held successfully!', ar: 'تم تعليق الطلب بنجاح!' },
@@ -100,6 +104,7 @@ export const UI_TEXT = {
   delivery: { en: "Delivery", ar: "توصيل" },
   customerRequired: { en: 'Customer Required', ar: 'العميل مطلوب' },
   customerRequiredDesc: { en: 'Please select or add a customer for this delivery order.', ar: 'يرجى اختيار أو إضافة عميل لطلب التوصيل هذا.' },
+  confirmCustomer: { en: 'Confirm Customer & Add Items', ar: 'تأكيد العميل وإضافة الأصناف' },
 };
 
 export const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType }[] = [
@@ -111,6 +116,7 @@ export const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; ico
     { value: 'tables', label: 'tables', icon: TableIcon },
     { value: 'customers', label: 'customers', icon: Users },
     { value: 'purchases', label: 'purchases', icon: Truck },
+    { value: 'deliveryReps', label: 'deliveryReps', icon: NotebookText },
     { value: 'shifts', label: 'shifts', icon: Briefcase },
     { value: 'settings', label: 'settings', icon: SettingsIcon },
 ];
@@ -120,6 +126,7 @@ export default function POSPage() {
   const [sales, setSales] = React.useState<Sale[]>([]);
   const [products, setProducts] = React.useState<Product[]>(initialProducts);
   const [customers, setCustomers] = React.useState<Customer[]>(initialCustomers);
+  const [deliveryReps, setDeliveryReps] = React.useState<DeliveryRep[]>(initialDeliveryReps);
   const [suppliers, setSuppliers] = React.useState<Supplier[]>(initialSuppliers);
   const [rawMaterials, setRawMaterials] = React.useState<RawMaterial[]>(initialRawMaterials);
   const [recipes, setRecipes] = React.useState<Recipe[]>(initialRecipes);
@@ -152,6 +159,7 @@ export default function POSPage() {
     receiptHeader: "Thank you for your business!",
     receiptFooter: "Please come again!",
     enableTables: true,
+    deliveryFee: 10,
     printerName: "Default Printer",
     printerConnectionType: "network",
     printerIpAddress: "192.168.1.100",
@@ -399,6 +407,10 @@ export default function POSPage() {
     setCustomers(updatedCustomers);
   };
   
+  const handleDeliveryRepUpdate = (updatedDeliveryReps: DeliveryRep[]) => {
+    setDeliveryReps(updatedDeliveryReps);
+  };
+
   const handleSupplierUpdate = (updatedSuppliers: Supplier[]) => {
     setSuppliers(updatedSuppliers);
   };
@@ -478,19 +490,15 @@ export default function POSPage() {
        );
     }
     return (
-      <div className="h-full flex flex-col">
-        <div className="flex-1 overflow-auto">
-            <ScrollArea className="h-full">
-              <div className="p-4">
-                <ProductGrid
-                  products={filteredProducts}
-                  onAddToCart={addToCart}
-                  language={language}
-                />
-              </div>
-            </ScrollArea>
-        </div>
-      </div>
+        <ScrollArea className="h-full">
+            <div className="p-1">
+            <ProductGrid
+                products={filteredProducts}
+                onAddToCart={addToCart}
+                language={language}
+            />
+            </div>
+        </ScrollArea>
     );
   }
 
@@ -526,6 +534,15 @@ export default function POSPage() {
                   onRawMaterialsChange={handleRawMaterialUpdate}
                   language={language} 
                />;
+      case 'deliveryReps':
+        return <DeliveryRepsTab
+                  reps={deliveryReps}
+                  onRepsChange={handleDeliveryRepUpdate}
+                  sales={sales}
+                  shifts={shifts}
+                  language={language}
+                  settings={settings}
+                />;
       case 'shifts':
         return (
           <ShiftsManagementTab
@@ -577,10 +594,10 @@ export default function POSPage() {
         enableTables={settings.enableTables}
       />
       <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 shrink-0">
            {activeView === 'sales' && activeOrder ? (
              <>
-                <div className="relative w-full">
+                <div className="relative flex-1">
                     <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
                     <Input
                     placeholder={UI_TEXT.searchPlaceholder[language]}
@@ -594,7 +611,7 @@ export default function POSPage() {
                   value={selectedCategoryId}
                   dir={language === 'ar' ? 'rtl' : 'ltr'}
                 >
-                    <SelectTrigger className="w-[200px]">
+                    <SelectTrigger className="w-auto sm:w-[200px]">
                         <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
                     </SelectTrigger>
                     <SelectContent>
@@ -654,6 +671,8 @@ export default function POSPage() {
         onSelectCustomer={setActiveCustomerId}
         onCustomerUpdate={handleCustomerUpdate}
         orderType={activeOrder?.type}
+        deliveryReps={deliveryReps}
+        settings={settings}
       />
       
       <SmartRoundupDialog

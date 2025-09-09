@@ -27,6 +27,7 @@ export interface Sale {
   customer?: Customer;
   orderType: OrderType;
   orderId: number;
+  deliveryRepId?: number;
 }
 
 export interface Customer {
@@ -35,6 +36,14 @@ export interface Customer {
     phone: string;
     address: string;
 }
+
+export interface DeliveryRep {
+    id: number;
+    name: string;
+    phone: string;
+    commissionRate: number; // Percentage
+}
+
 
 export interface Supplier {
     id: number;
@@ -139,6 +148,7 @@ export interface Settings {
     receiptHeader: string;
     receiptFooter: string;
     enableTables: boolean;
+    deliveryFee: number;
     printerName?: string;
     printerConnectionType?: 'bluetooth' | 'usb' | 'network';
     printerIpAddress?: string;

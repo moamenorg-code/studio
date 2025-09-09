@@ -22,6 +22,7 @@ const UI_TEXT = {
   financials: { en: 'Financials', ar: 'المالية' },
   currencySymbol: { en: 'Currency Symbol', ar: 'رمز العملة' },
   taxRate: { en: 'Tax Rate (%)', ar: 'نسبة الضريبة (%)' },
+  deliveryFee: { en: 'Delivery Fee', ar: 'رسوم التوصيل' },
   receipt: { en: 'Receipt Customization', ar: 'تخصيص الفاتورة' },
   receiptHeader: { en: 'Receipt Header', ar: 'رأس الفاتورة' },
   receiptFooter: { en: 'Receipt Footer', ar: 'تذييل الفاتورة' },
@@ -134,7 +135,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ settings, onSettingsChange, l
         {/* Financials */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium">{UI_TEXT.financials[language]}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="currency">{UI_TEXT.currencySymbol[language]}</Label>
               <Input id="currency" name="currency" value={currentSettings.currency} onChange={handleChange} />
@@ -142,6 +143,10 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ settings, onSettingsChange, l
             <div className="space-y-2">
               <Label htmlFor="taxRate">{UI_TEXT.taxRate[language]}</Label>
               <Input id="taxRate" name="taxRate" type="number" value={currentSettings.taxRate} onChange={handleChange} dir="ltr" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="deliveryFee">{UI_TEXT.deliveryFee[language]}</Label>
+              <Input id="deliveryFee" name="deliveryFee" type="number" value={currentSettings.deliveryFee} onChange={handleChange} dir="ltr" />
             </div>
           </div>
         </div>
