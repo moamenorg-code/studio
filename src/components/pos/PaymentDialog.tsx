@@ -9,9 +9,23 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { CreditCard, Wallet, UserPlus } from 'lucide-react';
+import { CreditCard, Wallet, UserPlus, Check, ChevronsUpDown } from 'lucide-react';
 import { Label } from '../ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import { cn } from '@/lib/utils';
+import CustomerDialog from './CustomerDialog';
 
 type Language = 'en' | 'ar';
 
@@ -24,6 +38,9 @@ const UI_TEXT = {
     customer: { en: 'Customer', ar: 'العميل' },
     selectCustomer: { en: 'Select a customer', ar: 'اختر عميل' },
     walkInCustomer: { en: 'Walk-in Customer', ar: 'عميل عابر' },
+    addCustomer: { en: 'Add Customer', ar: 'إضافة عميل' },
+    searchCustomer: { en: 'Search customer...', ar: 'ابحث عن عميل...' },
+    noCustomerFound: { en: 'No customer found.', ar: 'لم يتم العثور على عميل.' },
 };
 
 interface PaymentDialogProps {
@@ -35,6 +52,7 @@ interface PaymentDialogProps {
   customers: Customer[];
   selectedCustomerId: number | null;
   onSelectCustomer: (id: number | null) => void;
+  onCustomerUpdate: (customers: Customer[]) => void;
 }
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({ 
@@ -46,9 +64,12 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     customers,
     selectedCustomerId,
     onSelectCustomer,
+    onCustomerUpdate
  }) => {
   const [overallDiscount] = React.useState(0);
   const [serviceCharge] = React.useState(0);
+  const [isCustomerDialogOpen, setCustomerDialogOpen] = React.useState(false);
+  const [popoverOpen, setPopoverOpen] = React.useState(false)
 
   const subtotal = React.useMemo(() => cart.reduce((acc, item) => acc + item.price * item.quantity, 0), [cart]);
   
@@ -71,14 +92,28 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     });
   };
 
-  const handleSelectCustomer = (value: string) => {
-    const customerId = value === 'walk-in' ? null : Number(value);
+  const handleSelectCustomer = (customerId: number | null) => {
     onSelectCustomer(customerId);
+    setPopoverOpen(false);
   }
   
+  const handleSaveCustomer = (customer: Customer) => {
+    const newCustomer = { ...customer, id: Date.now() };
+    const updatedCustomers = [...customers, newCustomer];
+    onCustomerUpdate(updatedCustomers);
+    onSelectCustomer(newCustomer.id);
+    setCustomerDialogOpen(false);
+  };
+  
+  const selectedCustomerName = React.useMemo(() => {
+    if (selectedCustomerId === null) return UI_TEXT.walkInCustomer[language];
+    return customers.find(c => c.id === selectedCustomerId)?.name || UI_TEXT.selectCustomer[language];
+  }, [selectedCustomerId, customers, language]);
+
   if (!isOpen) return null;
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
@@ -95,20 +130,61 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="customer" className="flex items-center gap-2 text-sm">
-                <UserPlus size={14}/> {UI_TEXT.customer[language]}
+            <Label htmlFor="customer" className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2">
+                    <UserPlus size={14}/> {UI_TEXT.customer[language]}
+                </span>
+                <Button variant="link" className="p-0 h-auto" onClick={() => setCustomerDialogOpen(true)}>{UI_TEXT.addCustomer[language]}</Button>
             </Label>
-            <Select onValueChange={handleSelectCustomer} value={selectedCustomerId?.toString() || 'walk-in'} dir={language === 'ar' ? 'rtl' : 'ltr'}>
-                <SelectTrigger>
-                    <SelectValue placeholder={UI_TEXT.selectCustomer[language]} />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="walk-in">{UI_TEXT.walkInCustomer[language]}</SelectItem>
-                    {customers.map(c => (
-                        <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                <PopoverTrigger asChild>
+                    <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={popoverOpen}
+                    className="w-full justify-between"
+                    >
+                    {selectedCustomerName}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                    <Command>
+                        <CommandInput placeholder={UI_TEXT.searchCustomer[language]} />
+                        <CommandList>
+                            <CommandEmpty>{UI_TEXT.noCustomerFound[language]}</CommandEmpty>
+                            <CommandGroup>
+                                <CommandItem
+                                    onSelect={() => handleSelectCustomer(null)}
+                                >
+                                    <Check
+                                    className={cn(
+                                        "mr-2 h-4 w-4",
+                                        selectedCustomerId === null ? "opacity-100" : "opacity-0"
+                                    )}
+                                    />
+                                    {UI_TEXT.walkInCustomer[language]}
+                                </CommandItem>
+                                {customers.map((customer) => (
+                                <CommandItem
+                                    key={customer.id}
+                                    value={customer.name}
+                                    onSelect={() => handleSelectCustomer(customer.id)}
+                                >
+                                    <Check
+                                    className={cn(
+                                        "mr-2 h-4 w-4",
+                                        selectedCustomerId === customer.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                    />
+                                    {customer.name}
+                                </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            </Popover>
           </div>
         </div>
 
@@ -124,6 +200,14 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <CustomerDialog
+        isOpen={isCustomerDialogOpen}
+        onOpenChange={setCustomerDialogOpen}
+        onSave={handleSaveCustomer}
+        customer={null}
+        language={language}
+    />
+    </>
   );
 };
 

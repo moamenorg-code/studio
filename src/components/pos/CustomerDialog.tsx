@@ -28,7 +28,7 @@ const UI_TEXT = {
 interface CustomerDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (customer: Customer) => void;
+  onSave: (customer: Omit<Customer, 'id'> | Customer) => void;
   customer: Customer | null;
   language: Language;
 }
@@ -37,14 +37,16 @@ const CustomerDialog: React.FC<CustomerDialogProps> = ({ isOpen, onOpenChange, o
   const [formData, setFormData] = React.useState<Partial<Customer>>({});
 
   React.useEffect(() => {
-    if (customer) {
-      setFormData(customer);
-    } else {
-      setFormData({
-        name: '',
-        phone: '',
-        address: '',
-      });
+    if (isOpen) {
+      if (customer) {
+        setFormData(customer);
+      } else {
+        setFormData({
+          name: '',
+          phone: '',
+          address: '',
+        });
+      }
     }
   }, [customer, isOpen]);
 
@@ -57,37 +59,31 @@ const CustomerDialog: React.FC<CustomerDialogProps> = ({ isOpen, onOpenChange, o
   };
 
   const handleSave = () => {
-    // Basic validation
     if (formData.name && formData.phone) {
       onSave(formData as Customer);
+      onOpenChange(false);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{customer ? UI_TEXT.editCustomer[language] : UI_TEXT.addCustomer[language]}</DialogTitle>
           <DialogDescription>{UI_TEXT.customerInfo[language]}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-end">
-              {UI_TEXT.name[language]}
-            </Label>
-            <Input id="name" name="name" value={formData.name || ''} onChange={handleChange} className="col-span-3" />
+          <div className="space-y-2">
+            <Label htmlFor="name">{UI_TEXT.name[language]}</Label>
+            <Input id="name" name="name" value={formData.name || ''} onChange={handleChange} />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="phone" className="text-end">
-              {UI_TEXT.phone[language]}
-            </Label>
-            <Input id="phone" name="phone" value={formData.phone || ''} onChange={handleChange} className="col-span-3" dir="ltr" />
+          <div className="space-y-2">
+            <Label htmlFor="phone">{UI_TEXT.phone[language]}</Label>
+            <Input id="phone" name="phone" value={formData.phone || ''} onChange={handleChange} dir="ltr" />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="address" className="text-end">
-              {UI_TEXT.address[language]}
-            </Label>
-            <Input id="address" name="address" value={formData.address || ''} onChange={handleChange} className="col-span-3" />
+          <div className="space-y-2">
+            <Label htmlFor="address">{UI_TEXT.address[language]}</Label>
+            <Input id="address" name="address" value={formData.address || ''} onChange={handleChange} />
           </div>
         </div>
         <DialogFooter>

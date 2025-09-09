@@ -336,6 +336,7 @@ export default function POSPage() {
         customers={customers}
         selectedCustomerId={selectedCustomerId}
         onSelectCustomer={setSelectedCustomerId}
+        onCustomerUpdate={handleCustomerUpdate}
       />
       
       <PaymentDialog
@@ -347,6 +348,7 @@ export default function POSPage() {
         customers={customers}
         selectedCustomerId={selectedCustomerId}
         onSelectCustomer={setSelectedCustomerId}
+        onCustomerUpdate={handleCustomerUpdate}
       />
       
       <SmartRoundupDialog
