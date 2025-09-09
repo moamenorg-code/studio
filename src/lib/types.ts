@@ -59,3 +59,29 @@ export interface RawMaterial {
     unit: string; // e.g., kg, liter, piece
     stock: number;
 }
+
+export interface Expense {
+    id: number;
+    description: string;
+    amount: number;
+    createdAt: Date;
+}
+
+export interface CashDrawerEntry {
+    id: number;
+    type: 'cash_in' | 'cash_out';
+    amount: number;
+    reason: string;
+    createdAt: Date;
+}
+
+export interface Shift {
+    id: number;
+    startTime: Date;
+    endTime: Date | null;
+    startingCash: number;
+    endingCash: number | null;
+    totalSales: number;
+    totalExpenses: number;
+    status: 'open' | 'closed';
+}

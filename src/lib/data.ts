@@ -1,4 +1,4 @@
-import type { Product, Customer, Supplier, Purchase, RawMaterial } from './types';
+import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry } from './types';
 
 export const products: Product[] = [
   {
@@ -84,3 +84,7 @@ export const rawMaterials: RawMaterial[] = [
     { id: 5, name: 'Butter', nameAr: 'زبدة', unit: 'kg', stock: 40 },
     { id: 6, name: 'Eggs', nameAr: 'بيض', unit: 'piece', stock: 300 },
 ];
+
+export const expenses: Expense[] = [];
+export const cashDrawerEntries: CashDrawerEntry[] = [];
+export const shifts: Shift[] = [];

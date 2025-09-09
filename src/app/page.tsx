@@ -15,10 +15,13 @@ import {
   Archive,
   Search,
   Menu,
+  Briefcase,
+  Wallet,
+  Receipt,
 } from "lucide-react";
 
-import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial } from "@/lib/types";
-import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials } from "@/lib/data";
+import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry } from "@/lib/types";
+import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries } from "@/lib/data";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -49,10 +52,13 @@ import SupplierManagementTab from "@/components/pos/SupplierManagementTab";
 import PurchaseManagementTab from "@/components/pos/PurchaseManagementTab";
 import InventoryManagementTab from "@/components/pos/InventoryManagementTab";
 import FloatingCartBar from "@/components/pos/FloatingCartBar";
+import ShiftsManagementTab from "@/components/pos/ShiftsManagementTab";
+import ExpensesTab from "@/components/pos/ExpensesTab";
+import CashDrawerTab from "@/components/pos/CashDrawerTab";
 
 
 type Language = "en" | "ar";
-type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "suppliers" | "purchases" | "inventory";
+type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "suppliers" | "purchases" | "inventory" | "shifts" | "expenses" | "cash_drawer";
 
 const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
@@ -64,6 +70,9 @@ const UI_TEXT = {
   suppliers: { en: "Suppliers", ar: "الموردين" },
   purchases: { en: "Purchases", ar: "المشتريات" },
   inventory: { en: "Inventory", ar: "المخزون" },
+  shifts: { en: "Shifts", ar: "الشفتات" },
+  expenses: { en: "Expenses", ar: "المصروفات" },
+  cashDrawer: { en: "Cash Drawer", ar: "الخزينة" },
   transactionSuccess: { en: "Transaction successful!", ar: "تمت العملية بنجاح!" },
   transactionSuccessDesc: { en: (id: string) => `Sale ID: ${id}`, ar: (id: string) => `رقم الفاتورة: ${id}`},
   quickServeLite: { en: "QuickServe Lite", ar: "كويك سيرف لايت" },
@@ -80,6 +89,9 @@ const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: Reac
     { value: 'customers', label: 'customers', icon: Users },
     { value: 'suppliers', label: 'suppliers', icon: Building },
     { value: 'purchases', label: 'purchases', icon: Truck },
+    { value: 'shifts', label: 'shifts', icon: Briefcase },
+    { value: 'expenses', label: 'expenses', icon: Receipt },
+    { value: 'cash_drawer', label: 'cashDrawer', icon: Wallet },
 ];
 
 export default function POSPage() {
@@ -90,6 +102,9 @@ export default function POSPage() {
   const [customers, setCustomers] = React.useState<Customer[]>(initialCustomers);
   const [suppliers, setSuppliers] = React.useState<Supplier[]>(initialSuppliers);
   const [rawMaterials, setRawMaterials] = React.useState<RawMaterial[]>(initialRawMaterials);
+  const [shifts, setShifts] = React.useState<Shift[]>(initialShifts);
+  const [expenses, setExpenses] = React.useState<Expense[]>(initialExpenses);
+  const [cashDrawerEntries, setCashDrawerEntries] = React.useState<CashDrawerEntry[]>(initialCashDrawerEntries);
   const [activeView, setActiveView] = React.useState<ActiveView>("sales");
   const [searchQuery, setSearchQuery] = React.useState("");
   
@@ -153,6 +168,18 @@ export default function POSPage() {
   const handleRawMaterialUpdate = (updatedRawMaterials: RawMaterial[]) => {
     setRawMaterials(updatedRawMaterials);
   };
+  
+  const handleShiftsUpdate = (updatedShifts: Shift[]) => {
+    setShifts(updatedShifts);
+  };
+
+  const handleExpensesUpdate = (updatedExpenses: Expense[]) => {
+    setExpenses(updatedExpenses);
+  };
+
+  const handleCashDrawerUpdate = (updatedEntries: CashDrawerEntry[]) => {
+    setCashDrawerEntries(updatedEntries);
+  };
 
   const filteredProducts = React.useMemo(() => {
     if (!searchQuery) return products;
@@ -198,6 +225,12 @@ export default function POSPage() {
         return <SupplierManagementTab suppliers={suppliers} onSuppliersChange={handleSupplierUpdate} language={language} />;
       case 'purchases':
         return <PurchaseManagementTab suppliers={suppliers} rawMaterials={rawMaterials} onRawMaterialsChange={handleRawMaterialUpdate} language={language} />;
+      case 'shifts':
+        return <ShiftsManagementTab shifts={shifts} onShiftsChange={handleShiftsUpdate} language={language} sales={sales} expenses={expenses} />;
+      case 'expenses':
+        return <ExpensesTab expenses={expenses} onExpensesChange={handleExpensesUpdate} language={language} />;
+      case 'cash_drawer':
+        return <CashDrawerTab entries={cashDrawerEntries} onEntriesChange={handleCashDrawerUpdate} language={language} />;
       default:
         return null;
     }
