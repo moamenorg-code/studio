@@ -191,7 +191,7 @@ const Header: React.FC<HeaderProps> = ({
                   {firestoreStatus === 'error' && <p>{HEADER_UI_TEXT.db_error[language]}</p>}
                 </TooltipContent>
               </Tooltip>
-            <h1 className="text-xl font-bold text-primary">{appName}</h1>
+            <h1 className="text-lg font-bold text-primary">{appName}</h1>
           </div>
         </div>
       </TooltipProvider>
