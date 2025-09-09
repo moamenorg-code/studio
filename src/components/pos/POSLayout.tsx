@@ -5,7 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Briefcase, RefreshCcw, ShieldAlert } from 'lucide-react';
+import { Search, Briefcase, RefreshCcw, ShieldAlert, ScanLine } from 'lucide-react';
 import Header from './Header';
 import SalesView from './SalesView';
 import DashboardTab from './DashboardTab';
@@ -25,6 +25,7 @@ import SmartRoundupDialog from './SmartRoundupDialog';
 import HeldOrdersDialog from './HeldOrdersDialog';
 import SplitBillDialog from './SplitBillDialog';
 import LoginScreen from './LoginScreen';
+import BarcodeScanner from './BarcodeScanner';
 import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles } from "@/lib/data";
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '../ui/button';
@@ -56,6 +57,7 @@ const POSLayout: React.FC = () => {
   const [isHeldOrdersOpen, setHeldOrdersOpen] = React.useState(false);
   const [isCartSheetOpen, setCartSheetOpen] = React.useState(false);
   const [isSplitBillOpen, setSplitBillOpen] = React.useState(false);
+  const [isBarcodeScannerOpen, setBarcodeScannerOpen] = React.useState(false);
   
   const [activeOrder, setActiveOrder] = React.useState<ActiveOrder | null>(null);
   const [takeawayOrders, setTakeawayOrders] = React.useState<any[]>([]);
@@ -287,10 +289,10 @@ const handleHoldOrder = () => {
     }
     
     // For dine-in, we keep the table occupied. For others, we clear the active order.
-    if (activeOrder.type !== 'dine-in') {
-      clearCart();
+    if (activeOrder.type === 'dine-in') {
+        setCartSheetOpen(false);
     } else {
-      setCartSheetOpen(false);
+        clearCart();
     }
     
     toast({
@@ -462,6 +464,11 @@ const handleHoldOrder = () => {
     setRoles(updatedRoles);
   };
 
+  const handleBarcodeDetect = (barcode: string) => {
+    setSearchQuery(barcode);
+    setBarcodeScannerOpen(false);
+  };
+
 
   const filteredProducts = React.useMemo(() => {
     return products
@@ -623,13 +630,22 @@ const handleHoldOrder = () => {
            {showSearchBar() ? (
              <>
                 <div className="relative flex-1">
-                    <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
+                    <Search className={`absolute ${language === 'ar' ? 'right-10' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
                     <Input
                     placeholder={UI_TEXT.searchPlaceholder[language]}
-                    className={`${language === 'ar' ? 'pr-10' : 'pl-10'} text-base`}
+                    className={`${language === 'ar' ? 'pr-16' : 'pl-10'} text-base`}
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     />
+                     <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => setBarcodeScannerOpen(true)} 
+                        className={`absolute ${language === 'ar' ? 'right-2' : 'left-auto right-2'} top-1/2 -translate-y-1/2 h-8 w-8`}
+                        aria-label="Scan Barcode"
+                      >
+                        <ScanLine className="h-5 w-5" />
+                    </Button>
                 </div>
                 <Select 
                   onValueChange={setSelectedCategoryId} 
@@ -725,6 +741,12 @@ const handleHoldOrder = () => {
         onOpenChange={setHeldOrdersOpen}
         heldOrders={heldOrders}
         onRestoreOrder={handleRestoreOrder}
+        language={language}
+      />
+      <BarcodeScanner
+        isOpen={isBarcodeScannerOpen}
+        onOpenChange={setBarcodeScannerOpen}
+        onDetect={handleBarcodeDetect}
         language={language}
       />
     </div>
