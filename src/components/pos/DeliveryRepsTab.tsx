@@ -22,6 +22,8 @@ import { format } from "date-fns"
 import { DateRange } from "react-day-picker"
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import RepDetailView from './RepDetailView';
+
 
 type Language = 'en' | 'ar';
 
@@ -55,15 +57,16 @@ interface RepCardProps {
     language: Language;
     onEdit: (rep: DeliveryRep) => void;
     onDelete: (id: number) => void;
+    onSelect: (id: number) => void;
 }
 
-const RepCard: React.FC<RepCardProps> = ({ rep, language, onEdit, onDelete }) => (
-    <Card>
+const RepCard: React.FC<RepCardProps> = ({ rep, language, onEdit, onDelete, onSelect }) => (
+    <Card onClick={() => onSelect(rep.id)} className="cursor-pointer">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-lg font-bold">{rep.name}</CardTitle>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                <Button aria-haspopup="true" size="icon" variant="ghost">
+                <Button aria-haspopup="true" size="icon" variant="ghost" onClick={(e) => e.stopPropagation()}>
                     <MoreHorizontal className="h-4 w-4" />
                     <span className="sr-only">Toggle menu</span>
                 </Button>
@@ -119,6 +122,7 @@ const DeliveryRepsTab: React.FC<DeliveryRepsTabProps> = ({ reps, onRepsChange, s
   const [editingRep, setEditingRep] = React.useState<DeliveryRep | null>(null);
   const [selectedShiftId, setSelectedShiftId] = React.useState<string>('current');
   const [date, setDate] = React.useState<DateRange | undefined>()
+  const [selectedRepId, setSelectedRepId] = React.useState<number | null>(null);
 
   const activeShift = React.useMemo(() => shifts.find(s => s.status === 'open'), [shifts]);
 
@@ -193,7 +197,26 @@ const DeliveryRepsTab: React.FC<DeliveryRepsTabProps> = ({ reps, onRepsChange, s
 
       return { repStats: stats, summaryStats: summary };
   }, [reps, filteredSales]);
+  
+  const selectedRepData = React.useMemo(() => {
+      if (selectedRepId === null) return null;
+      const repDetails = repStats.find(r => r.id === selectedRepId);
+      const repSales = filteredSales.filter(s => s.deliveryRepId === selectedRepId);
+      return {
+          ...repDetails,
+          sales: repSales
+      }
+  }, [selectedRepId, repStats, filteredSales]);
 
+  if (selectedRepData) {
+      return (
+          <RepDetailView 
+              repData={selectedRepData}
+              onBack={() => setSelectedRepId(null)}
+              language={language}
+          />
+      )
+  }
 
   return (
     <>
@@ -295,7 +318,14 @@ const DeliveryRepsTab: React.FC<DeliveryRepsTabProps> = ({ reps, onRepsChange, s
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {repStats.length > 0 ? (
                   repStats.map(rep => (
-                    <RepCard key={rep.id} rep={rep} language={language} onEdit={handleEditRep} onDelete={handleDeleteRep} />
+                    <RepCard 
+                        key={rep.id} 
+                        rep={rep} 
+                        language={language} 
+                        onEdit={handleEditRep} 
+                        onDelete={handleDeleteRep} 
+                        onSelect={setSelectedRepId}
+                    />
                   ))
                 ) : (
                     <div className="col-span-full h-24 text-center flex items-center justify-center">
