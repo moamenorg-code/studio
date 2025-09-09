@@ -74,7 +74,7 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
               <CardDescription>{UI_TEXT.manageYourProducts[language]}</CardDescription>
             </div>
             <Button onClick={handleAddProduct}>
-              <PlusCircle className={language === 'ar' ? 'ms-2 h-4 w-4' : 'me-2 h-4 w-4'} />
+              <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
               {UI_TEXT.addProduct[language]}
             </Button>
           </div>

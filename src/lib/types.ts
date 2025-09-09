@@ -22,3 +22,25 @@ export interface Sale {
   paymentMethod: "cash" | "card";
   createdAt: Date;
 }
+
+export interface Customer {
+    id: number;
+    name: string;
+    phone: string;
+    address: string;
+}
+
+export interface Supplier {
+    id: number;
+    name: string;
+    phone: string;
+    address: string;
+}
+
+export interface Purchase {
+    id: string;
+    supplierId: number;
+    items: { name: string, nameAr: string, quantity: number, price: number }[];
+    total: number;
+    createdAt: Date;
+}

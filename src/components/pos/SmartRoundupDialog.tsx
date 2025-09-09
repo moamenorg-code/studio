@@ -39,12 +39,12 @@ function SubmitButton({ language, isPending }: { language: Language, isPending: 
     <Button type="submit" disabled={isPending} className="w-full">
       {isPending ? (
         <>
-          <Sparkles className={language === 'ar' ? "ms-2 h-4 w-4 animate-spin" : "me-2 h-4 w-4 animate-spin"} />
+          <Sparkles className={language === 'ar' ? "ml-2 h-4 w-4 animate-spin" : "mr-2 h-4 w-4 animate-spin"} />
           {UI_TEXT.gettingSuggestion[language]}
         </>
       ) : (
         <>
-          <Bot className={language === 'ar' ? "ms-2 h-4 w-4" : "me-2 h-4 w-4"} />
+          <Bot className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />
           {UI_TEXT.getSuggestion[language]}
         </>
       )}

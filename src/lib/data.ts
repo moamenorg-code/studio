@@ -1,4 +1,4 @@
-import type { Product } from './types';
+import type { Product, Customer, Supplier, Purchase } from './types';
 
 export const products: Product[] = [
   {
@@ -73,4 +73,14 @@ export const products: Product[] = [
     image: "https://picsum.photos/400/300?random=9",
     dataAiHint: "club sandwich",
   },
+];
+
+export const customers: Customer[] = [
+    { id: 1, name: "Ahmad Mahmoud", phone: "0501234567", address: "Riyadh, Saudi Arabia" },
+    { id: 2, name: "Fatima Al-Ali", phone: "0557654321", address: "Jeddah, Saudi Arabia" },
+];
+
+export const suppliers: Supplier[] = [
+    { id: 1, name: "Modern Mills", phone: "011-234-5678", address: "Industrial City, Riyadh" },
+    { id: 2, name: "Fresh Vegetables Co.", phone: "012-345-6789", address: "Central Market, Jeddah" },
 ];

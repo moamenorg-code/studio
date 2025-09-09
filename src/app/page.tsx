@@ -10,10 +10,13 @@ import {
   ClipboardList,
   AreaChart,
   ChevronDown,
+  Users,
+  Building,
+  Truck,
 } from "lucide-react";
 
-import type { CartItem, Product, Sale } from "@/lib/types";
-import { products as initialProducts } from "@/lib/data";
+import type { CartItem, Product, Sale, Customer, Supplier } from "@/lib/types";
+import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers } from "@/lib/data";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -38,9 +41,13 @@ import SmartRoundupDialog from "@/components/pos/SmartRoundupDialog";
 import SalesHistoryTab from "@/components/pos/SalesHistoryTab";
 import DashboardTab from "@/components/pos/DashboardTab";
 import ProductManagementTab from "@/components/pos/ProductManagementTab";
+import CustomerManagementTab from "@/components/pos/CustomerManagementTab";
+import SupplierManagementTab from "@/components/pos/SupplierManagementTab";
+import PurchaseManagementTab from "@/components/pos/PurchaseManagementTab";
+
 
 type Language = "en" | "ar";
-type ActiveView = "sales" | "dashboard" | "history" | "products";
+type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "suppliers" | "purchases";
 
 const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
@@ -48,6 +55,9 @@ const UI_TEXT = {
   dashboard: { en: "Dashboard", ar: "لوحة التحكم" },
   products: { en: "Products", ar: "المنتجات" },
   manageProducts: { en: "Manage Products", ar: "إدارة المنتجات" },
+  customers: { en: "Customers", ar: "العملاء" },
+  suppliers: { en: "Suppliers", ar: "الموردين" },
+  purchases: { en: "Purchases", ar: "المشتريات" },
   transactionSuccess: { en: "Transaction successful!", ar: "تمت العملية بنجاح!" },
   transactionSuccessDesc: { en: (id: string) => `Sale ID: ${id}`, ar: (id: string) => `رقم الفاتورة: ${id}`},
   quickServeLite: { en: "QuickServe Lite", ar: "كويك سيرف لايت" },
@@ -59,6 +69,9 @@ const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: Reac
     { value: 'dashboard', label: 'dashboard', icon: AreaChart },
     { value: 'history', label: 'salesHistory', icon: History },
     { value: 'products', label: 'manageProducts', icon: ClipboardList },
+    { value: 'customers', label: 'customers', icon: Users },
+    { value: 'suppliers', label: 'suppliers', icon: Building },
+    { value: 'purchases', label: 'purchases', icon: Truck },
 ];
 
 export default function POSPage() {
@@ -66,6 +79,8 @@ export default function POSPage() {
   const [cart, setCart] = React.useState<CartItem[]>([]);
   const [sales, setSales] = React.useState<Sale[]>([]);
   const [products, setProducts] = React.useState<Product[]>(initialProducts);
+  const [customers, setCustomers] = React.useState<Customer[]>(initialCustomers);
+  const [suppliers, setSuppliers] = React.useState<Supplier[]>(initialSuppliers);
   const [activeView, setActiveView] = React.useState<ActiveView>("sales");
   
   const [isPaymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
@@ -114,6 +129,14 @@ export default function POSPage() {
   const handleProductUpdate = (updatedProducts: Product[]) => {
     setProducts(updatedProducts);
   };
+
+  const handleCustomerUpdate = (updatedCustomers: Customer[]) => {
+    setCustomers(updatedCustomers);
+  };
+  
+  const handleSupplierUpdate = (updatedSuppliers: Supplier[]) => {
+    setSuppliers(updatedSuppliers);
+  };
   
   const ActiveViewIcon = VIEW_OPTIONS.find(v => v.value === activeView)?.icon || ShoppingBag;
 
@@ -131,16 +154,16 @@ export default function POSPage() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full justify-between sm:w-auto">
                     <div className="flex items-center">
-                        <ActiveViewIcon className={language === 'ar' ? 'ms-2 h-4 w-4' : 'me-2 h-4 w-4'} />
+                        <ActiveViewIcon className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
                         <span>{UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}</span>
                     </div>
-                  <ChevronDown className={language === 'ar' ? 'me-auto h-4 w-4' : 'ms-auto h-4 w-4'} />
+                  <ChevronDown className={language === 'ar' ? 'mr-auto h-4 w-4' : 'ml-auto h-4 w-4'} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-full sm:w-[200px]">
                 {VIEW_OPTIONS.map(({ value, label, icon: Icon }) => (
                   <DropdownMenuItem key={value} onSelect={() => setActiveView(value)}>
-                    <Icon className={language === 'ar' ? 'ms-2 h-4 w-4' : 'me-2 h-4 w-4'} />
+                    <Icon className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
                     <span>{UI_TEXT[label][language]}</span>
                   </DropdownMenuItem>
                 ))}
@@ -184,6 +207,26 @@ export default function POSPage() {
               products={products}
               onProductsChange={handleProductUpdate}
               language={language} 
+            />
+          )}
+          {activeView === 'customers' && (
+            <CustomerManagementTab
+              customers={customers}
+              onCustomersChange={handleCustomerUpdate}
+              language={language}
+            />
+          )}
+          {activeView === 'suppliers' && (
+            <SupplierManagementTab
+              suppliers={suppliers}
+              onSuppliersChange={handleSupplierUpdate}
+              language={language}
+            />
+          )}
+          {activeView === 'purchases' && (
+            <PurchaseManagementTab
+              suppliers={suppliers}
+              language={language}
             />
           )}
         </div>
