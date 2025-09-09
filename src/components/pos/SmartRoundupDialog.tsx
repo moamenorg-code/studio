@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { runSmartRoundup, type RoundupState } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
@@ -55,7 +55,7 @@ function SubmitButton({ language }: { language: Language }) {
 
 const SmartRoundupDialog: React.FC<SmartRoundupDialogProps> = ({ isOpen, onOpenChange, language }) => {
   const initialState: RoundupState = {};
-  const [state, dispatch] = useFormState(runSmartRoundup, initialState);
+  const [state, dispatch] = React.useActionState(runSmartRoundup, initialState);
   const formRef = React.useRef<HTMLFormElement>(null);
 
   React.useEffect(() => {
