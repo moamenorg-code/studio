@@ -57,6 +57,13 @@ import InventoryManagementTab from "@/components/pos/InventoryManagementTab";
 import FloatingCartBar from "@/components/pos/FloatingCartBar";
 import ShiftsManagementTab from "@/components/pos/ShiftsManagementTab";
 import SettingsTab from "@/components/pos/SettingsTab";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 
 type Language = "en" | "ar";
@@ -80,7 +87,8 @@ const UI_TEXT = {
   quickServeLite: { en: "QuickServe Lite", ar: "كويك سيرف لايت" },
   searchPlaceholder: { en: "Search by name or barcode...", ar: "ابحث بالاسم أو الباركود..." },
   menu: { en: "Menu", ar: "القائمة" },
-  allCategories: { en: 'All', ar: 'الكل' },
+  allCategories: { en: 'All Categories', ar: 'كل الفئات' },
+  selectCategory: { en: 'Select a category', ar: 'اختر فئة' },
 };
 
 const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType }[] = [
@@ -110,7 +118,7 @@ export default function POSPage() {
   const [cashDrawerEntries, setCashDrawerEntries] = React.useState<CashDrawerEntry[]>(initialCashDrawerEntries);
   const [activeView, setActiveView] = React.useState<ActiveView>("sales");
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [selectedCategoryId, setSelectedCategoryId] = React.useState<number | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = React.useState<string>("all");
   
   const [isPaymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   const [isSmartRoundupOpen, setSmartRoundupOpen] = React.useState(false);
@@ -238,7 +246,7 @@ export default function POSPage() {
   const filteredProducts = React.useMemo(() => {
     return products
       .filter(product => 
-        selectedCategoryId === null || product.categoryId === selectedCategoryId
+        selectedCategoryId === "all" || String(product.categoryId) === selectedCategoryId
       )
       .filter(product => {
         if (!searchQuery) return true;
@@ -254,29 +262,8 @@ export default function POSPage() {
       case 'sales':
         return (
           <>
-            <div className="mb-4">
-              <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex gap-2 pb-2">
-                  <Button
-                    variant={selectedCategoryId === null ? 'default' : 'outline'}
-                    onClick={() => setSelectedCategoryId(null)}
-                  >
-                    {UI_TEXT.allCategories[language]}
-                  </Button>
-                  {categories.map(category => (
-                    <Button
-                      key={category.id}
-                      variant={selectedCategoryId === category.id ? 'default' : 'outline'}
-                      onClick={() => setSelectedCategoryId(category.id)}
-                    >
-                      {language === 'ar' ? category.nameAr : category.name}
-                    </Button>
-                  ))}
-                </div>
-              </ScrollArea>
-            </div>
             <Card className="shadow-none border-none">
-              <CardHeader className="p-4 pt-0">
+              <CardHeader className="p-4">
                 <CardTitle>{UI_TEXT.products[language]}</CardTitle>
                 <CardDescription>
                     {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}
@@ -370,14 +357,31 @@ export default function POSPage() {
             </DropdownMenu>
 
             {activeView === 'sales' && (
-              <div className="relative w-full">
-                <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
-                <Input
-                  placeholder={UI_TEXT.searchPlaceholder[language]}
-                  className={`${language === 'ar' ? 'pr-10' : 'pl-10'} text-base`}
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                />
+              <div className="flex w-full gap-4">
+                <div className="relative w-full">
+                    <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
+                    <Input
+                    placeholder={UI_TEXT.searchPlaceholder[language]}
+                    className={`${language === 'ar' ? 'pr-10' : 'pl-10'} text-base`}
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <Select 
+                  onValueChange={setSelectedCategoryId} 
+                  value={selectedCategoryId}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
+                >
+                    <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">{UI_TEXT.allCategories[language]}</SelectItem>
+                        {categories.map(c => (
+                            <SelectItem key={c.id} value={String(c.id)}>{language === 'ar' ? c.nameAr : c.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
               </div>
             )}
         </div>
