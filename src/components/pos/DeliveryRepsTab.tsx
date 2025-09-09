@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { MoreHorizontal, PlusCircle, Calendar as CalendarIcon } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Calendar as CalendarIcon, ArrowLeftRight, Package, DollarSign } from 'lucide-react';
 import type { DeliveryRep, Sale, Shift, Settings } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 type Language = 'en' | 'ar';
 
 const UI_TEXT = {
-  manageReps: { en: 'Manage Delivery Reps', ar: 'إدارة مندوبي التوصيل' },
+  manageReps: { en: 'Delivery Reps Dashboard', ar: 'لوحة تحكم مندوبي التوصيل' },
   manageYourReps: { en: 'View, add, edit, and review performance of your delivery reps.', ar: 'عرض وإضافة وتعديل ومراجعة أداء مندوبي التوصيل.' },
   addRep: { en: 'Add Rep', ar: 'إضافة مندوب' },
   name: { en: 'Name', ar: 'الاسم' },
@@ -46,7 +45,65 @@ const UI_TEXT = {
   shift: { en: 'Shift', ar: 'الشفت' },
   currentShift: { en: 'Current Shift', ar: 'الشفت الحالي' },
   allShifts: { en: 'All Shifts', ar: 'كل الشفتات' },
+  totalDeliveryOrders: { en: 'Total Delivery Orders', ar: 'إجمالي طلبات التوصيل' },
+  totalDeliverySales: { en: 'Total Delivery Sales', ar: 'إجمالي مبيعات التوصيل' },
+  totalCommissionsPaid: { en: 'Total Commissions', ar: 'إجمالي العمولات' },
 };
+
+interface RepCardProps {
+    rep: any;
+    language: Language;
+    onEdit: (rep: DeliveryRep) => void;
+    onDelete: (id: number) => void;
+}
+
+const RepCard: React.FC<RepCardProps> = ({ rep, language, onEdit, onDelete }) => (
+    <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-lg font-bold">{rep.name}</CardTitle>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                <Button aria-haspopup="true" size="icon" variant="ghost">
+                    <MoreHorizontal className="h-4 w-4" />
+                    <span className="sr-only">Toggle menu</span>
+                </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
+                <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => onEdit(rep)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onDelete(rep.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </CardHeader>
+        <CardContent className="space-y-4">
+             <p className="text-sm text-muted-foreground" dir="ltr">{rep.phone}</p>
+             <div className="grid grid-cols-2 gap-4 text-center">
+                <div className="rounded-md bg-muted p-2">
+                    <p className="text-xs text-muted-foreground">{UI_TEXT.orders[language]}</p>
+                    <p className="text-xl font-bold">{rep.totalOrders}</p>
+                </div>
+                 <div className="rounded-md bg-muted p-2">
+                    <p className="text-xs text-muted-foreground">{UI_TEXT.commission[language]}</p>
+                    <p className="text-xl font-bold">{rep.commissionRate}%</p>
+                </div>
+             </div>
+             <div className="space-y-2">
+                <div className="flex justify-between items-baseline">
+                    <span className="text-sm text-muted-foreground">{UI_TEXT.totalSales[language]}</span>
+                    <span className="font-semibold">{rep.totalSalesValue.toFixed(2)}</span>
+                </div>
+                 <div className="flex justify-between items-baseline">
+                    <span className="text-sm text-muted-foreground">{UI_TEXT.totalDelivery[language]}</span>
+                    <span className="font-semibold">{rep.totalDeliveryFees.toFixed(2)}</span>
+                </div>
+                 <div className="flex justify-between items-baseline text-primary font-bold text-md">
+                    <span>{UI_TEXT.totalCommission[language]}</span>
+                    <span>{rep.totalCommission.toFixed(2)}</span>
+                </div>
+             </div>
+        </CardContent>
+    </Card>
+)
 
 interface DeliveryRepsTabProps {
   reps: DeliveryRep[];
@@ -90,7 +147,7 @@ const DeliveryRepsTab: React.FC<DeliveryRepsTabProps> = ({ reps, onRepsChange, s
   };
   
   const filteredSales = React.useMemo(() => {
-    let salesToFilter = sales.filter(s => s.orderType === 'delivery');
+    let salesToFilter = sales.filter(s => s.orderType === 'delivery' && s.deliveryRepId);
     
     if (selectedShiftId === 'current' && activeShift) {
        salesToFilter = salesToFilter.filter(s => new Date(s.createdAt) >= activeShift.startTime);
@@ -102,19 +159,21 @@ const DeliveryRepsTab: React.FC<DeliveryRepsTabProps> = ({ reps, onRepsChange, s
     }
 
     if (date?.from && date?.to) {
-        salesToFilter = salesToFilter.filter(s => new Date(s.createdAt) >= date.from! && new Date(s.createdAt) <= date.to!);
+        const toDate = new Date(date.to);
+        toDate.setHours(23, 59, 59, 999); // Include the whole end day
+        salesToFilter = salesToFilter.filter(s => new Date(s.createdAt) >= date.from! && new Date(s.createdAt) <= toDate);
     }
     
     return salesToFilter;
 
   }, [sales, activeShift, selectedShiftId, shifts, date]);
 
-  const repStats = React.useMemo(() => {
-      return reps.map(rep => {
+  const { repStats, summaryStats } = React.useMemo(() => {
+      const stats = reps.map(rep => {
           const repSales = filteredSales.filter(sale => sale.deliveryRepId === rep.id);
           const totalOrders = repSales.length;
           const totalSalesValue = repSales.reduce((sum, sale) => sum + sale.finalTotal, 0);
-          const totalDeliveryFees = totalOrders * settings.deliveryFee;
+          const totalDeliveryFees = repSales.reduce((sum, sale) => sum + sale.serviceCharge, 0);
           const totalCommission = totalSalesValue * (rep.commissionRate / 100);
 
           return {
@@ -124,8 +183,16 @@ const DeliveryRepsTab: React.FC<DeliveryRepsTabProps> = ({ reps, onRepsChange, s
               totalDeliveryFees,
               totalCommission
           }
-      })
-  }, [reps, filteredSales, settings.deliveryFee]);
+      });
+
+      const summary = {
+          totalOrders: filteredSales.length,
+          totalSales: filteredSales.reduce((sum, sale) => sum + sale.finalTotal, 0),
+          totalCommissions: stats.reduce((sum, rep) => sum + rep.totalCommission, 0)
+      }
+
+      return { repStats: stats, summaryStats: summary };
+  }, [reps, filteredSales]);
 
 
   return (
@@ -195,59 +262,47 @@ const DeliveryRepsTab: React.FC<DeliveryRepsTabProps> = ({ reps, onRepsChange, s
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[calc(100vh-22rem)]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{UI_TEXT.name[language]}</TableHead>
-                  <TableHead>{UI_TEXT.phone[language]}</TableHead>
-                  <TableHead>{UI_TEXT.commission[language]}</TableHead>
-                  <TableHead>{UI_TEXT.orders[language]}</TableHead>
-                  <TableHead>{UI_TEXT.totalDelivery[language]}</TableHead>
-                  <TableHead>{UI_TEXT.totalSales[language]}</TableHead>
-                  <TableHead>{UI_TEXT.totalCommission[language]}</TableHead>
-                  <TableHead>
-                    <span className="sr-only">{UI_TEXT.actions[language]}</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <div className="grid gap-4 md:grid-cols-3 mb-6">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">{UI_TEXT.totalDeliveryOrders[language]}</CardTitle>
+                        <Package className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{summaryStats.totalOrders}</div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">{UI_TEXT.totalDeliverySales[language]}</CardTitle>
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{summaryStats.totalSales.toFixed(2)}</div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">{UI_TEXT.totalCommissionsPaid[language]}</CardTitle>
+                        <ArrowLeftRight className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-primary">{summaryStats.totalCommissions.toFixed(2)}</div>
+                    </CardContent>
+                </Card>
+            </div>
+          <ScrollArea className="h-[calc(100vh-32rem)]">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {repStats.length > 0 ? (
                   repStats.map(rep => (
-                    <TableRow key={rep.id}>
-                      <TableCell className="font-medium">{rep.name}</TableCell>
-                      <TableCell dir="ltr">{rep.phone}</TableCell>
-                      <TableCell>{rep.commissionRate}%</TableCell>
-                      <TableCell>{rep.totalOrders}</TableCell>
-                      <TableCell>{rep.totalDeliveryFees.toFixed(2)}</TableCell>
-                      <TableCell>{rep.totalSalesValue.toFixed(2)}</TableCell>
-                      <TableCell className="font-semibold text-primary">{rep.totalCommission.toFixed(2)}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
-                            <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEditRep(rep)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteRep(rep.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
+                    <RepCard key={rep.id} rep={rep} language={language} onEdit={handleEditRep} onDelete={handleDeleteRep} />
                   ))
                 ) : (
-                  <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">
-                      {UI_TEXT.noReps[language]}
-                    </TableCell>
-                  </TableRow>
+                    <div className="col-span-full h-24 text-center flex items-center justify-center">
+                        <p>{UI_TEXT.noReps[language]}</p>
+                    </div>
                 )}
-              </TableBody>
-            </Table>
+              </div>
           </ScrollArea>
         </CardContent>
       </Card>
