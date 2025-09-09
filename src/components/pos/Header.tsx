@@ -69,7 +69,7 @@ const Header: React.FC<HeaderProps> = ({
        <div className="flex items-center gap-2">
          <h1 className="text-xl font-bold text-primary">{appName}</h1>
        </div>
-      <div className="flex items-center gap-2" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="flex items-center gap-2">
         <Button
           variant="outline"
           size="sm"
