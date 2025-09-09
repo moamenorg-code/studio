@@ -36,19 +36,22 @@ const UI_TEXT = {
 };
 
 interface TableDialogProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
   onSave: (name: string) => void;
-  initialName?: string;
+  table?: Table | null;
   language: Language;
+  children: React.ReactNode;
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
 }
 
-const TableDialog: React.FC<TableDialogProps> = ({ isOpen, onOpenChange, onSave, initialName = '', language }) => {
-  const [name, setName] = React.useState(initialName);
+const TableDialog: React.FC<TableDialogProps> = ({ onSave, table, language, children, isOpen, onOpenChange }) => {
+  const [name, setName] = React.useState('');
 
   React.useEffect(() => {
-    setName(initialName);
-  }, [initialName]);
+    if(isOpen) {
+      setName(table?.name || '');
+    }
+  }, [isOpen, table]);
 
   const handleSave = () => {
     if (name.trim()) {
@@ -59,9 +62,10 @@ const TableDialog: React.FC<TableDialogProps> = ({ isOpen, onOpenChange, onSave,
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{initialName ? UI_TEXT.editTable[language] : UI_TEXT.addTable[language]}</DialogTitle>
+          <DialogTitle>{table ? UI_TEXT.editTable[language] : UI_TEXT.addTable[language]}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <Label htmlFor="table-name">{UI_TEXT.tableName[language]}</Label>
@@ -86,10 +90,11 @@ interface TableCardProps {
     isActive: boolean;
     onSelect: (id: number) => void;
     onOpenCart: () => void;
+    onEdit: (table: Table) => void;
     language: Language;
 }
 
-const TableCard: React.FC<TableCardProps> = ({ table, isActive, onSelect, onOpenCart, language }) => {
+const TableCard: React.FC<TableCardProps> = ({ table, isActive, onSelect, onOpenCart, onEdit, language }) => {
     const isOccupied = table.cart.length > 0;
     const total = table.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const itemCount = table.cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -104,12 +109,15 @@ const TableCard: React.FC<TableCardProps> = ({ table, isActive, onSelect, onOpen
     return (
         <Card 
             className={cn(
-                "cursor-pointer transition-all duration-200 ease-in-out",
+                "cursor-pointer transition-all duration-200 ease-in-out relative group/table-card",
                 isActive ? "ring-2 ring-primary shadow-lg" : "hover:shadow-md",
                 isOccupied ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50" : "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/50"
             )}
             onClick={handleCardClick}
         >
+            <Button size="icon" variant="secondary" className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover/table-card:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); onEdit(table); }}>
+                <Edit className="h-3 w-3" />
+            </Button>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-lg font-bold">{table.name}</CardTitle>
                 <TableIcon className={cn("h-6 w-6", isOccupied ? "text-red-500" : "text-green-500")} />
@@ -180,6 +188,7 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
       };
       onTablesChange([...tables, newTable]);
     }
+    setDialogOpen(false);
   };
 
   return (
@@ -191,16 +200,10 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
               <CardTitle>{UI_TEXT.manageTables[language]}</CardTitle>
               <CardDescription>{UI_TEXT.viewAndManageTables[language]}</CardDescription>
             </div>
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button size="sm" className="w-full sm:w-auto">
-                        <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
-                        {UI_TEXT.addTable[language]}
-                    </Button>
-                </DialogTrigger>
-                <TableDialog isOpen={true} onOpenChange={()=>{}} onSave={(name) => handleSave(name)} language={language} />
-            </Dialog>
-
+            <Button size="sm" className="w-full sm:w-auto" onClick={handleAdd}>
+                <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                {UI_TEXT.addTable[language]}
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -213,6 +216,7 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
                             isActive={table.id === activeTableId}
                             onSelect={onSelectTable}
                             onOpenCart={onOpenCart}
+                            onEdit={handleEdit}
                             language={language}
                         />
                     ))}
@@ -220,6 +224,16 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
             </ScrollArea>
         </CardContent>
       </Card>
+      <TableDialog 
+        isOpen={isDialogOpen}
+        onOpenChange={setDialogOpen}
+        onSave={handleSave} 
+        table={editingTable} 
+        language={language}
+      >
+        {/* This is a dummy trigger, the dialog is controlled by `isOpen` state */}
+        <span /> 
+      </TableDialog>
     </>
   );
 };
