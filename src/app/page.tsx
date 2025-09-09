@@ -84,7 +84,7 @@ const UI_TEXT = {
   settings: { en: "Settings", ar: "الإعدادات" },
   transactionSuccess: { en: "Transaction successful!", ar: "تمت العملية بنجاح!" },
   transactionSuccessDesc: { en: (id: string) => `Sale ID: ${id}`, ar: (id: string) => `رقم الفاتورة: ${id}`},
-  quickServeLite: { en: "QuickServe Lite", ar: "كويك سيرف لايت" },
+  quickServeLite: { en: "RMS POS", ar: "RMS POS" },
   searchPlaceholder: { en: "Search by name or barcode...", ar: "ابحث بالاسم أو الباركود..." },
   menu: { en: "Menu", ar: "القائمة" },
   allCategories: { en: 'All Categories', ar: 'كل الفئات' },
@@ -127,7 +127,7 @@ export default function POSPage() {
   const [selectedCustomerId, setSelectedCustomerId] = React.useState<number | null>(null);
 
   const [settings, setSettings] = React.useState<Settings>({
-    storeName: "QuickServe Lite",
+    storeName: "RMS POS",
     address: "123 Main Street, Riyadh",
     phone: "011-123-4567",
     currency: "SAR",
@@ -376,10 +376,12 @@ export default function POSPage() {
                         <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
                     </SelectTrigger>
                     <SelectContent>
+                      <ScrollArea className="h-48">
                         <SelectItem value="all">{UI_TEXT.allCategories[language]}</SelectItem>
                         {categories.map(c => (
                             <SelectItem key={c.id} value={String(c.id)}>{language === 'ar' ? c.nameAr : c.name}</SelectItem>
                         ))}
+                      </ScrollArea>
                     </SelectContent>
                 </Select>
               </div>
