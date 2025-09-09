@@ -297,7 +297,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
                         <span className="text-primary">{finalTotal.toFixed(2)}</span>
                     </div>
                     <div className="flex gap-2">
-                        <Button onClick={onProcessPayment} size="lg" className="w-full bg-green-600 text-white hover:bg-green-700">
+                        <Button onClick={onProcessPayment} size="lg" className="flex-1 bg-green-600 text-white hover:bg-green-700">
                             {UI_TEXT.pay[language]}
                         </Button>
 
