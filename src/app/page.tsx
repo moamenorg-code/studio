@@ -213,35 +213,37 @@ export default function POSPage() {
       />
       <main className="flex flex-1 flex-col overflow-auto p-4 sm:p-6">
         <div className="mb-4 flex flex-col sm:flex-row items-center gap-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full sm:w-auto flex-shrink-0">
-                  <Menu className={language === 'ar' ? 'ml-2 h-5 w-5' : 'mr-2 h-5 w-5'} />
-                  <span>{UI_TEXT.menu[language]}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-[250px]">
-                {VIEW_OPTIONS.map(({ value, label, icon: Icon }) => (
-                  <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
-                    {language === 'en' && <Icon className="mr-3 h-5 w-5" />}
-                    <span className="flex-1 text-right">{UI_TEXT[label][language]}</span>
-                    {language === 'ar' && <Icon className="ml-3 h-5 w-5" />}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex w-full items-center gap-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex-shrink-0">
+                    <Menu className={language === 'ar' ? 'ml-2 h-5 w-5' : 'mr-2 h-5 w-5'} />
+                    <span>{UI_TEXT.menu[language]}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-[250px]">
+                  {VIEW_OPTIONS.map(({ value, label, icon: Icon }) => (
+                    <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
+                      {language === 'en' && <Icon className="mr-3 h-5 w-5" />}
+                      <span className="flex-1 text-right">{UI_TEXT[label][language]}</span>
+                      {language === 'ar' && <Icon className="ml-3 h-5 w-5" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-            {activeView === 'sales' && (
-              <div className="relative w-full">
-                <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
-                <Input
-                  placeholder={UI_TEXT.searchPlaceholder[language]}
-                  className={`${language === 'ar' ? 'pr-10' : 'pl-10'} h-full text-base py-2.5`}
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                />
-              </div>
-            )}
+              {activeView === 'sales' && (
+                <div className="relative w-full">
+                  <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
+                  <Input
+                    placeholder={UI_TEXT.searchPlaceholder[language]}
+                    className={`${language === 'ar' ? 'pr-10' : 'pl-10'} text-base`}
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
         </div>
 
         <div className="flex-1 pb-24 sm:pb-28"> 
