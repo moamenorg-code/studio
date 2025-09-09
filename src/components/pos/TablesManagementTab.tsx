@@ -200,10 +200,18 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
               <CardTitle>{UI_TEXT.manageTables[language]}</CardTitle>
               <CardDescription>{UI_TEXT.viewAndManageTables[language]}</CardDescription>
             </div>
-            <Button size="sm" className="w-full sm:w-auto" onClick={handleAdd}>
-                <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
-                {UI_TEXT.addTable[language]}
-            </Button>
+            <TableDialog 
+                isOpen={isDialogOpen}
+                onOpenChange={setDialogOpen}
+                onSave={handleSave} 
+                table={editingTable} 
+                language={language}
+              >
+              <Button size="sm" className="w-full sm:w-auto" onClick={handleAdd}>
+                  <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                  {UI_TEXT.addTable[language]}
+              </Button>
+            </TableDialog>
           </div>
         </CardHeader>
         <CardContent>
@@ -225,8 +233,8 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
         </CardContent>
       </Card>
       <TableDialog 
-        isOpen={isDialogOpen}
-        onOpenChange={setDialogOpen}
+        isOpen={isDialogOpen && editingTable !== null}
+        onOpenChange={(open) => { if (!open) setEditingTable(null); setDialogOpen(open); }}
         onSave={handleSave} 
         table={editingTable} 
         language={language}

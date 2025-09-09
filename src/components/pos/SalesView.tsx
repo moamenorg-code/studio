@@ -15,6 +15,7 @@ interface SalesViewProps {
   onNewTakeawayOrder: () => void;
   onNewDeliveryOrder: () => void;
   onSetActiveView: (view: ActiveView) => void;
+  tablesEnabled: boolean;
 }
 
 const SalesView: React.FC<SalesViewProps> = ({
@@ -25,6 +26,7 @@ const SalesView: React.FC<SalesViewProps> = ({
   onNewTakeawayOrder,
   onNewDeliveryOrder,
   onSetActiveView,
+  tablesEnabled,
 }) => {
   if (!activeOrder) {
     return (
@@ -36,10 +38,12 @@ const SalesView: React.FC<SalesViewProps> = ({
           <AlertTitle className="text-xl mb-2">{UI_TEXT.selectOrderTypePrompt[language]}</AlertTitle>
           <AlertDescription className="mb-6">{UI_TEXT.selectOrderTypePromptDesc[language]}</AlertDescription>
           <div className="mt-4 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button onClick={() => onSetActiveView('tables')} size="lg" className="px-8 py-6 text-lg">
-              <TableIcon className="w-6 h-6 me-3" />
-              {UI_TEXT.dineIn[language]}
-            </Button>
+            {tablesEnabled && (
+                <Button onClick={() => onSetActiveView('tables')} size="lg" className="px-8 py-6 text-lg">
+                    <TableIcon className="w-6 h-6 me-3" />
+                    {UI_TEXT.dineIn[language]}
+                </Button>
+            )}
             <Button variant="secondary" onClick={onNewTakeawayOrder} size="lg" className="px-8 py-6 text-lg">
               <Package className="w-6 h-6 me-3" />
               {UI_TEXT.takeaway[language]}

@@ -1,11 +1,11 @@
 import * as React from 'react';
-import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table } from '@/lib/types';
+import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
-
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SlectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, Briefcase } from 'lucide-react';
 import Header from './Header';
 import SalesView from './SalesView';
 import DashboardTab from './DashboardTab';
@@ -28,7 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 
 
 const POSLayout: React.FC = () => {
-    const [language, setLanguage] = React.useState<Language>("ar");
+  const [language, setLanguage] = React.useState<Language>("ar");
   const [sales, setSales] = React.useState<Sale[]>([]);
   const [products, setProducts] = React.useState<Product[]>(initialProducts);
   const [customers, setCustomers] = React.useState<Customer[]>(initialCustomers);
@@ -41,7 +41,7 @@ const POSLayout: React.FC = () => {
   const [shifts, setShifts] = React.useState<Shift[]>(initialShifts);
   const [expenses, setExpenses] = React.useState<Expense[]>(initialExpenses);
   const [cashDrawerEntries, setCashDrawerEntries] = React.useState<CashDrawerEntry[]>(initialCashDrawerEntries);
-  const [activeView, setActiveView] = React.useState<ActiveView>("sales");
+  const [activeView, setActiveView] = React.useState<ActiveView>("shifts");
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<string>("all");
   
@@ -73,6 +73,8 @@ const POSLayout: React.FC = () => {
   });
 
   const { toast } = useToast();
+
+  const activeShift = React.useMemo(() => shifts.find(s => s.status === 'open'), [shifts]);
 
   const activeCart = React.useMemo(() => {
     if (!activeOrder) return [];
@@ -191,7 +193,7 @@ const POSLayout: React.FC = () => {
 
     switch (activeOrder.type) {
         case 'dine-in':
-            setTables(prev => prev.map(t => t.id === activeOrder.id ? clearOrder(t) : t));
+            setTables(prev => prev.map(t => t.id === activeOrder.id ? { ...t, cart: [], selectedCustomerId: null, status: 'available' } : t));
             break;
         case 'takeaway':
              setTakeawayOrders(prev => prev.filter(o => o.id !== activeOrder.id));
@@ -236,7 +238,7 @@ const POSLayout: React.FC = () => {
 
     switch (orderType) {
         case 'dine-in':
-            setTables(prev => prev.map(t => t.id === orderId ? { ...t, cart, selectedCustomerId } : t));
+            setTables(prev => prev.map(t => t.id === orderId ? { ...t, cart, selectedCustomerId, status: 'occupied' } : t));
             break;
         case 'takeaway':
             setTakeawayOrders(prev => [...prev.filter(o => o.id !== orderId), orderData]);
@@ -339,6 +341,10 @@ const POSLayout: React.FC = () => {
   
   const handleShiftsUpdate = (updatedShifts: Shift[]) => {
     setShifts(updatedShifts);
+    // If a new shift was started, switch to the sales view
+    if (updatedShifts.some(s => s.status === 'open') && !activeShift) {
+      setActiveView('sales');
+    }
   };
 
   const handleExpensesUpdate = (updatedExpenses: Expense[]) => {
@@ -368,6 +374,18 @@ const POSLayout: React.FC = () => {
   }, [products, searchQuery, selectedCategoryId]);
 
     const renderActiveView = () => {
+    if (!activeShift && activeView !== 'shifts' && activeView !== 'settings') {
+      return (
+         <div className="flex h-full items-center justify-center">
+            <Alert className="max-w-md text-center">
+                <Briefcase className="mx-auto h-8 w-8 mb-4" />
+                <AlertTitle>{UI_TEXT.noActiveShift[language]}</AlertTitle>
+                <AlertDescription>{UI_TEXT.noActiveShiftDesc[language]}</AlertDescription>
+            </Alert>
+        </div>
+      );
+    }
+    
     switch(activeView) {
       case 'sales':
         return <SalesView 
@@ -378,6 +396,7 @@ const POSLayout: React.FC = () => {
                     onNewTakeawayOrder={handleNewTakeawayOrder}
                     onNewDeliveryOrder={handleNewDeliveryOrder}
                     onSetActiveView={setActiveView}
+                    tablesEnabled={settings.enableTables}
                 />;
       case 'dashboard':
         return <DashboardTab sales={sales} language={language} />;
@@ -448,8 +467,13 @@ const POSLayout: React.FC = () => {
   };
   
   const showFloatingCart = () => {
-    if (activeView !== 'sales') return false;
+    if (!activeShift || activeView !== 'sales') return false;
     return !!activeOrder && activeCart.length > 0;
+  }
+
+  const showSearchBar = () => {
+    if (!activeShift) return false;
+    return activeView === 'sales' && activeOrder;
   }
 
   return (
@@ -464,10 +488,11 @@ const POSLayout: React.FC = () => {
         activeView={activeView}
         setActiveView={setActiveView}
         enableTables={settings.enableTables}
+        isShiftOpen={!!activeShift}
       />
       <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
         <div className="flex items-center gap-4 shrink-0">
-           {activeView === 'sales' && activeOrder ? (
+           {showSearchBar() ? (
              <>
                 <div className="relative flex-1">
                     <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />

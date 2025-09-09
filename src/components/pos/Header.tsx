@@ -32,6 +32,7 @@ interface HeaderProps {
   activeView: ActiveView;
   setActiveView: (view: ActiveView) => void;
   enableTables: boolean;
+  isShiftOpen: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -44,6 +45,7 @@ const Header: React.FC<HeaderProps> = ({
   activeView,
   setActiveView,
   enableTables,
+  isShiftOpen,
 }) => {
   const { setTheme } = useTheme();
 
@@ -56,6 +58,7 @@ const Header: React.FC<HeaderProps> = ({
           size="sm"
           onClick={onOpenHeldOrders}
           className="gap-2 relative"
+          disabled={!isShiftOpen}
         >
           <PauseCircle className="h-4 w-4" />
           <span className="hidden sm:inline">
@@ -70,6 +73,7 @@ const Header: React.FC<HeaderProps> = ({
           size="sm"
           onClick={onOpenSmartRoundup}
           className="gap-2"
+          disabled={!isShiftOpen}
         >
           <Bot className="h-4 w-4" />
           <span className="hidden sm:inline">
@@ -117,7 +121,7 @@ const Header: React.FC<HeaderProps> = ({
 
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-9 w-9">
+            <Button variant="outline" size="icon" className="h-9 w-9" disabled={!isShiftOpen}>
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">{UI_TEXT.menu[language]}</span>
             </Button>
