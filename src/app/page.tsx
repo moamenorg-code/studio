@@ -272,7 +272,7 @@ export default function POSPage() {
     const newOrderId = Date.now();
     setDeliveryOrders(prev => [...prev, {id: newOrderId, cart: [], selectedCustomerId: null}]);
     setActiveOrder({ type: 'delivery', id: newOrderId });
-    setPaymentDialogOpen(true); // Force customer selection
+    setCartSheetOpen(true); // Open cart to force customer selection
   }
 
   const clearCart = () => {
@@ -609,6 +609,7 @@ export default function POSPage() {
         selectedCustomerId={activeCustomerId}
         onSelectCustomer={setActiveCustomerId}
         onCustomerUpdate={handleCustomerUpdate}
+        orderType={activeOrder?.type}
       />
       
       <PaymentDialog

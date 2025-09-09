@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { MinusCircle, PlusCircle, Trash2, XCircle, UserPlus } from 'lucide-react';
-import type { CartItem, Customer } from '@/lib/types';
+import type { CartItem, Customer, OrderType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -48,6 +48,7 @@ const UI_TEXT = {
     addCustomer: { en: 'Add Customer', ar: 'إضافة عميل' },
     searchCustomer: { en: 'Search customer...', ar: 'ابحث عن عميل بالاسم أو الهاتف...' },
     noCustomerFound: { en: 'No customer found.', ar: 'لم يتم العثور على عميل.' },
+    customerRequired: { en: 'Customer is required for delivery orders.', ar: 'العميل مطلوب لطلبات التوصيل.' },
 };
 
 interface CartPanelProps {
@@ -62,6 +63,7 @@ interface CartPanelProps {
   selectedCustomerId: number | null;
   onSelectCustomer: (id: number | null) => void;
   onCustomerUpdate: (customers: Customer[]) => void;
+  orderType?: OrderType;
 }
 
 const CartPanel: React.FC<CartPanelProps> = ({ 
@@ -75,7 +77,8 @@ const CartPanel: React.FC<CartPanelProps> = ({
     customers,
     selectedCustomerId,
     onSelectCustomer,
-    onCustomerUpdate
+    onCustomerUpdate,
+    orderType,
 }) => {
   const [overallDiscount, setOverallDiscount] = React.useState(0);
   const [serviceCharge, setServiceCharge] = React.useState(0);
@@ -142,6 +145,9 @@ const CartPanel: React.FC<CartPanelProps> = ({
     return customers.find(c => c.id === selectedCustomerId)?.name || UI_TEXT.selectCustomer[language];
   }, [selectedCustomerId, customers, language]);
 
+  const isDelivery = orderType === 'delivery';
+  const customerRequired = isDelivery && selectedCustomerId === null;
+
   return (
     <>
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
@@ -150,7 +156,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
                 <SheetTitle>{UI_TEXT.currentOrder[language]}</SheetTitle>
             </SheetHeader>
             <div className="flex-1 overflow-hidden">
-                {cart.length === 0 ? (
+                {cart.length === 0 && !isDelivery ? (
                 <div className="flex h-full items-center justify-center text-muted-foreground">
                     <p>{UI_TEXT.noItems[language]}</p>
                 </div>
@@ -176,7 +182,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
                 </ScrollArea>
                 )}
             </div>
-            {cart.length > 0 && (
+            {(cart.length > 0 || isDelivery) && (
             <SheetFooter className="flex-col items-stretch space-y-4 border-t pt-6">
                  <div className="space-y-2">
                     <Label htmlFor="customer" className="flex items-center justify-between text-sm">
@@ -191,7 +197,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
                             variant="outline"
                             role="combobox"
                             aria-expanded={popoverOpen}
-                            className="w-full justify-between"
+                            className={cn("w-full justify-between", customerRequired && "border-destructive")}
                             >
                             {selectedCustomerName}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -203,17 +209,12 @@ const CartPanel: React.FC<CartPanelProps> = ({
                                 <CommandList>
                                     <CommandEmpty>{UI_TEXT.noCustomerFound[language]}</CommandEmpty>
                                     <CommandGroup>
-                                        <CommandItem
-                                            onSelect={() => handleSelectCustomer(null)}
-                                        >
-                                            <Check
-                                            className={cn(
-                                                "mr-2 h-4 w-4",
-                                                selectedCustomerId === null ? "opacity-100" : "opacity-0"
-                                            )}
-                                            />
-                                            {UI_TEXT.walkInCustomer[language]}
-                                        </CommandItem>
+                                        {!isDelivery && (
+                                            <CommandItem onSelect={() => handleSelectCustomer(null)}>
+                                                <Check className={cn( "mr-2 h-4 w-4", selectedCustomerId === null ? "opacity-100" : "opacity-0" )}/>
+                                                {UI_TEXT.walkInCustomer[language]}
+                                            </CommandItem>
+                                        )}
                                         {customers.map((customer) => (
                                         <CommandItem
                                             key={customer.id}
@@ -237,48 +238,54 @@ const CartPanel: React.FC<CartPanelProps> = ({
                             </Command>
                         </PopoverContent>
                     </Popover>
+                    {customerRequired && <p className="text-sm text-destructive">{UI_TEXT.customerRequired[language]}</p>}
                 </div>
-                <div className="space-y-2">
-                    <div className="flex justify-between">
-                        <span>{UI_TEXT.subtotal[language]}</span>
-                        <span>{subtotal.toFixed(2)}</span>
+                
+                {cart.length > 0 && (
+                <>
+                    <div className="space-y-2">
+                        <div className="flex justify-between">
+                            <span>{UI_TEXT.subtotal[language]}</span>
+                            <span>{subtotal.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <Input 
+                                id="discount"
+                                type="number"
+                                value={overallDiscount}
+                                onChange={e => setOverallDiscount(Math.max(0, e.target.valueAsNumber || 0))}
+                                className="h-8 w-24 text-start"
+                                dir="ltr"
+                            />
+                            <Label htmlFor="discount" className="text-sm">{UI_TEXT.discount[language]}</Label>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <Input
+                                id="service-charge"
+                                type="number"
+                                value={serviceCharge}
+                                onChange={e => setServiceCharge(Math.max(0, e.target.valueAsNumber || 0))}
+                                className="h-8 w-24 text-start"
+                                dir="ltr"
+                            />
+                            <Label htmlFor="service-charge" className="text-sm">{UI_TEXT.serviceCharge[language]}</Label>
+                        </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                        <Input 
-                            id="discount"
-                            type="number"
-                            value={overallDiscount}
-                            onChange={e => setOverallDiscount(Math.max(0, e.target.valueAsNumber || 0))}
-                            className="h-8 w-24 text-start"
-                            dir="ltr"
-                        />
-                        <Label htmlFor="discount" className="text-sm">{UI_TEXT.discount[language]}</Label>
+                    <Separator />
+                    <div className="flex justify-between text-xl font-bold">
+                        <span>{UI_TEXT.finalTotal[language]}</span>
+                        <span className="text-primary">{finalTotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                         <Input
-                            id="service-charge"
-                            type="number"
-                            value={serviceCharge}
-                            onChange={e => setServiceCharge(Math.max(0, e.target.valueAsNumber || 0))}
-                            className="h-8 w-24 text-start"
-                            dir="ltr"
-                        />
-                        <Label htmlFor="service-charge" className="text-sm">{UI_TEXT.serviceCharge[language]}</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                        <Button variant="outline" onClick={clearCart}>
+                            <XCircle className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />{UI_TEXT.clearCart[language]}
+                        </Button>
+                        <Button onClick={onProcessPayment} className="bg-green-600 text-white hover:bg-green-700">
+                            {UI_TEXT.pay[language]}
+                        </Button>
                     </div>
-                </div>
-                <Separator />
-                <div className="flex justify-between text-xl font-bold">
-                    <span>{UI_TEXT.finalTotal[language]}</span>
-                    <span className="text-primary">{finalTotal.toFixed(2)}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" onClick={clearCart}>
-                        <XCircle className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />{UI_TEXT.clearCart[language]}
-                    </Button>
-                    <Button onClick={onProcessPayment} className="bg-green-600 text-white hover:bg-green-700">
-                        {UI_TEXT.pay[language]}
-                    </Button>
-                </div>
+                </>
+                )}
             </SheetFooter>
             )}
         </SheetContent>
