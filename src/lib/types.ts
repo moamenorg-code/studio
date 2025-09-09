@@ -164,7 +164,8 @@ export type Permission =
     | 'access_purchases'
     | 'access_delivery'
     | 'access_shifts'
-    | 'access_settings';
+    | 'access_settings'
+    | 'access_tables';
 
 export interface Role {
     id: number;

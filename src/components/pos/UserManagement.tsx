@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { MoreHorizontal, PlusCircle, Shield, User as UserIcon } from 'lucide-react';
-import type { User, Role } from '@/lib/types';
+import type { User, Role, Permission } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -18,6 +18,22 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
+import UserDialog from './UserDialog';
+import RoleDialog from './RoleDialog';
+import { Badge } from '../ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 type Language = 'en' | 'ar';
 
@@ -35,6 +51,12 @@ const UI_TEXT = {
   noUsers: { en: 'No users found.', ar: 'لم يتم العثور على مستخدمين.' },
   noRoles: { en: 'No roles found.', ar: 'لم يتم العثور على أدوار.' },
   permissions: { en: 'Permissions', ar: 'الصلاحيات' },
+  deleteConfirmTitle: { en: 'Are you sure?', ar: 'هل أنت متأكد؟' },
+  deleteUserConfirmDesc: { en: 'This action cannot be undone. This will permanently delete the user.', ar: 'لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف المستخدم نهائيًا.' },
+  deleteRoleConfirmDesc: { en: 'This action cannot be undone. This will permanently delete the role.', ar: 'لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف الدور نهائيًا.' },
+  cancel: { en: 'Cancel', ar: 'إلغاء' },
+  continue: { en: 'Continue', ar: 'متابعة' },
+  deleteSuccess: { en: 'Deleted successfully', ar: 'تم الحذف بنجاح' },
 };
 
 interface UserManagementProps {
@@ -52,11 +74,67 @@ const UserManagement: React.FC<UserManagementProps> = ({
   onRolesChange,
   language,
 }) => {
+  const [isUserDialogOpen, setUserDialogOpen] = React.useState(false);
+  const [isRoleDialogOpen, setRoleDialogOpen] = React.useState(false);
+  const [editingUser, setEditingUser] = React.useState<User | null>(null);
+  const [editingRole, setEditingRole] = React.useState<Role | null>(null);
+  const { toast } = useToast();
+
   const getRoleName = (roleId: number) => {
     return roles.find(r => r.id === roleId)?.name || 'N/A';
   };
 
+  const handleAddUser = () => {
+    setEditingUser(null);
+    setUserDialogOpen(true);
+  };
+  
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setUserDialogOpen(true);
+  };
+
+  const handleDeleteUser = (userId: number) => {
+    onUsersChange(users.filter(u => u.id !== userId));
+    toast({ title: UI_TEXT.deleteSuccess[language] });
+  };
+  
+  const handleSaveUser = (user: Omit<User, 'id'> | User) => {
+    if ('id' in user) {
+      onUsersChange(users.map(u => u.id === user.id ? user : u));
+    } else {
+      const newUser = { ...user, id: Date.now() };
+      onUsersChange([...users, newUser]);
+    }
+  };
+  
+  const handleAddRole = () => {
+    setEditingRole(null);
+    setRoleDialogOpen(true);
+  };
+  
+  const handleEditRole = (role: Role) => {
+    setEditingRole(role);
+    setRoleDialogOpen(true);
+  };
+
+  const handleDeleteRole = (roleId: number) => {
+    onRolesChange(roles.filter(r => r.id !== roleId));
+    onUsersChange(users.map(u => u.roleId === roleId ? { ...u, roleId: roles[0]?.id || 0 } : u));
+    toast({ title: UI_TEXT.deleteSuccess[language] });
+  };
+  
+  const handleSaveRole = (role: Omit<Role, 'id'> | Role) => {
+    if ('id' in role) {
+      onRolesChange(roles.map(r => r.id === role.id ? role : r));
+    } else {
+      const newRole = { ...role, id: Date.now() };
+      onRolesChange([...roles, newRole]);
+    }
+  };
+
   return (
+    <>
     <Tabs defaultValue="users" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="users">
@@ -71,8 +149,8 @@ const UserManagement: React.FC<UserManagementProps> = ({
       <TabsContent value="users">
         <div className="rounded-md border mt-4">
             <div className="p-4 flex justify-end">
-                <Button size="sm">
-                    <PlusCircle className={language === 'ar' ? 'ml-2' : 'mr-2'} />
+                <Button size="sm" onClick={handleAddUser}>
+                    <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
                     {UI_TEXT.addUser[language]}
                 </Button>
             </div>
@@ -92,7 +170,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
                     users.map(user => (
                     <TableRow key={user.id}>
                         <TableCell className="font-medium">{user.name}</TableCell>
-                        <TableCell>{getRoleName(user.roleId)}</TableCell>
+                        <TableCell><Badge variant="secondary">{getRoleName(user.roleId)}</Badge></TableCell>
                         <TableCell>****</TableCell>
                         <TableCell>
                         <DropdownMenu>
@@ -104,8 +182,22 @@ const UserManagement: React.FC<UserManagementProps> = ({
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
                             <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
-                            <DropdownMenuItem>{UI_TEXT.edit[language]}</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleEditUser(user)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
+                             <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>{UI_TEXT.deleteConfirmTitle[language]}</AlertDialogTitle>
+                                    <AlertDialogDescription>{UI_TEXT.deleteUserConfirmDesc[language]}</AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>{UI_TEXT.cancel[language]}</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteUser(user.id)}>{UI_TEXT.continue[language]}</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </DropdownMenuContent>
                         </DropdownMenu>
                         </TableCell>
@@ -125,8 +217,8 @@ const UserManagement: React.FC<UserManagementProps> = ({
       <TabsContent value="roles">
          <div className="rounded-md border mt-4">
             <div className="p-4 flex justify-end">
-                 <Button size="sm">
-                    <PlusCircle className={language === 'ar' ? 'ml-2' : 'mr-2'} />
+                 <Button size="sm" onClick={handleAddRole}>
+                    <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
                     {UI_TEXT.addRole[language]}
                 </Button>
             </div>
@@ -145,7 +237,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
                     roles.map(role => (
                     <TableRow key={role.id}>
                         <TableCell className="font-medium">{role.name}</TableCell>
-                        <TableCell>{Object.keys(role.permissions).length}</TableCell>
+                        <TableCell>{Object.values(role.permissions).filter(Boolean).length}</TableCell>
                         <TableCell>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -156,8 +248,22 @@ const UserManagement: React.FC<UserManagementProps> = ({
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
                             <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
-                            <DropdownMenuItem>{UI_TEXT.edit[language]}</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleEditRole(role)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive" disabled={role.id === 1}>{UI_TEXT.delete[language]}</DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>{UI_TEXT.deleteConfirmTitle[language]}</AlertDialogTitle>
+                                    <AlertDialogDescription>{UI_TEXT.deleteRoleConfirmDesc[language]}</AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>{UI_TEXT.cancel[language]}</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteRole(role.id)}>{UI_TEXT.continue[language]}</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </DropdownMenuContent>
                         </DropdownMenu>
                         </TableCell>
@@ -175,6 +281,23 @@ const UserManagement: React.FC<UserManagementProps> = ({
         </div>
       </TabsContent>
     </Tabs>
+    
+    <UserDialog 
+        isOpen={isUserDialogOpen}
+        onOpenChange={setUserDialogOpen}
+        onSave={handleSaveUser}
+        user={editingUser}
+        roles={roles}
+        language={language}
+    />
+    <RoleDialog
+        isOpen={isRoleDialogOpen}
+        onOpenChange={setRoleDialogOpen}
+        onSave={handleSaveRole}
+        role={editingRole}
+        language={language}
+    />
+    </>
   );
 };
 

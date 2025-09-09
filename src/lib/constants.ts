@@ -63,3 +63,16 @@ export const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; ico
     { value: 'shifts', label: 'shifts', icon: Briefcase },
     { value: 'settings', label: 'settings', icon: SettingsIcon },
 ];
+
+export const PERMISSIONS_LIST: { key: Permission, text: { en: string, ar: string }}[] = [
+  { key: 'access_dashboard', text: { en: 'Access Dashboard', ar: 'الوصول إلى لوحة التحكم' } },
+  { key: 'access_sales_history', text: { en: 'Access Sales History', ar: 'الوصول إلى سجل المبيعات' } },
+  { key: 'access_products', text: { en: 'Manage Products & Recipes', ar: 'إدارة المنتجات والوصفات' } },
+  { key: 'access_inventory', text: { en: 'Manage Inventory', ar: 'إدارة المخزون' } },
+  { key: 'access_customers', text: { en: 'Manage Customers', ar: 'إدارة العملاء' } },
+  { key: 'access_purchases', text: { en: 'Manage Purchases & Suppliers', ar: 'إدارة المشتريات والموردين' } },
+  { key: 'access_delivery', text: { en: 'Manage Delivery Reps', ar: 'إدارة مندوبي التوصيل' } },
+  { key: 'access_shifts', text: { en: 'Manage Shifts, Cash & Expenses', ar: 'إدارة الشفتات، الخزينة والمصروفات' } },
+  { key: 'access_tables', text: { en: 'Manage Tables', ar: 'إدارة الطاولات' } },
+  { key: 'access_settings', text: { en: 'Access Settings', ar: 'الوصول إلى الإعدادات' } },
+];
