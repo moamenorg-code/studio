@@ -12,8 +12,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Supplier, RawMaterial, PurchaseItem } from '@/lib/types';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { Supplier, RawMaterial, PurchaseItem, Product } from '@/lib/types';
+import { PlusCircle, Trash2, ScanLine } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 type Language = 'en' | 'ar';
 
@@ -24,6 +25,7 @@ const UI_TEXT = {
   selectSupplier: { en: 'Select a supplier', ar: 'اختر موردًا' },
   invoiceItems: { en: 'Invoice Items', ar: 'أصناف الفاتورة' },
   addItem: { en: 'Add Item', ar: 'إضافة صنف' },
+  addByBarcode: { en: 'Add by Barcode', ar: 'إضافة بالباركود' },
   item: { en: 'Item', ar: 'الصنف' },
   quantity: { en: 'Quantity', ar: 'الكمية' },
   price: { en: 'Unit Price', ar: 'سعر الوحدة' },
@@ -31,6 +33,8 @@ const UI_TEXT = {
   invoiceTotal: { en: 'Invoice Total', ar: 'إجمالي الفاتورة' },
   cancel: { en: 'Cancel', ar: 'إلغاء' },
   save: { en: 'Save', ar: 'حفظ' },
+  productNotFound: { en: 'Product not found', ar: 'المنتج غير موجود' },
+  productNotFoundDesc: { en: (barcode: string) => `No product with barcode ${barcode} found in raw materials.`, ar: (barcode: string) => `لم يتم العثور على منتج بالباركود ${barcode} في المواد الخام.`},
 };
 
 interface PurchaseDialogProps {
@@ -39,13 +43,16 @@ interface PurchaseDialogProps {
   onSave: (purchase: Omit<Purchase, 'id' | 'createdAt'>) => void;
   suppliers: Supplier[];
   rawMaterials: RawMaterial[];
+  products: Product[]; // Pass all products to find by barcode
   language: Language;
+  onOpenBarcodeScanner: (onDetect: (barcode: string) => void) => void;
 }
 
-const PurchaseDialog: React.FC<PurchaseDialogProps> = ({ isOpen, onOpenChange, onSave, suppliers, rawMaterials, language }) => {
+const PurchaseDialog: React.FC<PurchaseDialogProps> = ({ isOpen, onOpenChange, onSave, suppliers, rawMaterials, products, language, onOpenBarcodeScanner }) => {
   const [supplierId, setSupplierId] = React.useState<number | null>(null);
   const [items, setItems] = React.useState<PurchaseItem[]>([]);
   const [total, setTotal] = React.useState(0);
+  const { toast } = useToast();
 
   React.useEffect(() => {
     const newTotal = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
@@ -84,6 +91,38 @@ const PurchaseDialog: React.FC<PurchaseDialogProps> = ({ isOpen, onOpenChange, o
     }
   };
   
+  const handleBarcodeScan = () => {
+    onOpenBarcodeScanner((barcode) => {
+        // Since purchase is for raw materials, we need to find which product uses this barcode,
+        // and from there find the raw materials if a recipe is linked.
+        // This example assumes a more direct link: a barcode on a raw material itself,
+        // or that a "product" is being purchased as a "raw material". Let's find the raw material by barcode.
+        const material = rawMaterials.find(rm => rm.barcode === barcode);
+
+        if (material) {
+             const existingItemIndex = items.findIndex(i => i.rawMaterialId === material.id);
+             if(existingItemIndex > -1) {
+                 handleItemChange(existingItemIndex, 'quantity', items[existingItemIndex].quantity + 1);
+             } else {
+                 setItems(prev => [...prev, {
+                    rawMaterialId: material.id,
+                    name: material.name,
+                    nameAr: material.nameAr,
+                    quantity: 1,
+                    price: 0 // Default price, user should update
+                 }]);
+             }
+        } else {
+            toast({
+                variant: 'destructive',
+                title: UI_TEXT.productNotFound[language],
+                description: UI_TEXT.productNotFoundDesc[language](barcode),
+            });
+        }
+    });
+  };
+
+
   React.useEffect(() => {
       if (!isOpen) {
           setSupplierId(null);
@@ -115,13 +154,25 @@ const PurchaseDialog: React.FC<PurchaseDialogProps> = ({ isOpen, onOpenChange, o
           </div>
 
           <div>
-            <Label>{UI_TEXT.invoiceItems[language]}</Label>
+            <div className='flex justify-between items-center mb-2'>
+                <Label>{UI_TEXT.invoiceItems[language]}</Label>
+                <div className='flex gap-2'>
+                    <Button variant="outline" size="sm" onClick={handleBarcodeScan}>
+                        <ScanLine className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />
+                        {UI_TEXT.addByBarcode[language]}
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleAddItem}>
+                        <PlusCircle className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />
+                        {UI_TEXT.addItem[language]}
+                    </Button>
+                </div>
+            </div>
             <ScrollArea className="h-60 rounded-md border p-2">
               <div className="space-y-4">
                 {items.map((item, index) => (
                   <div key={index} className="grid grid-cols-12 gap-2 items-center">
                     <div className="col-span-5">
-                       <Select onValueChange={(value) => handleItemChange(index, 'rawMaterialId', Number(value))} dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                       <Select onValueChange={(value) => handleItemChange(index, 'rawMaterialId', Number(value))} value={String(item.rawMaterialId)} dir={language === 'ar' ? 'rtl' : 'ltr'}>
                             <SelectTrigger>
                                 <SelectValue placeholder={UI_TEXT.item[language]} />
                             </SelectTrigger>
@@ -156,10 +207,6 @@ const PurchaseDialog: React.FC<PurchaseDialogProps> = ({ isOpen, onOpenChange, o
                 ))}
               </div>
             </ScrollArea>
-            <Button variant="outline" size="sm" onClick={handleAddItem} className="mt-2">
-              <PlusCircle className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />
-              {UI_TEXT.addItem[language]}
-            </Button>
           </div>
 
           <div className="flex justify-end items-center gap-4 text-xl font-bold mt-4">

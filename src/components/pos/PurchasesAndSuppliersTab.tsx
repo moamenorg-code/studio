@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Building, Truck } from 'lucide-react';
-import type { Supplier, RawMaterial } from '@/lib/types';
+import type { Supplier, RawMaterial, Purchase, Product } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PurchaseManagementTab from './PurchaseManagementTab';
@@ -19,8 +19,12 @@ interface PurchasesAndSuppliersTabProps {
   suppliers: Supplier[];
   onSuppliersChange: (suppliers: Supplier[]) => void;
   rawMaterials: RawMaterial[];
+  products: Product[];
   onRawMaterialsChange: (materials: RawMaterial[]) => void;
+  purchases: Purchase[];
+  onPurchasesChange: (purchases: Purchase[]) => void;
   language: Language;
+  onOpenBarcodeScanner: (onDetect: (barcode: string) => void) => void;
 }
 
 const PurchasesAndSuppliersTab: React.FC<PurchasesAndSuppliersTabProps> = ({ 
@@ -28,7 +32,11 @@ const PurchasesAndSuppliersTab: React.FC<PurchasesAndSuppliersTabProps> = ({
     onSuppliersChange, 
     rawMaterials,
     onRawMaterialsChange,
-    language 
+    purchases,
+    onPurchasesChange,
+    language,
+    onOpenBarcodeScanner,
+    products
 }) => {
   return (
     <Card>
@@ -46,8 +54,12 @@ const PurchasesAndSuppliersTab: React.FC<PurchasesAndSuppliersTabProps> = ({
             <PurchaseManagementTab 
               suppliers={suppliers}
               rawMaterials={rawMaterials}
+              products={products}
               onRawMaterialsChange={onRawMaterialsChange}
               language={language}
+              purchases={purchases}
+              onPurchasesChange={onPurchasesChange}
+              onOpenBarcodeScanner={onOpenBarcodeScanner}
             />
           </TabsContent>
           <TabsContent value="suppliers">

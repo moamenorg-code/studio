@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { PlusCircle, Search } from 'lucide-react';
-import type { Purchase, Supplier, RawMaterial } from '@/lib/types';
+import type { Purchase, Supplier, RawMaterial, Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -25,12 +25,15 @@ const UI_TEXT = {
 interface PurchaseManagementTabProps {
   suppliers: Supplier[];
   rawMaterials: RawMaterial[];
+  products: Product[];
   onRawMaterialsChange: (materials: RawMaterial[]) => void;
   language: Language;
+  purchases: Purchase[];
+  onPurchasesChange: (purchases: Purchase[]) => void;
+  onOpenBarcodeScanner: (onDetect: (barcode: string) => void) => void;
 }
 
-const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers, rawMaterials, onRawMaterialsChange, language }) => {
-  const [purchases, setPurchases] = React.useState<Purchase[]>([]);
+const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers, rawMaterials, onRawMaterialsChange, language, purchases, onPurchasesChange, onOpenBarcodeScanner, products }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
 
@@ -44,7 +47,7 @@ const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers
         id: `PUR-${Date.now()}`,
         createdAt: new Date(),
     };
-    setPurchases(prev => [...prev, newPurchase]);
+    onPurchasesChange([...purchases, newPurchase]);
 
     // Update raw material stock
     const updatedMaterials = [...rawMaterials];
@@ -141,7 +144,9 @@ const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers
         onSave={handleSavePurchase}
         suppliers={suppliers}
         rawMaterials={rawMaterials}
+        products={products}
         language={language}
+        onOpenBarcodeScanner={onOpenBarcodeScanner}
       />
     </>
   );

@@ -26,6 +26,7 @@ interface ProductsAndRecipesTabProps {
   categories: Category[];
   onCategoriesChange: (categories: Category[]) => void;
   language: Language;
+  onOpenBarcodeScanner: (onDetect: (barcode: string) => void) => void;
 }
 
 const ProductsAndRecipesTab: React.FC<ProductsAndRecipesTabProps> = ({ 
@@ -36,7 +37,8 @@ const ProductsAndRecipesTab: React.FC<ProductsAndRecipesTabProps> = ({
     rawMaterials,
     categories,
     onCategoriesChange,
-    language 
+    language,
+    onOpenBarcodeScanner
 }) => {
   return (
     <Card>
@@ -58,6 +60,7 @@ const ProductsAndRecipesTab: React.FC<ProductsAndRecipesTabProps> = ({
               recipes={recipes}
               categories={categories}
               language={language}
+              onOpenBarcodeScanner={onOpenBarcodeScanner}
             />
           </TabsContent>
           <TabsContent value="recipes">

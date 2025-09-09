@@ -111,13 +111,13 @@ export const suppliers: Supplier[] = [
 ];
 
 export const rawMaterials: RawMaterial[] = [
-    { id: 1, name: 'Coffee Beans', nameAr: 'حبوب البن', unit: 'kg', stock: 50 },
-    { id: 2, name: 'Milk', nameAr: 'حليب', unit: 'liter', stock: 100 },
-    { id: 3, name: 'Sugar', nameAr: 'سكر', unit: 'kg', stock: 200 },
-    { id: 4, name: 'Flour', nameAr: 'دقيق', unit: 'kg', stock: 150 },
-    { id: 5, name: 'Butter', nameAr: 'زبدة', unit: 'kg', stock: 40 },
-    { id: 6, name: 'Eggs', nameAr: 'بيض', unit: 'piece', stock: 300 },
-    { id: 7, name: 'Dough', nameAr: 'عجينة', unit: 'piece', stock: 50 },
+    { id: 1, name: 'Coffee Beans', nameAr: 'حبوب البن', unit: 'kg', stock: 50, barcode: 'RM001' },
+    { id: 2, name: 'Milk', nameAr: 'حليب', unit: 'liter', stock: 100, barcode: 'RM002' },
+    { id: 3, name: 'Sugar', nameAr: 'سكر', unit: 'kg', stock: 200, barcode: 'RM003' },
+    { id: 4, name: 'Flour', nameAr: 'دقيق', unit: 'kg', stock: 150, barcode: 'RM004' },
+    { id: 5, name: 'Butter', nameAr: 'زبدة', unit: 'kg', stock: 40, barcode: 'RM005' },
+    { id: 6, name: 'Eggs', nameAr: 'بيض', unit: 'piece', stock: 300, barcode: 'RM006' },
+    { id: 7, name: 'Dough', nameAr: 'عجينة', unit: 'piece', stock: 50, barcode: 'RM007' },
 ];
 
 export const recipes: Recipe[] = [
@@ -179,3 +179,4 @@ export const users: User[] = [
 export const expenses: Expense[] = [];
 export const cashDrawerEntries: CashDrawerEntry[] = [];
 export const shifts: Shift[] = [];
+export const purchases: Purchase[] = [];

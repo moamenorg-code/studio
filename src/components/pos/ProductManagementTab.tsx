@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { MoreHorizontal, PlusCircle, BookCopy, Search } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, BookCopy, Search, ScanLine } from 'lucide-react';
 import type { Product, Recipe, Category } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,9 +43,10 @@ interface ProductManagementTabProps {
   recipes: Recipe[];
   categories: Category[];
   language: Language;
+  onOpenBarcodeScanner: (onDetect: (barcode: string) => void) => void;
 }
 
-const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, onProductsChange, recipes, categories, language }) => {
+const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, onProductsChange, recipes, categories, language, onOpenBarcodeScanner }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const [editingProduct, setEditingProduct] = React.useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -108,13 +109,22 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
             </div>
             <div className="flex w-full sm:w-auto flex-col sm:flex-row gap-2">
                  <div className="relative">
-                    <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
+                    <Search className={`absolute ${language === 'ar' ? 'right-10' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
                     <Input
                         placeholder={UI_TEXT.searchPlaceholder[language]}
-                        className={`${language === 'ar' ? 'pr-10' : 'pl-10'}`}
+                        className={`${language === 'ar' ? 'pr-16' : 'pl-10'}`}
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                     />
+                     <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => onOpenBarcodeScanner(setSearchQuery)} 
+                        className={`absolute ${language === 'ar' ? 'right-2' : 'left-auto right-2'} top-1/2 -translate-y-1/2 h-8 w-8`}
+                        aria-label="Scan Barcode"
+                      >
+                        <ScanLine className="h-5 w-5" />
+                    </Button>
                 </div>
                 <Button onClick={handleAddProduct} className="w-full sm:w-auto">
                 <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
@@ -213,6 +223,7 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
         product={editingProduct}
         categories={categories}
         language={language}
+        onOpenBarcodeScanner={onOpenBarcodeScanner}
       />
     </>
   );

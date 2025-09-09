@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Product, Category } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScanLine } from 'lucide-react';
 
 type Language = 'en' | 'ar';
 
@@ -36,9 +37,10 @@ interface ProductDialogProps {
   product: Product | null;
   categories: Category[];
   language: Language;
+  onOpenBarcodeScanner: (onDetect: (barcode: string) => void) => void;
 }
 
-const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onSave, product, categories, language }) => {
+const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onSave, product, categories, language, onOpenBarcodeScanner }) => {
   const [formData, setFormData] = React.useState<Partial<Product>>({});
 
   React.useEffect(() => {
@@ -76,6 +78,12 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onS
     }
   };
 
+  const handleBarcodeScan = () => {
+    onOpenBarcodeScanner((barcode) => {
+        setFormData(prev => ({...prev, barcode}));
+    })
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -99,7 +107,12 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onS
             </div>
             <div className="space-y-2">
                 <Label htmlFor="barcode">{UI_TEXT.barcode[language]}</Label>
-                <Input id="barcode" name="barcode" value={formData.barcode || ''} onChange={handleChange} dir="ltr" />
+                <div className="relative">
+                    <Input id="barcode" name="barcode" value={formData.barcode || ''} onChange={handleChange} dir="ltr" className="pr-10"/>
+                    <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={handleBarcodeScan}>
+                        <ScanLine className="h-5 w-5" />
+                    </Button>
+                </div>
             </div>
           </div>
           <div className="space-y-2">

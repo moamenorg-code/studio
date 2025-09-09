@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, Permission } from '@/lib/types';
+import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, Permission, Purchase } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,7 @@ import HeldOrdersDialog from './HeldOrdersDialog';
 import SplitBillDialog from './SplitBillDialog';
 import LoginScreen from './LoginScreen';
 import BarcodeScanner from './BarcodeScanner';
-import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles } from "@/lib/data";
+import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles, purchases as initialPurchases } from "@/lib/data";
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '../ui/button';
 
@@ -47,6 +47,8 @@ const POSLayout: React.FC = () => {
   const [cashDrawerEntries, setCashDrawerEntries] = React.useState<CashDrawerEntry[]>(initialCashDrawerEntries);
   const [users, setUsers] = React.useState<User[]>(initialUsers);
   const [roles, setRoles] = React.useState<Role[]>(initialRoles);
+  const [purchases, setPurchases] = React.useState<Purchase[]>(initialPurchases);
+  
   const [activeView, setActiveView] = React.useState<ActiveView>("shifts");
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<string>("all");
@@ -58,6 +60,7 @@ const POSLayout: React.FC = () => {
   const [isCartSheetOpen, setCartSheetOpen] = React.useState(false);
   const [isSplitBillOpen, setSplitBillOpen] = React.useState(false);
   const [isBarcodeScannerOpen, setBarcodeScannerOpen] = React.useState(false);
+  const [barcodeScannerCallback, setBarcodeScannerCallback] = React.useState<(barcode: string) => void>(() => () => {});
   
   const [activeOrder, setActiveOrder] = React.useState<ActiveOrder | null>(null);
   const [takeawayOrders, setTakeawayOrders] = React.useState<any[]>([]);
@@ -238,9 +241,9 @@ const POSLayout: React.FC = () => {
 
     switch (activeOrder.type) {
         case 'dine-in':
-            // If it's a payment, we clear the table fully.
-            // If it's a cancel/clear action, we also clear it.
-            setTables(prev => prev.map(t => t.id === activeOrder.id ? { ...t, cart: [], selectedCustomerId: null } : t));
+             if (isPayment) {
+                setTables(prev => prev.map(t => t.id === activeOrder.id ? { ...t, cart: [], selectedCustomerId: null } : t));
+             }
             break;
         case 'takeaway':
              setTakeawayOrders(prev => prev.filter(o => o.id !== activeOrder.id));
@@ -291,6 +294,7 @@ const handleHoldOrder = () => {
     // For dine-in, we keep the table occupied. For others, we clear the active order.
     if (activeOrder.type === 'dine-in') {
         setCartSheetOpen(false);
+        setActiveOrder(null);
     } else {
         clearCart();
     }
@@ -464,11 +468,20 @@ const handleHoldOrder = () => {
     setRoles(updatedRoles);
   };
 
-  const handleBarcodeDetect = (barcode: string) => {
-    setSearchQuery(barcode);
-    setBarcodeScannerOpen(false);
+  const handlePurchasesUpdate = (updatedPurchases: Purchase[]) => {
+    setPurchases(updatedPurchases);
   };
 
+
+  const openBarcodeScanner = (onDetect: (barcode: string) => void) => {
+    setBarcodeScannerCallback(() => onDetect);
+    setBarcodeScannerOpen(true);
+  };
+
+  const handleBarcodeDetect = (barcode: string) => {
+    barcodeScannerCallback(barcode);
+    setBarcodeScannerOpen(false);
+  };
 
   const filteredProducts = React.useMemo(() => {
     return products
@@ -527,6 +540,7 @@ const handleHoldOrder = () => {
                     categories={categories}
                     onCategoriesChange={handleCategoriesUpdate}
                     language={language} 
+                    onOpenBarcodeScanner={openBarcodeScanner}
                />;
       case 'inventory':
         return <InventoryManagementTab rawMaterials={rawMaterials} onRawMaterialsChange={handleRawMaterialUpdate} language={language} />;
@@ -536,9 +550,13 @@ const handleHoldOrder = () => {
         return <PurchasesAndSuppliersTab 
                   suppliers={suppliers} 
                   onSuppliersChange={handleSupplierUpdate} 
-                  rawMaterials={rawMaterials} 
+                  rawMaterials={rawMaterials}
                   onRawMaterialsChange={handleRawMaterialUpdate}
+                  purchases={purchases}
+                  onPurchasesChange={handlePurchasesUpdate}
                   language={language} 
+                  onOpenBarcodeScanner={openBarcodeScanner}
+                  products={products}
                />;
       case 'deliveryReps':
         return <DeliveryRepsTab
@@ -581,7 +599,7 @@ const handleHoldOrder = () => {
                   users={users}
                   onUsersChange={handleUsersUpdate}
                   roles={roles}
-                  onRolesChange={handleRolesUpdate}
+                  onRolesChange={handleRolesChange}
                   language={language} 
                 />;
       case 'unauthorized':
@@ -640,7 +658,7 @@ const handleHoldOrder = () => {
                      <Button 
                         variant="ghost" 
                         size="icon" 
-                        onClick={() => setBarcodeScannerOpen(true)} 
+                        onClick={() => openBarcodeScanner(setSearchQuery)} 
                         className={`absolute ${language === 'ar' ? 'right-2' : 'left-auto right-2'} top-1/2 -translate-y-1/2 h-8 w-8`}
                         aria-label="Scan Barcode"
                       >
