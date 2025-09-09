@@ -219,7 +219,9 @@ const CartPanel: React.FC<CartPanelProps> = ({
                                         <CommandItem
                                             key={customer.id}
                                             value={`${customer.name} ${customer.phone}`}
-                                            onSelect={() => {
+                                            onMouseDown={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
                                                 handleSelectCustomer(customer.id);
                                             }}
                                         >
