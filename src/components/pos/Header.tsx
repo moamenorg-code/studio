@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Bot, Languages } from 'lucide-react';
+import { Bot, Languages, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,6 +16,7 @@ const UI_TEXT = {
   english: { en: 'English', ar: 'English' },
   arabic: { en: 'العربية', ar: 'العربية' },
   smartRoundup: { en: 'Smart Roundup', ar: 'تقريب السعر الذكي' },
+  toggleTheme: { en: 'Toggle theme', ar: 'تبديل السمة' },
 };
 
 interface HeaderProps {
@@ -30,6 +32,8 @@ const Header: React.FC<HeaderProps> = ({
   setLanguage,
   onOpenSmartRoundup,
 }) => {
+  const { setTheme } = useTheme();
+
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 sm:px-6">
       <h1 className="text-xl font-bold text-primary">{appName}</h1>
@@ -60,6 +64,26 @@ const Header: React.FC<HeaderProps> = ({
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setLanguage('ar')}>
               {UI_TEXT.arabic[language]}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+         <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="h-9 w-9">
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">{UI_TEXT.toggleTheme[language]}</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setTheme("light")}>
+              Light
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("dark")}>
+              Dark
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("system")}>
+              System
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
