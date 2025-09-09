@@ -20,10 +20,11 @@ import {
   Receipt,
   Settings as SettingsIcon,
   BookCopy,
+  LayoutGrid
 } from "lucide-react";
 
-import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings, Recipe } from "@/lib/types";
-import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes } from "@/lib/data";
+import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings, Recipe, Category } from "@/lib/types";
+import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories } from "@/lib/data";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -79,6 +80,7 @@ const UI_TEXT = {
   quickServeLite: { en: "QuickServe Lite", ar: "كويك سيرف لايت" },
   searchPlaceholder: { en: "Search by name or barcode...", ar: "ابحث بالاسم أو الباركود..." },
   menu: { en: "Menu", ar: "القائمة" },
+  allCategories: { en: 'All', ar: 'الكل' },
 };
 
 const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType }[] = [
@@ -102,11 +104,13 @@ export default function POSPage() {
   const [suppliers, setSuppliers] = React.useState<Supplier[]>(initialSuppliers);
   const [rawMaterials, setRawMaterials] = React.useState<RawMaterial[]>(initialRawMaterials);
   const [recipes, setRecipes] = React.useState<Recipe[]>(initialRecipes);
+  const [categories, setCategories] = React.useState<Category[]>(initialCategories);
   const [shifts, setShifts] = React.useState<Shift[]>(initialShifts);
   const [expenses, setExpenses] = React.useState<Expense[]>(initialExpenses);
   const [cashDrawerEntries, setCashDrawerEntries] = React.useState<CashDrawerEntry[]>(initialCashDrawerEntries);
   const [activeView, setActiveView] = React.useState<ActiveView>("sales");
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = React.useState<number | null>(null);
   
   const [isPaymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   const [isSmartRoundupOpen, setSmartRoundupOpen] = React.useState(false);
@@ -210,6 +214,10 @@ export default function POSPage() {
   const handleRecipesUpdate = (updatedRecipes: Recipe[]) => {
     setRecipes(updatedRecipes);
   };
+
+  const handleCategoriesUpdate = (updatedCategories: Category[]) => {
+    setCategories(updatedCategories);
+  };
   
   const handleShiftsUpdate = (updatedShifts: Shift[]) => {
     setShifts(updatedShifts);
@@ -228,34 +236,61 @@ export default function POSPage() {
   };
 
   const filteredProducts = React.useMemo(() => {
-    if (!searchQuery) return products;
-    const lowercasedQuery = searchQuery.toLowerCase();
-    return products.filter(product => 
-      product.name.toLowerCase().includes(lowercasedQuery) ||
-      product.nameAr.includes(lowercasedQuery) ||
-      (product.barcode && product.barcode.includes(lowercasedQuery))
-    );
-  }, [products, searchQuery]);
+    return products
+      .filter(product => 
+        selectedCategoryId === null || product.categoryId === selectedCategoryId
+      )
+      .filter(product => {
+        if (!searchQuery) return true;
+        const lowercasedQuery = searchQuery.toLowerCase();
+        return product.name.toLowerCase().includes(lowercasedQuery) ||
+               product.nameAr.includes(lowercasedQuery) ||
+               (product.barcode && product.barcode.includes(lowercasedQuery));
+      });
+  }, [products, searchQuery, selectedCategoryId]);
 
   const renderActiveView = () => {
     switch(activeView) {
       case 'sales':
         return (
-          <Card className="shadow-none border-none">
-            <CardHeader className="p-4 pt-0">
-              <CardTitle>{UI_TEXT.products[language]}</CardTitle>
-              <CardDescription>
-                  {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <ProductGrid
-                products={filteredProducts}
-                onAddToCart={addToCart}
-                language={language}
-              />
-            </CardContent>
-          </Card>
+          <>
+            <div className="mb-4">
+              <ScrollArea className="w-full whitespace-nowrap">
+                <div className="flex gap-2 pb-2">
+                  <Button
+                    variant={selectedCategoryId === null ? 'default' : 'outline'}
+                    onClick={() => setSelectedCategoryId(null)}
+                  >
+                    {UI_TEXT.allCategories[language]}
+                  </Button>
+                  {categories.map(category => (
+                    <Button
+                      key={category.id}
+                      variant={selectedCategoryId === category.id ? 'default' : 'outline'}
+                      onClick={() => setSelectedCategoryId(category.id)}
+                    >
+                      {language === 'ar' ? category.nameAr : category.name}
+                    </Button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+            <Card className="shadow-none border-none">
+              <CardHeader className="p-4 pt-0">
+                <CardTitle>{UI_TEXT.products[language]}</CardTitle>
+                <CardDescription>
+                    {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                <ProductGrid
+                  products={filteredProducts}
+                  onAddToCart={addToCart}
+                  language={language}
+                />
+              </CardContent>
+            </Card>
+          </>
         );
       case 'dashboard':
         return <DashboardTab sales={sales} language={language} />;
@@ -268,6 +303,8 @@ export default function POSPage() {
                     recipes={recipes}
                     onRecipesChange={handleRecipesUpdate}
                     rawMaterials={rawMaterials}
+                    categories={categories}
+                    onCategoriesChange={handleCategoriesUpdate}
                     language={language} 
                />;
       case 'inventory':

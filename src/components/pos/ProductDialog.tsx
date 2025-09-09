@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Product } from '@/lib/types';
+import { Product, Category } from '@/lib/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type Language = 'en' | 'ar';
 
@@ -22,6 +23,8 @@ const UI_TEXT = {
   nameAr: { en: 'Name (Arabic)', ar: 'الاسم (العربية)' },
   price: { en: 'Price', ar: 'السعر' },
   barcode: { en: 'Barcode', ar: 'الباركود' },
+  category: { en: 'Category', ar: 'الفئة' },
+  selectCategory: { en: 'Select a category', ar: 'اختر فئة' },
   cancel: { en: 'Cancel', ar: 'إلغاء' },
   save: { en: 'Save', ar: 'حفظ' },
 };
@@ -31,10 +34,11 @@ interface ProductDialogProps {
   onOpenChange: (open: boolean) => void;
   onSave: (product: Omit<Product, 'id'> | Product) => void;
   product: Product | null;
+  categories: Category[];
   language: Language;
 }
 
-const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onSave, product, language }) => {
+const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onSave, product, categories, language }) => {
   const [formData, setFormData] = React.useState<Partial<Product>>({});
 
   React.useEffect(() => {
@@ -47,6 +51,7 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onS
             nameAr: '',
             price: 0,
             barcode: '',
+            categoryId: undefined,
           });
         }
     }
@@ -58,6 +63,10 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onS
       ...prev,
       [name]: type === 'number' ? parseFloat(value) || 0 : value,
     }));
+  };
+
+  const handleSelectChange = (value: string) => {
+    setFormData(prev => ({ ...prev, categoryId: Number(value) }));
   };
 
   const handleSave = () => {
@@ -83,13 +92,32 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onS
             <Label htmlFor="nameAr">{UI_TEXT.nameAr[language]}</Label>
             <Input id="nameAr" name="nameAr" value={formData.nameAr || ''} onChange={handleChange} dir="rtl" />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="price">{UI_TEXT.price[language]}</Label>
-            <Input id="price" name="price" type="number" value={formData.price || ''} onChange={handleChange} dir="ltr" />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+                <Label htmlFor="price">{UI_TEXT.price[language]}</Label>
+                <Input id="price" name="price" type="number" value={formData.price || ''} onChange={handleChange} dir="ltr" />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="barcode">{UI_TEXT.barcode[language]}</Label>
+                <Input id="barcode" name="barcode" value={formData.barcode || ''} onChange={handleChange} dir="ltr" />
+            </div>
           </div>
-           <div className="space-y-2">
-            <Label htmlFor="barcode">{UI_TEXT.barcode[language]}</Label>
-            <Input id="barcode" name="barcode" value={formData.barcode || ''} onChange={handleChange} dir="ltr" />
+          <div className="space-y-2">
+            <Label htmlFor="category">{UI_TEXT.category[language]}</Label>
+            <Select 
+                onValueChange={handleSelectChange} 
+                value={formData.categoryId ? String(formData.categoryId) : ''}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
+            >
+                <SelectTrigger>
+                    <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
+                </SelectTrigger>
+                <SelectContent>
+                    {categories.map(c => (
+                        <SelectItem key={c.id} value={String(c.id)}>{language === 'ar' ? c.nameAr : c.name}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
           </div>
         </div>
         <DialogFooter>

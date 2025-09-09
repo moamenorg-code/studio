@@ -1,4 +1,12 @@
-import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry, Recipe } from './types';
+import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry, Recipe, Category } from './types';
+
+export const categories: Category[] = [
+    { id: 1, name: "Hot Drinks", nameAr: "مشروبات ساخنة" },
+    { id: 2, name: "Pastries", nameAr: "معجنات" },
+    { id: 3, name: "Cold Drinks", nameAr: "مشروبات باردة" },
+    { id: 4, name: "Desserts", nameAr: "حلويات" },
+    { id: 5, name: "Sandwiches", nameAr: "ساندويتشات" },
+];
 
 export const products: Product[] = [
   {
@@ -8,6 +16,7 @@ export const products: Product[] = [
     price: 25.00,
     barcode: "860001",
     recipeId: 1,
+    categoryId: 1,
   },
   {
     id: 2,
@@ -16,6 +25,7 @@ export const products: Product[] = [
     price: 35.50,
     barcode: "860002",
     recipeId: 2,
+    categoryId: 1,
   },
   {
     id: 3,
@@ -24,6 +34,7 @@ export const products: Product[] = [
     price: 22.75,
     barcode: "860003",
     recipeId: 3,
+    categoryId: 2,
   },
   {
     id: 4,
@@ -31,6 +42,7 @@ export const products: Product[] = [
     nameAr: "تشيز كيك",
     price: 45.00,
     barcode: "860004",
+    categoryId: 4,
   },
   {
     id: 5,
@@ -38,6 +50,7 @@ export const products: Product[] = [
     nameAr: "شاي مثلج",
     price: 30.25,
     barcode: "860005",
+    categoryId: 3,
   },
   {
     id: 6,
@@ -45,6 +58,7 @@ export const products: Product[] = [
     nameAr: "مافن",
     price: 28.00,
     barcode: "860006",
+    categoryId: 2,
   },
     {
     id: 7,
@@ -53,6 +67,7 @@ export const products: Product[] = [
     price: 32.00,
     barcode: "860007",
     recipeId: 2,
+    categoryId: 1,
   },
   {
     id: 8,
@@ -60,6 +75,7 @@ export const products: Product[] = [
     nameAr: "عصير برتقال",
     price: 28.50,
     barcode: "860008",
+    categoryId: 3,
   },
   {
     id: 9,
@@ -67,6 +83,7 @@ export const products: Product[] = [
     nameAr: "كلوب سندويتش",
     price: 55.00,
     barcode: "860009",
+    categoryId: 5,
   },
 ];
 

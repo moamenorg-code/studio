@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { MoreHorizontal, PlusCircle, BookCopy } from 'lucide-react';
-import type { Product, Recipe } from '@/lib/types';
+import type { Product, Recipe, Category } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -23,23 +23,27 @@ const UI_TEXT = {
   addProduct: { en: 'Add Product', ar: 'إضافة منتج' },
   name: { en: 'Name', ar: 'الاسم' },
   price: { en: 'Price', ar: 'السعر' },
+  category: { en: 'Category', ar: 'الفئة' },
   recipe: { en: 'Recipe', ar: 'الوصفة' },
   noRecipe: { en: 'No Recipe', ar: 'لا توجد وصفة' },
+  noCategory: { en: 'No Category', ar: 'لا توجد فئة' },
   actions: { en: 'Actions', ar: 'الإجراءات' },
   edit: { en: 'Edit', ar: 'تعديل' },
   delete: { en: 'Delete', ar: 'حذف' },
   noProducts: { en: 'No products found.', ar: 'لم يتم العثور على منتجات.' },
   selectRecipe: { en: 'Select a recipe', ar: 'اختر وصفة' },
+  selectCategory: { en: 'Select a category', ar: 'اختر فئة' },
 };
 
 interface ProductManagementTabProps {
   products: Product[];
   onProductsChange: (products: Product[]) => void;
   recipes: Recipe[];
+  categories: Category[];
   language: Language;
 }
 
-const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, onProductsChange, recipes, language }) => {
+const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, onProductsChange, recipes, categories, language }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const [editingProduct, setEditingProduct] = React.useState<Product | null>(null);
 
@@ -74,6 +78,11 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
       onProductsChange(products.map(p => p.id === productId ? {...p, recipeId: newRecipeId} : p));
   }
 
+  const handleCategoryChange = (productId: number, categoryId: string) => {
+      const newCategoryId = categoryId === 'none' ? undefined : Number(categoryId);
+      onProductsChange(products.map(p => p.id === productId ? {...p, categoryId: newCategoryId} : p));
+  }
+
 
   return (
     <>
@@ -97,6 +106,7 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
                 <TableRow>
                   <TableHead>{UI_TEXT.name[language]}</TableHead>
                   <TableHead>{UI_TEXT.price[language]}</TableHead>
+                  <TableHead>{UI_TEXT.category[language]}</TableHead>
                   <TableHead>{UI_TEXT.recipe[language]}</TableHead>
                   <TableHead>
                     <span className="sr-only">{UI_TEXT.actions[language]}</span>
@@ -109,6 +119,23 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
                     <TableRow key={product.id}>
                       <TableCell className="font-medium">{language === 'ar' ? product.nameAr : product.name}</TableCell>
                       <TableCell>{product.price.toFixed(2)}</TableCell>
+                      <TableCell>
+                        <Select 
+                            onValueChange={(value) => handleCategoryChange(product.id, value)} 
+                            value={product.categoryId ? String(product.categoryId) : 'none'}
+                            dir={language === 'ar' ? 'rtl' : 'ltr'}
+                        >
+                            <SelectTrigger className="h-9 w-[150px]">
+                                <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">{UI_TEXT.noCategory[language]}</SelectItem>
+                                {categories.map(c => (
+                                    <SelectItem key={c.id} value={String(c.id)}>{language === 'ar' ? c.nameAr : c.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                      </TableCell>
                       <TableCell>
                         <Select 
                             onValueChange={(value) => handleRecipeChange(product.id, value)} 
@@ -145,7 +172,7 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       {UI_TEXT.noProducts[language]}
                     </TableCell>
                   </TableRow>
@@ -160,6 +187,7 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
         onOpenChange={setDialogOpen}
         onSave={handleSaveProduct}
         product={editingProduct}
+        categories={categories}
         language={language}
       />
     </>

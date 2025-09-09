@@ -5,6 +5,7 @@ export interface Product {
   price: number;
   barcode?: string;
   recipeId?: number;
+  categoryId?: number;
 }
 
 export interface CartItem extends Product {
@@ -71,6 +72,12 @@ export interface Recipe {
     id: number;
     name: string;
     items: RecipeItem[];
+}
+
+export interface Category {
+    id: number;
+    name: string;
+    nameAr: string;
 }
 
 export interface Expense {
