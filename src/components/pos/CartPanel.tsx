@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { MinusCircle, PlusCircle, Trash2, XCircle, UserPlus, UserCheck } from 'lucide-react';
+import { MinusCircle, PlusCircle, Trash2, XCircle, UserPlus, UserCheck, Pause } from 'lucide-react';
 import type { CartItem, Customer, OrderType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from '@/lib/utils';
 import CustomerDialog from './CustomerDialog';
@@ -42,6 +43,7 @@ const UI_TEXT = {
     noCustomerFound: { en: 'No customer found.', ar: 'لم يتم العثور على عميل.' },
     customerRequired: { en: 'Customer is required for delivery orders.', ar: 'العميل مطلوب لطلبات التوصيل.' },
     confirmCustomer: { en: 'Confirm Customer & Add Items', ar: 'تأكيد العميل وإضافة الأصناف' },
+    hold: { en: 'Hold', ar: 'تعليق' },
 };
 
 interface CartPanelProps {
@@ -51,6 +53,7 @@ interface CartPanelProps {
   setCart: (cart: CartItem[] | ((prevCart: CartItem[]) => CartItem[])) => void;
   clearCart: () => void;
   onProcessPayment: () => void;
+  onHoldOrder: () => void;
   language: Language;
   customers: Customer[];
   selectedCustomerId: number | null;
@@ -65,7 +68,8 @@ const CartPanel: React.FC<CartPanelProps> = ({
     cart, 
     setCart, 
     clearCart, 
-    onProcessPayment, 
+    onProcessPayment,
+    onHoldOrder, 
     language,
     customers,
     selectedCustomerId,
@@ -124,6 +128,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
   const handleSelectCustomer = (customerId: number | null) => {
       onSelectCustomer(customerId);
       setPopoverOpen(false);
+      setSearchQuery('');
   }
 
   const handleSaveCustomer = (customer: Customer) => {
@@ -206,46 +211,39 @@ const CartPanel: React.FC<CartPanelProps> = ({
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                            <div className="p-2">
-                              <Input
-                                placeholder={UI_TEXT.searchCustomer[language]}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full"
-                              />
-                            </div>
-                            <ScrollArea className="h-48">
-                                <div className='p-1'>
+                          <Command>
+                            <CommandInput 
+                              placeholder={UI_TEXT.searchCustomer[language]}
+                              value={searchQuery}
+                              onValueChange={setSearchQuery}
+                            />
+                            <CommandList>
+                              <CommandEmpty>{UI_TEXT.noCustomerFound[language]}</CommandEmpty>
+                              <CommandGroup>
                                 {!isDelivery && (
-                                  <button
-                                    onClick={() => handleSelectCustomer(null)}
-                                    className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent"
-                                  >
-                                    <Check className={cn( "mr-2 h-4 w-4", selectedCustomerId === null ? "opacity-100" : "opacity-0" )}/>
-                                    {UI_TEXT.walkInCustomer[language]}
-                                  </button>
+                                  <CommandItem onSelect={() => handleSelectCustomer(null)}>
+                                      <Check className={cn("mr-2 h-4 w-4", selectedCustomerId === null ? "opacity-100" : "opacity-0")} />
+                                      {UI_TEXT.walkInCustomer[language]}
+                                  </CommandItem>
                                 )}
-                                {filteredCustomers.length === 0 && <p className="p-4 text-center text-sm text-muted-foreground">{UI_TEXT.noCustomerFound[language]}</p>}
                                 {filteredCustomers.map((customer) => (
-                                  <button
-                                    key={customer.id}
-                                    onClick={() => handleSelectCustomer(customer.id)}
-                                    className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent"
-                                  >
-                                    <Check
-                                      className={cn(
-                                          "mr-2 h-4 w-4",
-                                          selectedCustomerId === customer.id ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
-                                    <div className="flex flex-col items-start">
-                                      <span>{customer.name}</span>
-                                      <span className="text-xs text-muted-foreground" dir="ltr">{customer.phone}</span>
-                                    </div>
-                                  </button>
+                                    <CommandItem
+                                      key={customer.id}
+                                      value={`${customer.name} ${customer.phone}`}
+                                      onSelect={() => handleSelectCustomer(customer.id)}
+                                    >
+                                      <Check
+                                          className={cn( "mr-2 h-4 w-4", selectedCustomerId === customer.id ? "opacity-100" : "opacity-0")}
+                                      />
+                                      <div className="flex flex-col items-start">
+                                        <span>{customer.name}</span>
+                                        <span className="text-xs text-muted-foreground" dir="ltr">{customer.phone}</span>
+                                      </div>
+                                    </CommandItem>
                                 ))}
-                                </div>
-                            </ScrollArea>
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
                         </PopoverContent>
                     </Popover>
                     {customerRequired && <p className="text-sm text-destructive">{UI_TEXT.customerRequired[language]}</p>}
@@ -287,13 +285,16 @@ const CartPanel: React.FC<CartPanelProps> = ({
                         <span className="text-primary">{finalTotal.toFixed(2)}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
+                         <Button variant="secondary" onClick={onHoldOrder}>
+                            <Pause className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />{UI_TEXT.hold[language]}
+                        </Button>
                         <Button variant="outline" onClick={clearCart}>
                             <XCircle className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />{UI_TEXT.clearCart[language]}
                         </Button>
-                        <Button onClick={onProcessPayment} className="bg-green-600 text-white hover:bg-green-700">
-                            {UI_TEXT.pay[language]}
-                        </Button>
                     </div>
+                     <Button onClick={onProcessPayment} size="lg" className="w-full bg-green-600 text-white hover:bg-green-700">
+                        {UI_TEXT.pay[language]}
+                    </Button>
                 </>
                 ) : (
                   isDelivery && selectedCustomerId && (

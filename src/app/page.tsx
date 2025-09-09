@@ -27,7 +27,7 @@ import {
   Bike
 } from "lucide-react";
 
-import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings, Recipe, Category, Table, OrderType } from "@/lib/types";
+import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings, Recipe, Category, Table, OrderType, HeldOrder } from "@/lib/types";
 import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables } from "@/lib/data";
 
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,7 @@ import FloatingCartBar from "@/components/pos/FloatingCartBar";
 import ShiftsManagementTab from "@/components/pos/ShiftsManagementTab";
 import SettingsTab from "@/components/pos/SettingsTab";
 import TablesManagementTab from "@/components/pos/TablesManagementTab";
+import HeldOrdersDialog from "@/components/pos/HeldOrdersDialog";
 import {
   Select,
   SelectContent,
@@ -91,6 +92,7 @@ const UI_TEXT = {
   tables: { en: "Tables", ar: "الطاولات" },
   transactionSuccess: { en: "Transaction successful!", ar: "تمت العملية بنجاح!" },
   transactionSuccessDesc: { en: (id: string) => `Sale ID: ${id}`, ar: (id: string) => `رقم الفاتورة: ${id}`},
+  orderHeld: { en: 'Order held successfully!', ar: 'تم تعليق الطلب بنجاح!' },
   quickServeLite: { en: "RMS POS", ar: "RMS POS" },
   searchPlaceholder: { en: "Search by name or barcode...", ar: "ابحث بالاسم أو الباركود..." },
   menu: { en: "Menu", ar: "القائمة" },
@@ -138,11 +140,13 @@ export default function POSPage() {
   
   const [isPaymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   const [isSmartRoundupOpen, setSmartRoundupOpen] = React.useState(false);
+  const [isHeldOrdersOpen, setHeldOrdersOpen] = React.useState(false);
   const [isCartSheetOpen, setCartSheetOpen] = React.useState(false);
   
   const [activeOrder, setActiveOrder] = React.useState<{ type: OrderType; id: number } | null>(null);
   const [takeawayOrders, setTakeawayOrders] = React.useState<any[]>([]);
   const [deliveryOrders, setDeliveryOrders] = React.useState<any[]>([]);
+  const [heldOrders, setHeldOrders] = React.useState<HeldOrder[]>([]);
 
 
   const [settings, setSettings] = React.useState<Settings>({
@@ -290,6 +294,56 @@ export default function POSPage() {
     }
     setActiveOrder(null);
   };
+
+  const handleHoldOrder = () => {
+    if (!activeOrder || activeCart.length === 0) return;
+    
+    const customer = customers.find(c => c.id === activeCustomerId);
+    const orderName = activeOrder.type === 'dine-in'
+      ? tables.find(t => t.id === activeOrder.id)?.name
+      : customer?.name || (activeOrder.type === 'takeaway' ? `Takeaway #${activeOrder.id}` : `Delivery #${activeOrder.id}`);
+
+    const newHeldOrder: HeldOrder = {
+        id: Date.now(),
+        name: orderName || `Order #${activeOrder.id}`,
+        cart: activeCart,
+        orderType: activeOrder.type,
+        orderId: activeOrder.id,
+        selectedCustomerId: activeCustomerId,
+        heldAt: new Date(),
+    };
+    
+    setHeldOrders(prev => [newHeldOrder, ...prev]);
+    clearCart();
+    setCartSheetOpen(false);
+    toast({
+        title: UI_TEXT.orderHeld[language],
+    });
+  }
+
+  const handleRestoreOrder = (heldOrder: HeldOrder) => {
+    const { orderType, orderId, cart, selectedCustomerId } = heldOrder;
+    
+    const orderData = { id: orderId, cart, selectedCustomerId };
+
+    switch (orderType) {
+        case 'dine-in':
+            setTables(prev => prev.map(t => t.id === orderId ? { ...t, cart, selectedCustomerId } : t));
+            break;
+        case 'takeaway':
+            setTakeawayOrders(prev => [...prev.filter(o => o.id !== orderId), orderData]);
+            break;
+        case 'delivery':
+            setDeliveryOrders(prev => [...prev.filter(o => o.id !== orderId), orderData]);
+            break;
+    }
+    
+    setActiveOrder({ type: orderType, id: orderId });
+    setHeldOrders(prev => prev.filter(o => o.id !== heldOrder.id));
+    setActiveView('sales');
+    setHeldOrdersOpen(false);
+    setCartSheetOpen(true);
+  }
 
   const handleConfirmPayment = (saleData: Omit<Sale, "id" | "createdAt" | "customer" | "orderType" | "orderId">) => {
     if (!activeOrder) return;
@@ -522,6 +576,8 @@ export default function POSPage() {
         language={language}
         setLanguage={setLanguage}
         onOpenSmartRoundup={() => setSmartRoundupOpen(true)}
+        onOpenHeldOrders={() => setHeldOrdersOpen(true)}
+        heldOrdersCount={heldOrders.length}
       />
       <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
         <div className="flex items-center gap-4">
@@ -601,6 +657,7 @@ export default function POSPage() {
         setCart={setActiveCart}
         clearCart={clearCart}
         onProcessPayment={() => setPaymentDialogOpen(true)}
+        onHoldOrder={handleHoldOrder}
         language={language}
         customers={customers}
         selectedCustomerId={activeCustomerId}
@@ -625,6 +682,14 @@ export default function POSPage() {
       <SmartRoundupDialog
         isOpen={isSmartRoundupOpen}
         onOpenChange={setSmartRoundupOpen}
+        language={language}
+      />
+
+      <HeldOrdersDialog
+        isOpen={isHeldOrdersOpen}
+        onOpenChange={setHeldOrdersOpen}
+        heldOrders={heldOrders}
+        onRestoreOrder={handleRestoreOrder}
         language={language}
       />
     </div>

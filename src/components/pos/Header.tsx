@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Bot, Languages, Moon, Sun } from 'lucide-react';
+import { Bot, Languages, Moon, Sun, PauseCircle } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Badge } from '../ui/badge';
 
 type Language = 'en' | 'ar';
 
@@ -17,6 +18,7 @@ const UI_TEXT = {
   arabic: { en: 'العربية', ar: 'العربية' },
   smartRoundup: { en: 'Smart Roundup', ar: 'تقريب السعر الذكي' },
   toggleTheme: { en: 'Toggle theme', ar: 'تبديل السمة' },
+  heldOrders: { en: 'Held Orders', ar: 'الطلبات المعلقة' },
 };
 
 interface HeaderProps {
@@ -24,6 +26,8 @@ interface HeaderProps {
   language: Language;
   setLanguage: (lang: Language) => void;
   onOpenSmartRoundup: () => void;
+  onOpenHeldOrders: () => void;
+  heldOrdersCount: number;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -31,6 +35,8 @@ const Header: React.FC<HeaderProps> = ({
   language,
   setLanguage,
   onOpenSmartRoundup,
+  onOpenHeldOrders,
+  heldOrdersCount,
 }) => {
   const { setTheme } = useTheme();
 
@@ -38,6 +44,20 @@ const Header: React.FC<HeaderProps> = ({
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 sm:px-6 shrink-0">
       <h1 className="text-xl font-bold text-primary">{appName}</h1>
       <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onOpenHeldOrders}
+          className="gap-2 relative"
+        >
+          <PauseCircle className="h-4 w-4" />
+          <span className="hidden sm:inline">
+            {UI_TEXT.heldOrders[language]}
+          </span>
+          {heldOrdersCount > 0 && (
+            <Badge variant="destructive" className="absolute -right-2 -top-2 h-5 w-5 justify-center p-0">{heldOrdersCount}</Badge>
+          )}
+        </Button>
         <Button
           variant="outline"
           size="sm"

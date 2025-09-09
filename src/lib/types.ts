@@ -91,6 +91,16 @@ export interface Table {
   selectedCustomerId: number | null;
 }
 
+export interface HeldOrder {
+  id: number;
+  name: string;
+  cart: CartItem[];
+  orderType: OrderType;
+  orderId: number;
+  selectedCustomerId: number | null;
+  heldAt: Date;
+}
+
 
 export interface Expense {
     id: number;
