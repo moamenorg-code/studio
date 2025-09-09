@@ -155,6 +155,31 @@ export interface Settings {
     printerPaperWidth?: '58mm' | '80mm';
 }
 
+export type Permission = 
+    | 'access_dashboard'
+    | 'access_sales_history'
+    | 'access_products'
+    | 'access_inventory'
+    | 'access_customers'
+    | 'access_purchases'
+    | 'access_delivery'
+    | 'access_shifts'
+    | 'access_settings';
+
+export interface Role {
+    id: number;
+    name: string;
+    permissions: Partial<Record<Permission, boolean>>;
+}
+
+export interface User {
+    id: number;
+    name: string;
+    pin: string; // 4-digit PIN
+    roleId: number;
+}
+
+
 export type Language = "en" | "ar";
 export type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings" | "tables" | "deliveryReps";
 

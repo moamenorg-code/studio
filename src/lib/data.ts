@@ -1,4 +1,4 @@
-import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry, Recipe, Category, Table, DeliveryRep } from './types';
+import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry, Recipe, Category, Table, DeliveryRep, Role, User } from './types';
 
 export const categories: Category[] = [
     { id: 1, name: "Hot Drinks", nameAr: "مشروبات ساخنة" },
@@ -134,6 +134,45 @@ export const tables: Table[] = [
     { id: 5, name: "T5", cart: [], selectedCustomerId: null },
     { id: 6, name: "T6", cart: [], selectedCustomerId: null },
 ];
+
+export const roles: Role[] = [
+    { 
+        id: 1, 
+        name: 'Admin', 
+        permissions: {
+            access_dashboard: true,
+            access_sales_history: true,
+            access_products: true,
+            access_inventory: true,
+            access_customers: true,
+            access_purchases: true,
+            access_delivery: true,
+            access_shifts: true,
+            access_settings: true,
+        }
+    },
+    {
+        id: 2,
+        name: 'Cashier',
+        permissions: {
+            access_dashboard: false,
+            access_sales_history: true,
+            access_products: false,
+            access_inventory: false,
+            access_customers: true,
+            access_purchases: false,
+            access_delivery: false,
+            access_shifts: true,
+            access_settings: false,
+        }
+    }
+];
+
+export const users: User[] = [
+    { id: 1, name: 'Admin User', pin: '1111', roleId: 1 },
+    { id: 2, name: 'Cashier User', pin: '2222', roleId: 2 },
+];
+
 
 export const expenses: Expense[] = [];
 export const cashDrawerEntries: CashDrawerEntry[] = [];

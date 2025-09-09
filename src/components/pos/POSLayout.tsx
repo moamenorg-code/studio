@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry } from '@/lib/types';
+import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -24,7 +24,7 @@ import PaymentDialog from './PaymentDialog';
 import SmartRoundupDialog from './SmartRoundupDialog';
 import HeldOrdersDialog from './HeldOrdersDialog';
 import SplitBillDialog from './SplitBillDialog';
-import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps } from "@/lib/data";
+import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles } from "@/lib/data";
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '../ui/button';
 
@@ -43,6 +43,8 @@ const POSLayout: React.FC = () => {
   const [shifts, setShifts] = React.useState<Shift[]>(initialShifts);
   const [expenses, setExpenses] = React.useState<Expense[]>(initialExpenses);
   const [cashDrawerEntries, setCashDrawerEntries] = React.useState<CashDrawerEntry[]>(initialCashDrawerEntries);
+  const [users, setUsers] = React.useState<User[]>(initialUsers);
+  const [roles, setRoles] = React.useState<Role[]>(initialRoles);
   const [activeView, setActiveView] = React.useState<ActiveView>("shifts");
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<string>("all");
@@ -245,12 +247,12 @@ const handleHoldOrder = () => {
       setHeldOrders(prev => [newHeldOrder, ...prev]);
     }
     
-    if (activeOrder.type === 'takeaway' || activeOrder.type === 'delivery') {
-      // Clear active takeaway/delivery order after holding
-      clearCart();
+    if (activeOrder.type === 'dine-in') {
+        // Don't clear cart for dine-in, just close the sheet.
+        setCartSheetOpen(false);
     } else {
-      // For dine-in, just close the cart, don't clear it.
-      setCartSheetOpen(false);
+        // Clear active takeaway/delivery order after holding
+        clearCart();
     }
     
     toast({
@@ -410,6 +412,15 @@ const handleHoldOrder = () => {
   const handleSettingsUpdate = (updatedSettings: Settings) => {
     setSettings(updatedSettings);
   };
+  
+  const handleUsersUpdate = (updatedUsers: User[]) => {
+    setUsers(updatedUsers);
+  };
+  
+  const handleRolesUpdate = (updatedRoles: Role[]) => {
+    setRoles(updatedRoles);
+  };
+
 
   const filteredProducts = React.useMemo(() => {
     return products
@@ -512,7 +523,15 @@ const handleHoldOrder = () => {
            />
          );
       case 'settings':
-        return <SettingsTab settings={settings} onSettingsChange={handleSettingsUpdate} language={language} />;
+        return <SettingsTab 
+                  settings={settings} 
+                  onSettingsChange={handleSettingsUpdate}
+                  users={users}
+                  onUsersChange={handleUsersUpdate}
+                  roles={roles}
+                  onRolesChange={handleRolesUpdate}
+                  language={language} 
+                />;
       default:
         return null;
     }

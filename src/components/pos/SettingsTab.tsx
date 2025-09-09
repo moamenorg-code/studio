@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { Settings } from '@/lib/types';
+import type { Settings, User, Role } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
+import UserManagement from './UserManagement';
 
 type Language = 'en' | 'ar';
 
@@ -39,6 +40,7 @@ const UI_TEXT = {
   tables: { en: 'Tables Management', ar: 'إدارة الطاولات' },
   enableTables: { en: 'Enable Tables', ar: 'تفعيل نظام الطاولات' },
   enableTablesDesc: { en: 'Enable this to manage orders by tables.', ar: 'فعل هذا الخيار لإدارة الطلبات حسب الطاولات.' },
+  usersAndRoles: { en: 'Users & Roles', ar: 'المستخدمون والأدوار' },
   save: { en: 'Save Settings', ar: 'حفظ الإعدادات' },
   saveSuccess: { en: 'Settings saved successfully!', ar: 'تم حفظ الإعدادات بنجاح!' },
 };
@@ -46,10 +48,22 @@ const UI_TEXT = {
 interface SettingsTabProps {
   settings: Settings;
   onSettingsChange: (settings: Settings) => void;
+  users: User[];
+  onUsersChange: (users: User[]) => void;
+  roles: Role[];
+  onRolesChange: (roles: Role[]) => void;
   language: Language;
 }
 
-const SettingsTab: React.FC<SettingsTabProps> = ({ settings, onSettingsChange, language }) => {
+const SettingsTab: React.FC<SettingsTabProps> = ({ 
+    settings, 
+    onSettingsChange,
+    users,
+    onUsersChange,
+    roles,
+    onRolesChange,
+    language 
+}) => {
   const [currentSettings, setCurrentSettings] = React.useState<Settings>(settings);
   const { toast } = useToast();
 
@@ -150,6 +164,21 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ settings, onSettingsChange, l
             </div>
           </div>
         </div>
+        
+        <Separator />
+
+        {/* Users & Roles */}
+        <div className="space-y-4">
+            <h3 className="text-lg font-medium">{UI_TEXT.usersAndRoles[language]}</h3>
+            <UserManagement 
+                users={users}
+                onUsersChange={onUsersChange}
+                roles={roles}
+                onRolesChange={onRolesChange}
+                language={language}
+            />
+        </div>
+
 
         <Separator />
 
