@@ -157,9 +157,9 @@ const POSLayout: React.FC = () => {
     document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
   }, [language]);
 
-  const hasPermission = React.useCallback((permission: Permission): boolean => {
-    if (!currentUser) return false;
-    const userRole = roles.find(r => r.id === currentUser.roleId);
+  const hasPermission = React.useCallback((permission: Permission, user: User | null = currentUser): boolean => {
+    if (!user) return false;
+    const userRole = roles.find(r => r.id === user.roleId);
     if (!userRole) return false;
     return userRole.permissions[permission] || false;
   }, [currentUser, roles]);
@@ -177,7 +177,8 @@ const POSLayout: React.FC = () => {
     const user = users.find(u => u.pin === pin);
     if (user) {
       setCurrentUser(user);
-      handleSetActiveView('shifts'); // Redirect to a default view after login
+      const shiftsViewPermitted = hasPermission('access_shifts', user);
+      setActiveView(shiftsViewPermitted ? 'shifts' : 'sales');
     } else {
       toast({
         title: UI_TEXT.loginFailed[language],
@@ -599,7 +600,7 @@ const handleHoldOrder = () => {
                   users={users}
                   onUsersChange={handleUsersUpdate}
                   roles={roles}
-                  onRolesChange={handleRolesChange}
+                  onRolesChange={handleRolesUpdate}
                   language={language} 
                 />;
       case 'unauthorized':
@@ -772,3 +773,5 @@ const handleHoldOrder = () => {
 }
 
 export default POSLayout;
+
+    
