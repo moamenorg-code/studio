@@ -10,9 +10,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
-import { ActiveView, UI_TEXT, VIEW_OPTIONS } from '@/app/page';
-
-type Language = 'en' | 'ar';
+import type { ActiveView, Language } from '@/lib/types';
+import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
 
 const HEADER_UI_TEXT = {
   language: { en: 'Language', ar: 'اللغة' },

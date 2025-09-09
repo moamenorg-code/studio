@@ -154,3 +154,11 @@ export interface Settings {
     printerIpAddress?: string;
     printerPaperWidth?: '58mm' | '80mm';
 }
+
+export type Language = "en" | "ar";
+export type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings" | "tables" | "deliveryReps";
+
+export interface ActiveOrder {
+  type: OrderType;
+  id: number;
+}
