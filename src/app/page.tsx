@@ -7,9 +7,9 @@ import {
   PlusCircle,
   ShoppingBag,
   History,
-  LayoutGrid,
   ClipboardList,
   AreaChart,
+  ChevronDown,
 } from "lucide-react";
 
 import type { CartItem, Product, Sale } from "@/lib/types";
@@ -23,7 +23,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/pos/Header";
 import ProductGrid from "@/components/pos/ProductGrid";
@@ -35,6 +40,7 @@ import DashboardTab from "@/components/pos/DashboardTab";
 import ProductManagementTab from "@/components/pos/ProductManagementTab";
 
 type Language = "en" | "ar";
+type ActiveView = "sales" | "dashboard" | "history" | "products";
 
 const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
@@ -45,13 +51,22 @@ const UI_TEXT = {
   transactionSuccess: { en: "Transaction successful!", ar: "تمت العملية بنجاح!" },
   transactionSuccessDesc: { en: (id: string) => `Sale ID: ${id}`, ar: (id: string) => `رقم الفاتورة: ${id}`},
   quickServeLite: { en: "QuickServe Lite", ar: "كويك سيرف لايت" },
+  view: { en: "View", ar: "عرض" },
 };
+
+const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType }[] = [
+    { value: 'sales', label: 'sales', icon: ShoppingBag },
+    { value: 'dashboard', label: 'dashboard', icon: AreaChart },
+    { value: 'history', label: 'salesHistory', icon: History },
+    { value: 'products', label: 'manageProducts', icon: ClipboardList },
+];
 
 export default function POSPage() {
   const [language, setLanguage] = React.useState<Language>("ar");
   const [cart, setCart] = React.useState<CartItem[]>([]);
   const [sales, setSales] = React.useState<Sale[]>([]);
   const [products, setProducts] = React.useState<Product[]>(initialProducts);
+  const [activeView, setActiveView] = React.useState<ActiveView>("sales");
   
   const [isPaymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   const [isSmartRoundupOpen, setSmartRoundupOpen] = React.useState(false);
@@ -99,6 +114,8 @@ export default function POSPage() {
   const handleProductUpdate = (updatedProducts: Product[]) => {
     setProducts(updatedProducts);
   };
+  
+  const ActiveViewIcon = VIEW_OPTIONS.find(v => v.value === activeView)?.icon || ShoppingBag;
 
   return (
     <div className="flex h-screen flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -108,29 +125,32 @@ export default function POSPage() {
         setLanguage={setLanguage}
         onOpenSmartRoundup={() => setSmartRoundupOpen(true)}
       />
-      <main className="flex-1 overflow-auto p-4 sm:p-6">
-        <Tabs defaultValue="sales" className="h-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="sales">
-              <ShoppingBag className={language === 'ar' ? "ms-2 h-4 w-4" : "me-2 h-4 w-4"} />
-              {UI_TEXT.sales[language]}
-            </TabsTrigger>
-            <TabsTrigger value="dashboard">
-               <AreaChart className={language === 'ar' ? "ms-2 h-4 w-4" : "me-2 h-4 w-4"} />
-              {UI_TEXT.dashboard[language]}
-            </TabsTrigger>
-            <TabsTrigger value="history">
-              <History className={language === 'ar' ? "ms-2 h-4 w-4" : "me-2 h-4 w-4"} />
-              {UI_TEXT.salesHistory[language]}
-            </TabsTrigger>
-             <TabsTrigger value="products">
-              <ClipboardList className={language === 'ar' ? "ms-2 h-4 w-4" : "me-2 h-4 w-4"} />
-              {UI_TEXT.manageProducts[language]}
-            </TabsTrigger>
-          </TabsList>
+      <main className="flex flex-1 flex-col overflow-auto p-4 sm:p-6">
+        <div className="mb-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-between sm:w-auto">
+                    <div className="flex items-center">
+                        <ActiveViewIcon className={language === 'ar' ? 'ms-2 h-4 w-4' : 'me-2 h-4 w-4'} />
+                        <span>{UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}</span>
+                    </div>
+                  <ChevronDown className={language === 'ar' ? 'me-auto h-4 w-4' : 'ms-auto h-4 w-4'} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-full sm:w-[200px]">
+                {VIEW_OPTIONS.map(({ value, label, icon: Icon }) => (
+                  <DropdownMenuItem key={value} onSelect={() => setActiveView(value)}>
+                    <Icon className={language === 'ar' ? 'ms-2 h-4 w-4' : 'me-2 h-4 w-4'} />
+                    <span>{UI_TEXT[label][language]}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
 
-          <TabsContent value="sales" className="h-full">
-            <div className="grid h-[calc(100vh-10rem)] grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="flex-1">
+          {activeView === 'sales' && (
+            <div className="grid h-full grid-cols-1 gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2">
                 <Card className="h-full">
                   <CardHeader>
@@ -155,25 +175,18 @@ export default function POSPage() {
                   />
               </div>
             </div>
-          </TabsContent>
+          )}
 
-          <TabsContent value="dashboard">
-            <DashboardTab sales={sales} language={language} />
-          </TabsContent>
-
-          <TabsContent value="history">
-            <SalesHistoryTab sales={sales} language={language} />
-          </TabsContent>
-
-          <TabsContent value="products">
+          {activeView === 'dashboard' && <DashboardTab sales={sales} language={language} />}
+          {activeView === 'history' && <SalesHistoryTab sales={sales} language={language} />}
+          {activeView === 'products' && (
             <ProductManagementTab 
               products={products}
               onProductsChange={handleProductUpdate}
               language={language} 
             />
-          </TabsContent>
-
-        </Tabs>
+          )}
+        </div>
       </main>
 
       <PaymentDialog
