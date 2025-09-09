@@ -7,6 +7,9 @@ import {
   PlusCircle,
   ShoppingBag,
   History,
+  LayoutGrid,
+  ClipboardList,
+  AreaChart,
 } from "lucide-react";
 
 import type { CartItem, Product, Sale } from "@/lib/types";
@@ -28,16 +31,19 @@ import CartPanel from "@/components/pos/CartPanel";
 import PaymentDialog from "@/components/pos/PaymentDialog";
 import SmartRoundupDialog from "@/components/pos/SmartRoundupDialog";
 import SalesHistoryTab from "@/components/pos/SalesHistoryTab";
+import DashboardTab from "@/components/pos/DashboardTab";
+import ProductManagementTab from "@/components/pos/ProductManagementTab";
 
 type Language = "en" | "ar";
 
 const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
   salesHistory: { en: "Sales History", ar: "سجل المبيعات" },
-  posSystem: { en: "POS System", ar: "نظام نقاط البيع" },
+  dashboard: { en: "Dashboard", ar: "لوحة التحكم" },
+  products: { en: "Products", ar: "المنتجات" },
+  manageProducts: { en: "Manage Products", ar: "إدارة المنتجات" },
   transactionSuccess: { en: "Transaction successful!", ar: "تمت العملية بنجاح!" },
   transactionSuccessDesc: { en: (id: string) => `Sale ID: ${id}`, ar: (id: string) => `رقم الفاتورة: ${id}`},
-  products: { en: "Products", ar: "المنتجات" },
   quickServeLite: { en: "QuickServe Lite", ar: "كويك سيرف لايت" },
 };
 
@@ -45,7 +51,7 @@ export default function POSPage() {
   const [language, setLanguage] = React.useState<Language>("ar");
   const [cart, setCart] = React.useState<CartItem[]>([]);
   const [sales, setSales] = React.useState<Sale[]>([]);
-  const [products] = React.useState<Product[]>(initialProducts);
+  const [products, setProducts] = React.useState<Product[]>(initialProducts);
   
   const [isPaymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   const [isSmartRoundupOpen, setSmartRoundupOpen] = React.useState(false);
@@ -90,6 +96,10 @@ export default function POSPage() {
     });
   };
 
+  const handleProductUpdate = (updatedProducts: Product[]) => {
+    setProducts(updatedProducts);
+  };
+
   return (
     <div className="flex h-screen flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Header
@@ -100,16 +110,25 @@ export default function POSPage() {
       />
       <main className="flex-1 overflow-auto p-4 sm:p-6">
         <Tabs defaultValue="sales" className="h-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="sales">
               <ShoppingBag className={language === 'ar' ? "ms-2 h-4 w-4" : "me-2 h-4 w-4"} />
               {UI_TEXT.sales[language]}
+            </TabsTrigger>
+            <TabsTrigger value="dashboard">
+               <AreaChart className={language === 'ar' ? "ms-2 h-4 w-4" : "me-2 h-4 w-4"} />
+              {UI_TEXT.dashboard[language]}
             </TabsTrigger>
             <TabsTrigger value="history">
               <History className={language === 'ar' ? "ms-2 h-4 w-4" : "me-2 h-4 w-4"} />
               {UI_TEXT.salesHistory[language]}
             </TabsTrigger>
+             <TabsTrigger value="products">
+              <ClipboardList className={language === 'ar' ? "ms-2 h-4 w-4" : "me-2 h-4 w-4"} />
+              {UI_TEXT.manageProducts[language]}
+            </TabsTrigger>
           </TabsList>
+
           <TabsContent value="sales" className="h-full">
             <div className="grid h-[calc(100vh-10rem)] grid-cols-1 gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2">
@@ -137,9 +156,23 @@ export default function POSPage() {
               </div>
             </div>
           </TabsContent>
+
+          <TabsContent value="dashboard">
+            <DashboardTab sales={sales} language={language} />
+          </TabsContent>
+
           <TabsContent value="history">
             <SalesHistoryTab sales={sales} language={language} />
           </TabsContent>
+
+          <TabsContent value="products">
+            <ProductManagementTab 
+              products={products}
+              onProductsChange={handleProductUpdate}
+              language={language} 
+            />
+          </TabsContent>
+
         </Tabs>
       </main>
 
