@@ -16,7 +16,7 @@ const UI_TEXT = {
 
 const ProductCard: React.FC<{ product: Product; onAddToCart: (product: Product) => void; language: 'en' | 'ar' }> = ({ product, onAddToCart, language }) => {
   return (
-    <Card className="flex flex-col justify-between overflow-hidden transition-shadow hover:shadow-lg">
+    <Card className="flex flex-col justify-between overflow-hidden transition-shadow duration-200 ease-in-out hover:shadow-lg">
       <CardContent className="p-4">
         <CardTitle className="mb-2 text-base">{language === 'ar' ? product.nameAr : product.name}</CardTitle>
         <p className="text-lg font-semibold text-primary">{product.price.toFixed(2)}</p>
