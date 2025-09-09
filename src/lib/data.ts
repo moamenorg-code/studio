@@ -1,4 +1,4 @@
-import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry, Recipe, Category, Table, DeliveryRep, Role, User, Permission } from './types';
+import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry, Recipe, Category, Table, DeliveryRep, Role, User, Sale } from './types';
 
 export const categories: Category[] = [
     { id: 1, name: "Hot Drinks", nameAr: "مشروبات ساخنة" },
@@ -10,7 +10,7 @@ export const categories: Category[] = [
 
 export const products: Product[] = [
   {
-    id: 1,
+    id: "1",
     name: "Espresso",
     nameAr: "اسبريسو",
     price: 25.00,
@@ -19,7 +19,7 @@ export const products: Product[] = [
     categoryId: 1,
   },
   {
-    id: 2,
+    id: "2",
     name: "Latte",
     nameAr: "لاتيه",
     price: 35.50,
@@ -28,7 +28,7 @@ export const products: Product[] = [
     categoryId: 1,
   },
   {
-    id: 3,
+    id: "3",
     name: "Croissant",
     nameAr: "كرواسون",
     price: 22.75,
@@ -37,7 +37,7 @@ export const products: Product[] = [
     categoryId: 2,
   },
   {
-    id: 4,
+    id: "4",
     name: "Cheesecake",
     nameAr: "تشيز كيك",
     price: 45.00,
@@ -45,7 +45,7 @@ export const products: Product[] = [
     categoryId: 4,
   },
   {
-    id: 5,
+    id: "5",
     name: "Iced Tea",
     nameAr: "شاي مثلج",
     price: 30.25,
@@ -53,7 +53,7 @@ export const products: Product[] = [
     categoryId: 3,
   },
   {
-    id: 6,
+    id: "6",
     name: "Muffin",
     nameAr: "مافن",
     price: 28.00,
@@ -61,7 +61,7 @@ export const products: Product[] = [
     categoryId: 2,
   },
     {
-    id: 7,
+    id: "7",
     name: "Cappuccino",
     nameAr: "كابتشينو",
     price: 32.00,
@@ -70,7 +70,7 @@ export const products: Product[] = [
     categoryId: 1,
   },
   {
-    id: 8,
+    id: "8",
     name: "Orange Juice",
     nameAr: "عصير برتقال",
     price: 28.50,
@@ -78,7 +78,7 @@ export const products: Product[] = [
     categoryId: 3,
   },
   {
-    id: 9,
+    id: "9",
     name: "Club Sandwich",
     nameAr: "كلوب سندويتش",
     price: 55.00,
@@ -176,7 +176,107 @@ export const users: User[] = [
 ];
 
 
-export const expenses: Expense[] = [];
-export const cashDrawerEntries: CashDrawerEntry[] = [];
-export const shifts: Shift[] = [];
-export const purchases: Purchase[] = [];
+export const sales: Sale[] = [
+    {
+        id: "SALE-1700000000000",
+        items: [{ ...products[0], quantity: 1, discount: 0 }, { ...products[2], quantity: 2, discount: 0 }],
+        subtotal: 70.5,
+        totalDiscountValue: 0,
+        serviceCharge: 0,
+        finalTotal: 70.5,
+        paymentMethod: "card",
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+        customer: customers[0],
+        orderType: "dine-in",
+        orderId: 1,
+    },
+    {
+        id: "SALE-1700000001000",
+        items: [{ ...products[4], quantity: 1, discount: 0 }],
+        subtotal: 30.25,
+        totalDiscountValue: 0,
+        serviceCharge: 10,
+        finalTotal: 40.25,
+        paymentMethod: "cash",
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+        customer: customers[1],
+        orderType: "delivery",
+        orderId: 101,
+        deliveryRepId: 1,
+    },
+     {
+        id: "SALE-1700000002000",
+        items: [{ ...products[8], quantity: 2, discount: 0 }],
+        subtotal: 110.0,
+        totalDiscountValue: 11,
+        serviceCharge: 0,
+        finalTotal: 99.0,
+        paymentMethod: "card",
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+        orderType: "takeaway",
+        orderId: 201,
+    },
+    {
+        id: "SALE-1700000003000",
+        items: [{ ...products[1], quantity: 1, discount: 0 }, { ...products[3], quantity: 1, discount: 0 }],
+        subtotal: 80.5,
+        totalDiscountValue: 0,
+        serviceCharge: 0,
+        finalTotal: 80.5,
+        paymentMethod: "cash",
+        createdAt: new Date(), // Today
+        customer: customers[2],
+        orderType: "dine-in",
+        orderId: 3,
+    }
+];
+
+const shift1Sales = sales.filter(s => new Date(s.createdAt) > new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) && new Date(s.createdAt) < new Date(Date.now() - 2 * 24 * 60 * 60 * 1000));
+const shift2Sales = sales.filter(s => new Date(s.createdAt) > new Date(Date.now() - 2 * 24 * 60 * 60 * 1000));
+
+export const expenses: Expense[] = [
+    { id: 1, shiftId: 1, description: "Cleaning Supplies", amount: 150.00, createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)},
+    { id: 2, shiftId: 2, description: "Printer Paper", amount: 50.00, createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)},
+];
+
+export const cashDrawerEntries: CashDrawerEntry[] = [
+    { id: 1, shiftId: 1, type: 'cash_out', amount: 150.00, reason: "Cleaning Supplies", createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)},
+    { id: 2, shiftId: 2, type: 'cash_out', amount: 50.00, reason: "Printer Paper", createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)},
+    { id: 3, shiftId: 2, type: 'cash_in', amount: 500.00, reason: "Owner Deposit", createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)},
+];
+
+export const shifts: Shift[] = [
+    { 
+        id: 1,
+        startTime: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+        endTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+        startingCash: 500,
+        endingCash: 1200.50,
+        totalSales: shift1Sales.reduce((sum, s) => sum + s.finalTotal, 0),
+        totalExpenses: 150.00,
+        status: 'closed'
+    },
+     { 
+        id: 2,
+        startTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+        endTime: new Date(),
+        startingCash: 1200.50,
+        endingCash: 2500.00,
+        totalSales: shift2Sales.reduce((sum, s) => sum + s.finalTotal, 0),
+        totalExpenses: 50.00,
+        status: 'closed'
+    }
+];
+
+export const purchases: Purchase[] = [
+    {
+        id: "PUR-1700000000000",
+        supplierId: 1,
+        items: [
+            { rawMaterialId: 1, name: 'Coffee Beans', nameAr: 'حبوب البن', quantity: 10, price: 150 },
+            { rawMaterialId: 3, name: 'Sugar', nameAr: 'سكر', quantity: 20, price: 10 },
+        ],
+        total: (10 * 150) + (20 * 10),
+        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+    }
+];

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { Settings, User, Role, AppData } from '@/lib/types';
+import type { Settings, User, Role, AppData, Purchase } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,7 @@ import { UserCog, Store, Cloud, HardDrive, DatabaseZap } from 'lucide-react';
 import BackupRestoreTab from './BackupRestoreTab';
 import { db } from '@/lib/firebase';
 import { writeBatch, doc, collection } from 'firebase/firestore';
-import { products as initialProducts, categories as initialCategories, rawMaterials as initialRawMaterials, recipes as initialRecipes, roles as initialRoles, users as initialUsers, customers as initialCustomers, deliveryReps as initialDeliveryReps, suppliers as initialSuppliers, tables as initialTables } from '@/lib/data';
+import { products as initialProducts, categories as initialCategories, rawMaterials as initialRawMaterials, recipes as initialRecipes, roles as initialRoles, users as initialUsers, customers as initialCustomers, deliveryReps as initialDeliveryReps, suppliers as initialSuppliers, tables as initialTables, sales as initialSales, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, purchases as initialPurchases } from '@/lib/data';
 
 
 type Language = 'en' | 'ar';
@@ -233,54 +233,41 @@ const SettingsTab: React.FC<SettingsTabProps> = (props) => {
     try {
         const batch = writeBatch(db);
 
-        initialProducts.forEach(product => {
-            const docRef = doc(db, "products", String(product.id));
-            batch.set(docRef, product);
-        });
+        const collectionsToSeed: { name: string, data: any[], key?: string }[] = [
+            { name: "products", data: initialProducts, key: 'id' },
+            { name: "categories", data: initialCategories, key: 'id' },
+            { name: "raw_materials", data: initialRawMaterials, key: 'id' },
+            { name: "recipes", data: initialRecipes, key: 'id' },
+            { name: "roles", data: initialRoles, key: 'id' },
+            { name: "users", data: initialUsers, key: 'id' },
+            { name: "customers", data: initialCustomers, key: 'id' },
+            { name: "delivery_reps", data: initialDeliveryReps, key: 'id' },
+            { name: "suppliers", data: initialSuppliers, key: 'id' },
+            { name: "tables", data: initialTables, key: 'id' },
+            { name: "sales", data: initialSales, key: 'id' },
+            { name: "shifts", data: initialShifts, key: 'id' },
+            { name: "expenses", data: initialExpenses, key: 'id' },
+            { name: "cash_drawer", data: initialCashDrawerEntries, key: 'id' },
+            { name: "purchases", data: initialPurchases, key: 'id' },
+        ];
         
-        initialCategories.forEach(category => {
-            const docRef = doc(collection(db, "categories"), String(category.id));
-            batch.set(docRef, category);
-        });
+        collectionsToSeed.forEach(coll => {
+            coll.data.forEach(item => {
+                // Ensure dates are converted to Timestamps if they are not already
+                const dataToSet = { ...item };
+                if (dataToSet.createdAt && !(dataToSet.createdAt.toDate)) {
+                     dataToSet.createdAt = new Date(dataToSet.createdAt);
+                }
+                 if (dataToSet.startTime && !(dataToSet.startTime.toDate)) {
+                     dataToSet.startTime = new Date(dataToSet.startTime);
+                }
+                if (dataToSet.endTime && !(dataToSet.endTime.toDate)) {
+                     dataToSet.endTime = new Date(dataToSet.endTime);
+                }
 
-        initialRawMaterials.forEach(material => {
-            const docRef = doc(collection(db, "raw_materials"), String(material.id));
-            batch.set(docRef, material);
-        });
-
-        initialRecipes.forEach(recipe => {
-            const docRef = doc(collection(db, "recipes"), String(recipe.id));
-            batch.set(docRef, recipe);
-        });
-
-        initialRoles.forEach(role => {
-            const docRef = doc(collection(db, "roles"), String(role.id));
-            batch.set(docRef, role);
-        });
-
-        initialUsers.forEach(user => {
-            const docRef = doc(collection(db, "users"), String(user.id));
-            batch.set(docRef, user);
-        });
-
-        initialCustomers.forEach(customer => {
-            const docRef = doc(collection(db, "customers"), String(customer.id));
-            batch.set(docRef, customer);
-        });
-
-        initialDeliveryReps.forEach(rep => {
-            const docRef = doc(collection(db, "delivery_reps"), String(rep.id));
-            batch.set(docRef, rep);
-        });
-        
-        initialSuppliers.forEach(supplier => {
-            const docRef = doc(collection(db, "suppliers"), String(supplier.id));
-            batch.set(docRef, supplier);
-        });
-        
-        initialTables.forEach(table => {
-            const docRef = doc(collection(db, "tables"), String(table.id));
-            batch.set(docRef, table);
+                const docRef = doc(db, coll.name, String(item[coll.key || 'id']));
+                batch.set(docRef, dataToSet);
+            });
         });
 
         await batch.commit();
@@ -288,6 +275,8 @@ const SettingsTab: React.FC<SettingsTabProps> = (props) => {
         toast({
             title: UI_TEXT.seedSuccess[language],
         });
+
+        setTimeout(() => window.location.reload(), 1000);
 
     } catch (error) {
         console.error("Error seeding data:", error);

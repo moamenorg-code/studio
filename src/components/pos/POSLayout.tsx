@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
-import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, AppData, FirestoreStatus } from '@/lib/types';
+import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, AppData, FirestoreStatus, Purchase } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -28,14 +28,14 @@ import HeldOrdersDialog from './HeldOrdersDialog';
 import SplitBillDialog from './SplitBillDialog';
 import LoginScreen from './LoginScreen';
 import BarcodeScanner from './BarcodeScanner';
-import { customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles, purchases as initialPurchases } from "@/lib/data";
+import { customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles, purchases as initialPurchases, sales as initialSales } from "@/lib/data";
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '../ui/button';
 
 
 const POSLayout: React.FC = () => {
   const [language, setLanguage] = React.useState<Language>("ar");
-  const [sales, setSales] = React.useState<Sale[]>([]);
+  const [sales, setSales] = React.useState<Sale[]>(initialSales);
   const [products, setProducts] = React.useState<Product[]>([]);
   const [customers, setCustomers] = React.useState<Customer[]>(initialCustomers);
   const [deliveryReps, setDeliveryReps] = React.useState<DeliveryRep[]>(initialDeliveryReps);
