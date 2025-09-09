@@ -11,8 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-// TODO: Create a CustomerDialog component
-// import CustomerDialog from './CustomerDialog';
+import CustomerDialog from './CustomerDialog';
 
 type Language = 'en' | 'ar';
 
@@ -36,20 +35,17 @@ interface CustomerManagementTabProps {
 }
 
 const CustomerManagementTab: React.FC<CustomerManagementTabProps> = ({ customers, onCustomersChange, language }) => {
-  // TODO: Implement Dialog state
-  // const [isDialogOpen, setDialogOpen] = React.useState(false);
-  // const [editingCustomer, setEditingCustomer] = React.useState<Customer | null>(null);
+  const [isDialogOpen, setDialogOpen] = React.useState(false);
+  const [editingCustomer, setEditingCustomer] = React.useState<Customer | null>(null);
 
   const handleAddCustomer = () => {
-    // setEditingCustomer(null);
-    // setDialogOpen(true);
-    alert('Add customer functionality not implemented yet.');
+    setEditingCustomer(null);
+    setDialogOpen(true);
   };
 
   const handleEditCustomer = (customer: Customer) => {
-    // setEditingCustomer(customer);
-    // setDialogOpen(true);
-     alert('Edit customer functionality not implemented yet.');
+    setEditingCustomer(customer);
+    setDialogOpen(true);
   };
 
   const handleDeleteCustomer = (customerId: number) => {
@@ -57,8 +53,13 @@ const CustomerManagementTab: React.FC<CustomerManagementTabProps> = ({ customers
   };
   
   const handleSaveCustomer = (customer: Customer) => {
-    // ...
-    // setDialogOpen(false);
+    if (editingCustomer) {
+      onCustomersChange(customers.map(c => (c.id === customer.id ? customer : c)));
+    } else {
+      const newCustomer = { ...customer, id: Date.now() };
+      onCustomersChange([...customers, newCustomer]);
+    }
+    setDialogOpen(false);
   };
 
   return (
@@ -123,13 +124,13 @@ const CustomerManagementTab: React.FC<CustomerManagementTabProps> = ({ customers
           </Table>
         </CardContent>
       </Card>
-      {/* <CustomerDialog 
+      <CustomerDialog 
         isOpen={isDialogOpen}
         onOpenChange={setDialogOpen}
         onSave={handleSaveCustomer}
         customer={editingCustomer}
         language={language}
-      /> */}
+      />
     </>
   );
 };

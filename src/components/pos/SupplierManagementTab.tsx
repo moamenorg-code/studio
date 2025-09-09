@@ -11,6 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import SupplierDialog from './SupplierDialog';
 
 type Language = 'en' | 'ar';
 
@@ -34,18 +35,33 @@ interface SupplierManagementTabProps {
 }
 
 const SupplierManagementTab: React.FC<SupplierManagementTabProps> = ({ suppliers, onSuppliersChange, language }) => {
+  const [isDialogOpen, setDialogOpen] = React.useState(false);
+  const [editingSupplier, setEditingSupplier] = React.useState<Supplier | null>(null);
 
   const handleAddSupplier = () => {
-     alert('Add supplier functionality not implemented yet.');
+    setEditingSupplier(null);
+    setDialogOpen(true);
   };
 
   const handleEditSupplier = (supplier: Supplier) => {
-     alert('Edit supplier functionality not implemented yet.');
+    setEditingSupplier(supplier);
+    setDialogOpen(true);
   };
 
   const handleDeleteSupplier = (supplierId: number) => {
     onSuppliersChange(suppliers.filter(s => s.id !== supplierId));
   };
+
+  const handleSaveSupplier = (supplier: Supplier) => {
+    if (editingSupplier) {
+      onSuppliersChange(suppliers.map(s => (s.id === supplier.id ? supplier : s)));
+    } else {
+      const newSupplier = { ...supplier, id: Date.now() };
+      onSuppliersChange([...suppliers, newSupplier]);
+    }
+    setDialogOpen(false);
+  };
+
 
   return (
     <>
@@ -109,6 +125,13 @@ const SupplierManagementTab: React.FC<SupplierManagementTabProps> = ({ suppliers
           </Table>
         </CardContent>
       </Card>
+      <SupplierDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setDialogOpen}
+        onSave={handleSaveSupplier}
+        supplier={editingSupplier}
+        language={language}
+      />
     </>
   );
 };
