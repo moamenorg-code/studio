@@ -10,7 +10,9 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [],
+    unoptimized: true,
   },
+  output: 'export'
 };
 
 export default nextConfig;
