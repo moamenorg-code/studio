@@ -433,51 +433,19 @@ export default function POSPage() {
        );
     }
     return (
-        <div className="h-full flex flex-col">
-            <div className="p-4 border-b">
-              <div className="flex items-center gap-4">
-                  <div className="flex w-full gap-4">
-                    <div className="relative w-full">
-                        <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
-                        <Input
-                        placeholder={UI_TEXT.searchPlaceholder[language]}
-                        className={`${language === 'ar' ? 'pr-10' : 'pl-10'} text-base`}
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                    <Select 
-                      onValueChange={setSelectedCategoryId} 
-                      value={selectedCategoryId}
-                      dir={language === 'ar' ? 'rtl' : 'ltr'}
-                    >
-                        <SelectTrigger className="w-[200px]">
-                            <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <ScrollArea className="h-48">
-                            <SelectItem value="all">{UI_TEXT.allCategories[language]}</SelectItem>
-                            {categories.map(c => (
-                                <SelectItem key={c.id} value={String(c.id)}>{language === 'ar' ? c.nameAr : c.name}</SelectItem>
-                            ))}
-                          </ScrollArea>
-                        </SelectContent>
-                    </Select>
-                  </div>
+      <div className="h-full flex flex-col">
+        <div className="flex-1 overflow-auto">
+            <ScrollArea className="h-full">
+              <div className="p-4">
+                <ProductGrid
+                  products={filteredProducts}
+                  onAddToCart={addToCart}
+                  language={language}
+                />
               </div>
-            </div>
-            <div className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full">
-                  <div className="p-4">
-                    <ProductGrid
-                      products={filteredProducts}
-                      onAddToCart={addToCart}
-                      language={language}
-                    />
-                  </div>
-                </ScrollArea>
-            </div>
+            </ScrollArea>
         </div>
+      </div>
     );
   }
 
@@ -562,7 +530,7 @@ export default function POSPage() {
         <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="flex-shrink-0">
+                <Button variant="outline" size="icon" className="flex-shrink-0 h-10 w-10">
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">{UI_TEXT.menu[language]}</span>
                 </Button>
@@ -580,9 +548,40 @@ export default function POSPage() {
               </DropdownMenuContent>
             </DropdownMenu>
 
+           {activeView === 'sales' && activeOrder ? (
+             <>
+                <div className="relative w-full">
+                    <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
+                    <Input
+                    placeholder={UI_TEXT.searchPlaceholder[language]}
+                    className={`${language === 'ar' ? 'pr-10' : 'pl-10'} text-base`}
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <Select 
+                  onValueChange={setSelectedCategoryId} 
+                  value={selectedCategoryId}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
+                >
+                    <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <ScrollArea className="h-48">
+                        <SelectItem value="all">{UI_TEXT.allCategories[language]}</SelectItem>
+                        {categories.map(c => (
+                            <SelectItem key={c.id} value={String(c.id)}>{language === 'ar' ? c.nameAr : c.name}</SelectItem>
+                        ))}
+                      </ScrollArea>
+                    </SelectContent>
+                </Select>
+             </>
+           ) : (
             <h1 className="text-xl font-semibold flex-1 text-right">
               {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}
             </h1>
+           )}
         </div>
 
         <div className="flex-1 overflow-auto"> 
