@@ -27,7 +27,7 @@ const UI_TEXT = {
 interface ExpenseDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (expense: Omit<Expense, 'id' | 'createdAt'>) => void;
+  onSave: (expense: Omit<Expense, 'id' | 'createdAt' | 'shiftId'>) => void;
   language: Language;
 }
 

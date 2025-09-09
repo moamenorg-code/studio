@@ -63,6 +63,7 @@ export interface RawMaterial {
 
 export interface Expense {
     id: number;
+    shiftId: number;
     description: string;
     amount: number;
     createdAt: Date;
@@ -70,6 +71,7 @@ export interface Expense {
 
 export interface CashDrawerEntry {
     id: number;
+    shiftId: number;
     type: 'cash_in' | 'cash_out';
     amount: number;
     reason: string;

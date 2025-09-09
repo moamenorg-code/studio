@@ -55,13 +55,11 @@ import PurchaseManagementTab from "@/components/pos/PurchaseManagementTab";
 import InventoryManagementTab from "@/components/pos/InventoryManagementTab";
 import FloatingCartBar from "@/components/pos/FloatingCartBar";
 import ShiftsManagementTab from "@/components/pos/ShiftsManagementTab";
-import ExpensesTab from "@/components/pos/ExpensesTab";
-import CashDrawerTab from "@/components/pos/CashDrawerTab";
 import SettingsTab from "@/components/pos/SettingsTab";
 
 
 type Language = "en" | "ar";
-type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "suppliers" | "purchases" | "inventory" | "shifts" | "expenses" | "cash_drawer" | "settings";
+type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "suppliers" | "purchases" | "inventory" | "shifts" | "settings";
 
 const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
@@ -73,7 +71,7 @@ const UI_TEXT = {
   suppliers: { en: "Suppliers", ar: "الموردين" },
   purchases: { en: "Purchases", ar: "المشتريات" },
   inventory: { en: "Inventory", ar: "المخزون" },
-  shifts: { en: "Shifts", ar: "الشفتات" },
+  shifts: { en: "Shifts & Cash", ar: "الشفتات والخزينة" },
   expenses: { en: "Expenses", ar: "المصروفات" },
   cashDrawer: { en: "Cash Drawer", ar: "الخزينة" },
   settings: { en: "Settings", ar: "الإعدادات" },
@@ -94,8 +92,6 @@ const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: Reac
     { value: 'suppliers', label: 'suppliers', icon: Building },
     { value: 'purchases', label: 'purchases', icon: Truck },
     { value: 'shifts', label: 'shifts', icon: Briefcase },
-    { value: 'expenses', label: 'expenses', icon: Receipt },
-    { value: 'cash_drawer', label: 'cashDrawer', icon: Wallet },
     { value: 'settings', label: 'settings', icon: SettingsIcon },
 ];
 
@@ -255,11 +251,18 @@ export default function POSPage() {
       case 'purchases':
         return <PurchaseManagementTab suppliers={suppliers} rawMaterials={rawMaterials} onRawMaterialsChange={handleRawMaterialUpdate} language={language} />;
       case 'shifts':
-        return <ShiftsManagementTab shifts={shifts} onShiftsChange={handleShiftsUpdate} language={language} sales={sales} expenses={expenses} />;
-      case 'expenses':
-        return <ExpensesTab expenses={expenses} onExpensesChange={handleExpensesUpdate} language={language} />;
-      case 'cash_drawer':
-        return <CashDrawerTab entries={cashDrawerEntries} onEntriesChange={handleCashDrawerUpdate} language={language} />;
+        return (
+          <ShiftsManagementTab
+            shifts={shifts}
+            onShiftsChange={handleShiftsUpdate}
+            sales={sales}
+            expenses={expenses}
+            onExpensesChange={handleExpensesUpdate}
+            cashDrawerEntries={cashDrawerEntries}
+            onCashDrawerChange={handleCashDrawerUpdate}
+            language={language}
+          />
+        );
       case 'settings':
         return <SettingsTab settings={settings} onSettingsChange={handleSettingsUpdate} language={language} />;
       default:
@@ -276,40 +279,38 @@ export default function POSPage() {
         onOpenSmartRoundup={() => setSmartRoundupOpen(true)}
       />
       <main className="flex flex-1 flex-col overflow-auto p-4 sm:p-6">
-        <div className="mb-4 flex flex-col sm:flex-row items-center gap-4">
-            <div className="flex w-full items-center gap-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex-shrink-0">
-                    <Menu className={language === 'ar' ? 'ml-2 h-5 w-5' : 'mr-2 h-5 w-5'} />
-                    <span>{UI_TEXT.menu[language]}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-[250px]">
-                  <ScrollArea className="h-[400px]">
-                    {VIEW_OPTIONS.map(({ value, label, icon: Icon }) => (
-                      <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
-                        {language === 'en' && <Icon className="mr-3 h-5 w-5" />}
-                        <span className="flex-1 text-right">{UI_TEXT[label][language]}</span>
-                        {language === 'ar' && <Icon className="ml-3 h-5 w-5" />}
-                      </DropdownMenuItem>
-                    ))}
-                  </ScrollArea>
-                </DropdownMenuContent>
-              </DropdownMenu>
+        <div className="mb-4 flex items-center gap-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex-shrink-0">
+                  <Menu className={language === 'ar' ? 'ml-2 h-5 w-5' : 'mr-2 h-5 w-5'} />
+                  <span>{UI_TEXT.menu[language]}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-[250px]">
+                <ScrollArea className="h-[400px]">
+                  {VIEW_OPTIONS.map(({ value, label, icon: Icon }) => (
+                    <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
+                      {language === 'en' && <Icon className="mr-3 h-5 w-5" />}
+                      <span className="flex-1 text-right">{UI_TEXT[label][language]}</span>
+                      {language === 'ar' && <Icon className="ml-3 h-5 w-5" />}
+                    </DropdownMenuItem>
+                  ))}
+                </ScrollArea>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-              {activeView === 'sales' && (
-                <div className="relative w-full">
-                  <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
-                  <Input
-                    placeholder={UI_TEXT.searchPlaceholder[language]}
-                    className={`${language === 'ar' ? 'pr-10' : 'pl-10'} text-base`}
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              )}
-            </div>
+            {activeView === 'sales' && (
+              <div className="relative w-full">
+                <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
+                <Input
+                  placeholder={UI_TEXT.searchPlaceholder[language]}
+                  className={`${language === 'ar' ? 'pr-10' : 'pl-10'} text-base`}
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                />
+              </div>
+            )}
         </div>
 
         <div className="flex-1 pb-24 sm:pb-28"> 

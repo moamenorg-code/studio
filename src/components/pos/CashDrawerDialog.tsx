@@ -30,7 +30,7 @@ const UI_TEXT = {
 interface CashDrawerDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (entry: Omit<CashDrawerEntry, 'id' | 'createdAt'>) => void;
+  onSave: (entry: Omit<CashDrawerEntry, 'id' | 'createdAt' | 'shiftId'>) => void;
   language: Language;
 }
 

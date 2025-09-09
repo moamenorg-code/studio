@@ -10,7 +10,14 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shift } from '@/lib/types';
+import { Shift, Sale, Expense } from '@/lib/types';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 type Language = 'en' | 'ar';
 
@@ -18,14 +25,14 @@ const UI_TEXT = {
   startShift: { en: 'Start New Shift', ar: 'بدء شفت جديد' },
   endShift: { en: 'End Shift', ar: 'إنهاء الشفت' },
   startShiftInfo: { en: 'Enter the starting cash amount.', ar: 'أدخل مبلغ النقدية الافتتاحي.' },
-  endShiftInfo: { en: 'Enter the ending cash amount.', ar: 'أدخل مبلغ النقدية الختامي.' },
+  endShiftInfo: { en: 'Review the shift summary and enter the ending cash amount.', ar: 'راجع ملخص الشفت وأدخل مبلغ النقدية الختامي.' },
   startingCash: { en: 'Starting Cash', ar: 'النقدية الافتتاحية' },
   endingCash: { en: 'Ending Cash', ar: 'النقدية الختامية' },
-  shiftDetails: { en: 'Shift Details', ar: 'تفاصيل الشفت' },
+  shiftDetails: { en: 'Shift Summary', ar: 'ملخص الشفت' },
   startTime: { en: 'Start Time', ar: 'وقت البدء' },
   totalSales: { en: 'Total Sales', ar: 'إجمالي المبيعات' },
   totalExpenses: { en: 'Total Expenses', ar: 'إجمالي المصروفات' },
-  expectedCash: { en: 'Expected Cash', ar: 'النقدية المتوقعة' },
+  expectedCash: { en: 'Expected Cash in Drawer', ar: 'النقدية المتوقعة بالخزينة' },
   difference: { en: 'Difference', ar: 'الفرق' },
   cancel: { en: 'Cancel', ar: 'إلغاء' },
   start: { en: 'Start', ar: 'بدء' },
@@ -39,9 +46,11 @@ interface ShiftDialogProps {
   onSave: (shiftData: Partial<Shift>) => void;
   activeShift: Shift | null;
   language: Language;
+  sales: Sale[];
+  expenses: Expense[];
 }
 
-const ShiftDialog: React.FC<ShiftDialogProps> = ({ isOpen, onOpenChange, onSave, activeShift, language }) => {
+const ShiftDialog: React.FC<ShiftDialogProps> = ({ isOpen, onOpenChange, onSave, activeShift, language, sales, expenses }) => {
   const [startingCash, setStartingCash] = React.useState(0);
   const [endingCash, setEndingCash] = React.useState(0);
 
@@ -61,7 +70,20 @@ const ShiftDialog: React.FC<ShiftDialogProps> = ({ isOpen, onOpenChange, onSave,
     }
   }, [isOpen]);
 
-  const expectedCash = activeShift ? activeShift.startingCash + activeShift.totalSales - activeShift.totalExpenses : 0;
+  const { totalSalesInShift, totalExpensesInShift } = React.useMemo(() => {
+    if (!activeShift) return { totalSalesInShift: 0, totalExpensesInShift: 0 };
+    
+    const salesInShift = sales.filter(sale => new Date(sale.createdAt) >= new Date(activeShift.startTime));
+    const expensesInShift = expenses.filter(exp => exp.shiftId === activeShift.id);
+    
+    const totalSales = salesInShift.reduce((sum, sale) => sum + sale.finalTotal, 0);
+    const totalExpenses = expensesInShift.reduce((sum, exp) => sum + exp.amount, 0);
+
+    return { totalSalesInShift: totalSales, totalExpensesInShift: totalExpenses };
+  }, [activeShift, sales, expenses]);
+
+
+  const expectedCash = activeShift ? activeShift.startingCash + totalSalesInShift - totalExpensesInShift : 0;
   const difference = activeShift ? endingCash - expectedCash : 0;
 
   return (
@@ -77,14 +99,14 @@ const ShiftDialog: React.FC<ShiftDialogProps> = ({ isOpen, onOpenChange, onSave,
         {activeShift ? (
             <div className="grid gap-4 py-4">
                 <Card>
-                    <CardHeader>
-                        <CardTitle>{UI_TEXT.shiftDetails[language]}</CardTitle>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-lg">{UI_TEXT.shiftDetails[language]}</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
+                    <CardContent className="space-y-2 text-sm pt-2">
                         <div className="flex justify-between"><span>{UI_TEXT.startTime[language]}:</span> <span>{new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(activeShift.startTime))}</span></div>
                         <div className="flex justify-between"><span>{UI_TEXT.startingCash[language]}:</span> <span>{activeShift.startingCash.toFixed(2)}</span></div>
-                        <div className="flex justify-between"><span>{UI_TEXT.totalSales[language]}:</span> <span className="text-green-600">{activeShift.totalSales.toFixed(2)}</span></div>
-                        <div className="flex justify-between"><span>{UI_TEXT.totalExpenses[language]}:</span> <span className="text-red-600">{activeShift.totalExpenses.toFixed(2)}</span></div>
+                        <div className="flex justify-between"><span>{UI_TEXT.totalSales[language]}:</span> <span className="font-semibold text-green-600">(+) {totalSalesInShift.toFixed(2)}</span></div>
+                        <div className="flex justify-between"><span>{UI_TEXT.totalExpenses[language]}:</span> <span className="font-semibold text-red-600">(-) {totalExpensesInShift.toFixed(2)}</span></div>
                         <Separator />
                         <div className="flex justify-between font-bold"><span>{UI_TEXT.expectedCash[language]}:</span> <span>{expectedCash.toFixed(2)}</span></div>
                     </CardContent>
@@ -93,7 +115,7 @@ const ShiftDialog: React.FC<ShiftDialogProps> = ({ isOpen, onOpenChange, onSave,
                     <Label htmlFor="ending-cash">{UI_TEXT.endingCash[language]}</Label>
                     <Input id="ending-cash" type="number" value={endingCash} onChange={e => setEndingCash(Number(e.target.value))} dir="ltr" />
                 </div>
-                 <div className="flex justify-between font-bold text-lg">
+                 <div className="flex justify-between font-bold text-lg p-2 rounded-md bg-muted">
                     <span>{UI_TEXT.difference[language]}:</span>
                     <span className={difference === 0 ? '' : difference > 0 ? 'text-green-600' : 'text-red-600'}>
                         {difference.toFixed(2)}
@@ -111,20 +133,11 @@ const ShiftDialog: React.FC<ShiftDialogProps> = ({ isOpen, onOpenChange, onSave,
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>{UI_TEXT.cancel[language]}</Button>
-          <Button onClick={handleSave}>{activeShift ? UI_TEXT.end[language] : UI_TEXT.start[language]}</Button>
+          <Button onClick={handleSave} variant={activeShift ? "destructive" : "default"}>{activeShift ? UI_TEXT.end[language] : UI_TEXT.start[language]}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
-
-
-// Dummy components to avoid compilation errors, assuming they exist elsewhere
-const Card: React.FC<{children: React.ReactNode}> = ({ children }) => <div className="border rounded-lg">{children}</div>;
-const CardHeader: React.FC<{children: React.ReactNode}> = ({ children }) => <div className="p-4">{children}</div>;
-const CardTitle: React.FC<{children: React.ReactNode}> = ({ children }) => <h3 className="font-bold text-lg">{children}</h3>;
-const CardContent: React.FC<{children: React.ReactNode, className?: string}> = ({ children, className }) => <div className={`p-4 pt-0 ${className}`}>{children}</div>;
-const Separator: React.FC = () => <hr className="my-2" />;
-
 
 export default ShiftDialog;

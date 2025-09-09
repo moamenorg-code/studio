@@ -1,41 +1,66 @@
 import * as React from 'react';
-import { PlusCircle } from 'lucide-react';
-import type { Expense } from '@/lib/types';
+import { PlusCircle, Receipt } from 'lucide-react';
+import type { Expense, Shift } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ExpenseDialog from './ExpenseDialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 type Language = 'en' | 'ar';
 
 const UI_TEXT = {
   manageExpenses: { en: 'Manage Expenses', ar: 'إدارة المصروفات' },
-  trackExpenses: { en: 'Record and view your business expenses.', ar: 'سجل واعرض مصروفات نشاطك التجاري.' },
+  trackExpenses: { en: 'Record and view your business expenses for the active shift.', ar: 'سجل واعرض مصروفات نشاطك التجاري للشفت الحالي.' },
   addExpense: { en: 'Add Expense', ar: 'إضافة مصروف' },
   description: { en: 'Description', ar: 'الوصف' },
   amount: { en: 'Amount', ar: 'المبلغ' },
   date: { en: 'Date', ar: 'التاريخ' },
-  noExpenses: { en: 'No expenses found.', ar: 'لم يتم العثور على مصروفات.' },
+  noExpenses: { en: 'No expenses found for the active shift.', ar: 'لم يتم العثور على مصروفات للشفت الحالي.' },
+  noActiveShift: { en: 'No Active Shift', ar: 'لا يوجد شفت نشط' },
+  noActiveShiftDesc: { en: 'You must start a shift to add or view expenses.', ar: 'يجب أن تبدأ شفتًا لإضافة أو عرض المصروفات.' },
 };
 
 interface ExpensesTabProps {
   expenses: Expense[];
   onExpensesChange: (expenses: Expense[]) => void;
   language: Language;
+  activeShift: Shift | null;
 }
 
-const ExpensesTab: React.FC<ExpensesTabProps> = ({ expenses, onExpensesChange, language }) => {
+const ExpensesTab: React.FC<ExpensesTabProps> = ({ expenses, onExpensesChange, language, activeShift }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
 
-  const handleSaveExpense = (expense: Omit<Expense, 'id' | 'createdAt'>) => {
-    const newExpense: Expense = {
-      ...expense,
-      id: Date.now(),
-      createdAt: new Date(),
-    };
-    onExpensesChange([...expenses, newExpense]);
+  const handleSaveExpense = (expense: Omit<Expense, 'id' | 'createdAt' | 'shiftId'>) => {
+    if (activeShift) {
+        const newExpense: Expense = {
+            ...expense,
+            id: Date.now(),
+            createdAt: new Date(),
+            shiftId: activeShift.id,
+        };
+        onExpensesChange([...expenses, newExpense]);
+    }
   };
+
+  const expensesForActiveShift = React.useMemo(() => {
+    if (!activeShift) return [];
+    return expenses.filter(e => e.shiftId === activeShift.id);
+  }, [expenses, activeShift]);
+  
+  if (!activeShift) {
+    return (
+        <Card className="h-full flex items-center justify-center">
+            <Alert className="w-auto">
+                <Receipt className="h-4 w-4" />
+                <AlertTitle>{UI_TEXT.noActiveShift[language]}</AlertTitle>
+                <AlertDescription>{UI_TEXT.noActiveShiftDesc[language]}</AlertDescription>
+            </Alert>
+        </Card>
+    );
+  }
+
 
   return (
     <>
@@ -53,7 +78,7 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({ expenses, onExpensesChange, l
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[calc(100vh-22rem)]">
+          <ScrollArea className="h-[calc(100vh-28rem)]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -63,8 +88,8 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({ expenses, onExpensesChange, l
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {expenses.length > 0 ? (
-                  expenses.map(expense => (
+                {expensesForActiveShift.length > 0 ? (
+                  expensesForActiveShift.map(expense => (
                     <TableRow key={expense.id}>
                       <TableCell className="font-medium">{expense.description}</TableCell>
                       <TableCell>
