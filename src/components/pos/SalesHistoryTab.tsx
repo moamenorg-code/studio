@@ -25,11 +25,13 @@ const UI_TEXT = {
   allTransactions: { en: 'A list of all sales transactions.', ar: 'قائمة بجميع عمليات البيع.' },
   transactionId: { en: 'Transaction ID', ar: 'معرف العملية' },
   date: { en: 'Date', ar: 'التاريخ' },
+  customer: { en: 'Customer', ar: 'العميل' },
   total: { en: 'Total', ar: 'الإجمالي' },
   paymentMethod: { en: 'Payment Method', ar: 'طريقة الدفع' },
   noSales: { en: 'No sales yet.', ar: 'لا توجد مبيعات بعد.' },
   cash: { en: 'Cash', ar: 'نقدي' },
   card: { en: 'Card', ar: 'بطاقة' },
+  walkIn: { en: 'Walk-in', ar: 'عابر' },
 };
 
 interface SalesHistoryTabProps {
@@ -54,6 +56,7 @@ const SalesHistoryTab: React.FC<SalesHistoryTabProps> = ({ sales, language }) =>
             <TableHeader>
               <TableRow>
                 <TableHead>{UI_TEXT.transactionId[language]}</TableHead>
+                <TableHead>{UI_TEXT.customer[language]}</TableHead>
                 <TableHead>{UI_TEXT.date[language]}</TableHead>
                 <TableHead>{UI_TEXT.paymentMethod[language]}</TableHead>
                 <TableHead className="text-end">{UI_TEXT.total[language]}</TableHead>
@@ -62,7 +65,7 @@ const SalesHistoryTab: React.FC<SalesHistoryTabProps> = ({ sales, language }) =>
             <TableBody>
               {sales.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     {UI_TEXT.noSales[language]}
                   </TableCell>
                 </TableRow>
@@ -70,6 +73,7 @@ const SalesHistoryTab: React.FC<SalesHistoryTabProps> = ({ sales, language }) =>
                 sales.map((sale) => (
                   <TableRow key={sale.id}>
                     <TableCell className="font-medium">{sale.id}</TableCell>
+                    <TableCell>{sale.customer ? sale.customer.name : UI_TEXT.walkIn[language]}</TableCell>
                     <TableCell>
                       {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', {
                           year: 'numeric',

@@ -116,6 +116,8 @@ export default function POSPage() {
   const [isPaymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   const [isSmartRoundupOpen, setSmartRoundupOpen] = React.useState(false);
   const [isCartSheetOpen, setCartSheetOpen] = React.useState(false);
+  
+  const [selectedCustomerId, setSelectedCustomerId] = React.useState<number | null>(null);
 
   const [settings, setSettings] = React.useState<Settings>({
     storeName: "QuickServe Lite",
@@ -154,16 +156,20 @@ export default function POSPage() {
 
   const clearCart = () => {
     setCart([]);
+    setSelectedCustomerId(null);
   };
 
-  const handleConfirmPayment = (saleData: Omit<Sale, "id" | "createdAt">) => {
+  const handleConfirmPayment = (saleData: Omit<Sale, "id" | "createdAt" | "customer">) => {
+    const selectedCustomer = customers.find(c => c.id === selectedCustomerId) || undefined;
     const newSale: Sale = {
       ...saleData,
       id: `SALE-${Date.now()}`,
       createdAt: new Date(),
+      customer: selectedCustomer,
     };
     setSales(prevSales => [newSale, ...prevSales]);
     setCart([]);
+    setSelectedCustomerId(null);
     setPaymentDialogOpen(false);
     setCartSheetOpen(false);
     toast({
@@ -327,6 +333,9 @@ export default function POSPage() {
         clearCart={clearCart}
         onProcessPayment={() => setPaymentDialogOpen(true)}
         language={language}
+        customers={customers}
+        selectedCustomerId={selectedCustomerId}
+        onSelectCustomer={setSelectedCustomerId}
       />
       
       <PaymentDialog
@@ -335,6 +344,9 @@ export default function POSPage() {
         cart={cart}
         onConfirm={handleConfirmPayment}
         language={language}
+        customers={customers}
+        selectedCustomerId={selectedCustomerId}
+        onSelectCustomer={setSelectedCustomerId}
       />
       
       <SmartRoundupDialog

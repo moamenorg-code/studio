@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { MinusCircle, PlusCircle, Trash2, XCircle } from 'lucide-react';
-import type { CartItem } from '@/lib/types';
+import { MinusCircle, PlusCircle, Trash2, XCircle, UserPlus } from 'lucide-react';
+import type { CartItem, Customer } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -13,6 +13,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type Language = 'en' | 'ar';
 
@@ -25,6 +32,9 @@ const UI_TEXT = {
     finalTotal: { en: 'Final Total', ar: 'الإجمالي النهائي' },
     clearCart: { en: 'Clear Cart', ar: 'إفراغ السلة' },
     pay: { en: 'Pay', ar: 'الدفع' },
+    customer: { en: 'Customer', ar: 'العميل' },
+    selectCustomer: { en: 'Select a customer', ar: 'اختر عميل' },
+    walkInCustomer: { en: 'Walk-in Customer', ar: 'عميل عابر' },
 };
 
 interface CartPanelProps {
@@ -35,9 +45,23 @@ interface CartPanelProps {
   clearCart: () => void;
   onProcessPayment: () => void;
   language: Language;
+  customers: Customer[];
+  selectedCustomerId: number | null;
+  onSelectCustomer: (id: number | null) => void;
 }
 
-const CartPanel: React.FC<CartPanelProps> = ({ isOpen, onOpenChange, cart, setCart, clearCart, onProcessPayment, language }) => {
+const CartPanel: React.FC<CartPanelProps> = ({ 
+    isOpen, 
+    onOpenChange, 
+    cart, 
+    setCart, 
+    clearCart, 
+    onProcessPayment, 
+    language,
+    customers,
+    selectedCustomerId,
+    onSelectCustomer
+}) => {
   const [overallDiscount, setOverallDiscount] = React.useState(0);
   const [serviceCharge, setServiceCharge] = React.useState(0);
 
@@ -81,6 +105,11 @@ const CartPanel: React.FC<CartPanelProps> = ({ isOpen, onOpenChange, cart, setCa
       }
   }, [cart]);
 
+  const handleSelectCustomer = (value: string) => {
+      const customerId = value === 'walk-in' ? null : Number(value);
+      onSelectCustomer(customerId);
+  }
+
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
         <SheetContent className="flex w-full flex-col sm:max-w-lg" side={language === 'ar' ? 'left' : 'right'}>
@@ -116,6 +145,22 @@ const CartPanel: React.FC<CartPanelProps> = ({ isOpen, onOpenChange, cart, setCa
             </div>
             {cart.length > 0 && (
             <SheetFooter className="flex-col items-stretch space-y-4 border-t pt-6">
+                 <div className="space-y-2">
+                    <Label htmlFor="customer" className="flex items-center gap-2 text-sm">
+                        <UserPlus size={14}/> {UI_TEXT.customer[language]}
+                    </Label>
+                    <Select onValueChange={handleSelectCustomer} value={selectedCustomerId?.toString() || 'walk-in'} dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                        <SelectTrigger>
+                            <SelectValue placeholder={UI_TEXT.selectCustomer[language]} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="walk-in">{UI_TEXT.walkInCustomer[language]}</SelectItem>
+                            {customers.map(c => (
+                                <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
                 <div className="space-y-2">
                     <div className="flex justify-between">
                         <span>{UI_TEXT.subtotal[language]}</span>

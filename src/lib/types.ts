@@ -20,6 +20,7 @@ export interface Sale {
   finalTotal: number;
   paymentMethod: "cash" | "card";
   createdAt: Date;
+  customer?: Customer;
 }
 
 export interface Customer {
