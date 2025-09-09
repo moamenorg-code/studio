@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
 import { runSmartRoundup, type RoundupState } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
@@ -34,11 +34,10 @@ interface SmartRoundupDialogProps {
   language: Language;
 }
 
-function SubmitButton({ language }: { language: Language }) {
-  const { pending } = useFormStatus();
+function SubmitButton({ language, isPending }: { language: Language, isPending: boolean }) {
   return (
-    <Button type="submit" disabled={pending} className="w-full">
-      {pending ? (
+    <Button type="submit" disabled={isPending} className="w-full">
+      {isPending ? (
         <>
           <Sparkles className="me-2 h-4 w-4 animate-spin" />
           {UI_TEXT.gettingSuggestion[language]}
@@ -54,21 +53,20 @@ function SubmitButton({ language }: { language: Language }) {
 }
 
 const SmartRoundupDialog: React.FC<SmartRoundupDialogProps> = ({ isOpen, onOpenChange, language }) => {
-  const [state, setState] = React.useState<RoundupState>({});
+  const [state, formAction, isPending] = useActionState(runSmartRoundup, undefined);
   const formRef = React.useRef<HTMLFormElement>(null);
+  const [localState, setLocalState] = React.useState<RoundupState | undefined>(undefined);
+
+  React.useEffect(() => {
+    setLocalState(state);
+  }, [state]);
 
   React.useEffect(() => {
     if (!isOpen) {
       formRef.current?.reset();
-      setState({});
+      setLocalState(undefined);
     }
   }, [isOpen]);
-
-  const handleAction = async (formData: FormData) => {
-    const result = await runSmartRoundup(undefined, formData);
-    setState(result);
-  };
-
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -77,32 +75,32 @@ const SmartRoundupDialog: React.FC<SmartRoundupDialogProps> = ({ isOpen, onOpenC
           <DialogTitle>{UI_TEXT.title[language]}</DialogTitle>
           <DialogDescription>{UI_TEXT.description[language]}</DialogDescription>
         </DialogHeader>
-        <form ref={formRef} action={handleAction} className="space-y-4">
+        <form ref={formRef} action={formAction} className="space-y-4">
           <div>
             <Label htmlFor="price">{UI_TEXT.originalPrice[language]}</Label>
             <Input id="price" name="price" type="number" step="0.01" required dir="ltr" />
-            {state?.errors?.price && (
-              <p className="mt-1 text-sm text-destructive">{state.errors.price[0]}</p>
+            {localState?.errors?.price && (
+              <p className="mt-1 text-sm text-destructive">{localState.errors.price[0]}</p>
             )}
           </div>
-          <SubmitButton language={language} />
+          <SubmitButton language={language} isPending={isPending} />
         </form>
 
-        {state?.result && (
+        {localState?.result && (
           <div className="mt-4 space-y-4 rounded-lg border bg-muted p-4">
             <div>
               <h3 className="font-semibold">{UI_TEXT.suggestedPrice[language]}</h3>
-              <p className="text-2xl font-bold text-primary">{state.result.roundedPrice.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-primary">{localState.result.roundedPrice.toFixed(2)}</p>
             </div>
             <div>
               <h3 className="font-semibold">{UI_TEXT.reasoning[language]}</h3>
-              <p className="text-sm text-muted-foreground">{state.result.reason}</p>
+              <p className="text-sm text-muted-foreground">{localState.result.reason}</p>
             </div>
           </div>
         )}
         
-        {state?.message && !state.result && state.message !== 'Success' &&(
-             <p className="mt-1 text-sm text-destructive">{state.message}</p>
+        {localState?.message && !localState.result && localState.message !== 'Success' &&(
+             <p className="mt-1 text-sm text-destructive">{localState.message}</p>
         )}
 
         <DialogFooter>

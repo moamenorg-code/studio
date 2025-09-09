@@ -102,11 +102,11 @@ export default function POSPage() {
         <Tabs defaultValue="sales" className="h-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="sales">
-              <ShoppingBag className="me-2 h-4 w-4" />
+              <ShoppingBag className="ms-2 h-4 w-4" />
               {UI_TEXT.sales[language]}
             </TabsTrigger>
             <TabsTrigger value="history">
-              <History className="me-2 h-4 w-4" />
+              <History className="ms-2 h-4 w-4" />
               {UI_TEXT.salesHistory[language]}
             </TabsTrigger>
           </TabsList>
