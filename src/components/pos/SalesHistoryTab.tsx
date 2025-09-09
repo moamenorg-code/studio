@@ -76,7 +76,7 @@ const SalesHistoryTab: React.FC<SalesHistoryTabProps> = ({ sales, language }) =>
                   <TableRow key={sale.id}>
                     <TableCell className="font-medium">{sale.id}</TableCell>
                     <TableCell>{sale.customer ? sale.customer.name : UI_TEXT.walkIn[language]}</TableCell>
-                    <TableCell>{sale.tableId ? `T${sale.tableId}` : '-'}</TableCell>
+                    <TableCell>{sale.tableId ? `T${sale.tableId}` : (sale.tableId === 0 ? UI_TEXT.walkIn[language] : '-')}</TableCell>
                     <TableCell>
                       {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', {
                           year: 'numeric',

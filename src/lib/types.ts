@@ -23,7 +23,7 @@ export interface Sale {
   paymentMethod: "cash" | "card";
   createdAt: Date;
   customer?: Customer;
-  tableId?: number;
+  tableId?: number | null;
 }
 
 export interface Customer {

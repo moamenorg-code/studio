@@ -21,7 +21,8 @@ import {
   Settings as SettingsIcon,
   BookCopy,
   LayoutGrid,
-  Table as TableIcon
+  Table as TableIcon,
+  Zap
 } from "lucide-react";
 
 import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings, Recipe, Category, Table } from "@/lib/types";
@@ -95,6 +96,7 @@ const UI_TEXT = {
   selectCategory: { en: 'Select a category', ar: 'اختر فئة' },
   selectTablePrompt: { en: 'Select a Table', ar: 'اختر طاولة' },
   selectTablePromptDesc: { en: 'Please go to the Tables screen to select a table and start an order.', ar: 'يرجى الذهاب إلى شاشة الطاولات لاختيار طاولة وبدء الطلب.' },
+  quickServe: { en: "Quick Serve", ar: "خدمة سريعة" },
 };
 
 const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType }[] = [
@@ -355,9 +357,14 @@ export default function POSPage() {
                 <TableIcon className="h-4 w-4" />
                 <AlertTitle>{UI_TEXT.selectTablePrompt[language]}</AlertTitle>
                 <AlertDescription>{UI_TEXT.selectTablePromptDesc[language]}</AlertDescription>
-                <div className="mt-4">
+                <div className="mt-4 flex gap-2">
                     <Button onClick={() => setActiveView('tables')}>
+                        <TableIcon className="w-4 h-4 me-2"/>
                         {UI_TEXT.tables[language]}
+                    </Button>
+                    <Button variant="secondary" onClick={() => setActiveTableId(0)}>
+                        <Zap className="w-4 h-4 me-2"/>
+                        {UI_TEXT.quickServe[language]}
                     </Button>
                 </div>
             </Alert>
@@ -478,7 +485,7 @@ export default function POSPage() {
   const showFloatingCart = () => {
     if (activeView !== 'sales') return false;
     if (settings.enableTables) {
-      return !!activeTableId && activeCart.length > 0;
+      return (!!activeTableId || activeTableId === 0) && activeCart.length > 0;
     }
     return activeCart.length > 0;
   }
