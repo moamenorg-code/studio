@@ -135,7 +135,7 @@ const CartPanel: React.FC<CartPanelProps> = ({ cart, setCart, clearCart, onProce
           </div>
           <div className="grid grid-cols-2 gap-2">
               <Button variant="outline" onClick={clearCart}>
-                  <XCircle className="me-2 h-4 w-4" />{UI_TEXT.clearCart[language]}
+                  <XCircle className={language === 'ar' ? "ms-2 h-4 w-4" : "me-2 h-4 w-4"} />{UI_TEXT.clearCart[language]}
               </Button>
               <Button onClick={onProcessPayment} className="bg-accent text-accent-foreground hover:bg-accent/90">
                   {UI_TEXT.pay[language]}

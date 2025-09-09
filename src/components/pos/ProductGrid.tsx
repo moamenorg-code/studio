@@ -36,7 +36,7 @@ const ProductCard: React.FC<{ product: Product; onAddToCart: (product: Product) 
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <Button className="w-full" onClick={() => onAddToCart(product)}>
-          <PlusCircle className="me-2 h-4 w-4" />
+          <PlusCircle className={language === 'ar' ? "ms-2 h-4 w-4" : "me-2 h-4 w-4"} />
           {UI_TEXT.addToCart[language]}
         </Button>
       </CardFooter>

@@ -91,7 +91,7 @@ export default function POSPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Header
         appName={UI_TEXT.quickServeLite[language]}
         language={language}
@@ -102,11 +102,11 @@ export default function POSPage() {
         <Tabs defaultValue="sales" className="h-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="sales">
-              <ShoppingBag className="ms-2 h-4 w-4" />
+              <ShoppingBag className={language === 'ar' ? "ms-2 h-4 w-4" : "me-2 h-4 w-4"} />
               {UI_TEXT.sales[language]}
             </TabsTrigger>
             <TabsTrigger value="history">
-              <History className="ms-2 h-4 w-4" />
+              <History className={language === 'ar' ? "ms-2 h-4 w-4" : "me-2 h-4 w-4"} />
               {UI_TEXT.salesHistory[language]}
             </TabsTrigger>
           </TabsList>

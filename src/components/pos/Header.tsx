@@ -54,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({
               </span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
             <DropdownMenuItem onClick={() => setLanguage('en')}>
               {UI_TEXT.english[language]}
             </DropdownMenuItem>

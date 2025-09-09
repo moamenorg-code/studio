@@ -72,11 +72,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({ isOpen, onOpenChange, car
         </div>
         <DialogFooter className="grid grid-cols-2 gap-4">
           <Button size="lg" onClick={() => handlePayment('cash')} className="bg-accent text-accent-foreground hover:bg-accent/90">
-            <Wallet className="me-2 h-5 w-5" />
+            <Wallet className={language === 'ar' ? "ms-2 h-5 w-5" : "me-2 h-5 w-5"} />
             {UI_TEXT.cash[language]}
           </Button>
           <Button size="lg" onClick={() => handlePayment('card')}>
-            <CreditCard className="me-2 h-5 w-5" />
+            <CreditCard className={language === 'ar' ? "ms-2 h-5 w-5" : "me-2 h-5 w-5"} />
             {UI_TEXT.card[language]}
           </Button>
         </DialogFooter>
