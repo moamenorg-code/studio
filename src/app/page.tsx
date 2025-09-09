@@ -183,7 +183,7 @@ export default function POSPage() {
         <div className="mb-4 flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-[200px]">
+                <Button variant="outline" className="w-auto">
                   <Menu className={language === 'ar' ? 'ml-2 h-5 w-5' : 'mr-2 h-5 w-5'} />
                   <span>{UI_TEXT.menu[language]}</span>
                 </Button>
@@ -191,8 +191,9 @@ export default function POSPage() {
               <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-[250px]">
                 {VIEW_OPTIONS.map(({ value, label, icon: Icon }) => (
                   <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
-                    <Icon className={language === 'ar' ? 'ml-3 h-5 w-5' : 'mr-3 h-5 w-5'} />
+                    {language === 'en' && <Icon className="mr-3 h-5 w-5" />}
                     <span className="flex-1 text-right">{UI_TEXT[label][language]}</span>
+                    {language === 'ar' && <Icon className="mr-3 h-5 w-5" />}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
