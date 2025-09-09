@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, Permission, Purchase, AppData } from '@/lib/types';
+import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, Permission, AppData } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -167,7 +167,7 @@ const POSLayout: React.FC = () => {
   const handleSetActiveView = (view: ActiveView) => {
     if (currentUser) {
         const viewOption = VIEW_OPTIONS.find(v => v.value === view);
-        if (viewOption?.permission && !hasPermission(viewOption.permission)) {
+        if (viewOption?.permission && !hasPermission(viewOption.permission, currentUser)) {
             setActiveView('unauthorized');
         } else {
             setActiveView(view);
@@ -779,7 +779,7 @@ const handleHoldOrder = () => {
         customers={customers}
         selectedCustomerId={activeCustomerId}
         onSelectCustomer={setActiveCustomerId}
-        onCustomerUpdate={onCustomerUpdate}
+        onCustomerUpdate={handleCustomerUpdate}
         orderType={activeOrder?.type}
         deliveryReps={deliveryReps}
         settings={settings}
