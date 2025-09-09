@@ -408,21 +408,23 @@ export default function POSPage() {
     if (!activeOrder) {
        return (
          <div className="flex items-center justify-center h-full">
-            <Alert className="w-auto">
-                <ShoppingBag className="h-4 w-4" />
-                <AlertTitle>{UI_TEXT.selectOrderTypePrompt[language]}</AlertTitle>
-                <AlertDescription>{UI_TEXT.selectOrderTypePromptDesc[language]}</AlertDescription>
-                <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                    <Button onClick={() => setActiveView('tables')} className="w-full sm:w-auto">
-                        <TableIcon className="w-4 h-4 me-2"/>
+            <Alert className="max-w-lg text-center">
+                <div className="flex justify-center mb-4">
+                  <ShoppingBag className="h-8 w-8" />
+                </div>
+                <AlertTitle className="text-xl mb-2">{UI_TEXT.selectOrderTypePrompt[language]}</AlertTitle>
+                <AlertDescription className="mb-6">{UI_TEXT.selectOrderTypePromptDesc[language]}</AlertDescription>
+                <div className="mt-4 flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button onClick={() => setActiveView('tables')} size="lg" className="px-8 py-6 text-lg">
+                        <TableIcon className="w-6 h-6 me-3"/>
                         {UI_TEXT.dineIn[language]}
                     </Button>
-                    <Button variant="secondary" onClick={handleNewTakeawayOrder} className="w-full sm:w-auto">
-                        <Package className="w-4 h-4 me-2"/>
+                    <Button variant="secondary" onClick={handleNewTakeawayOrder} size="lg" className="px-8 py-6 text-lg">
+                        <Package className="w-6 h-6 me-3"/>
                         {UI_TEXT.takeaway[language]}
                     </Button>
-                    <Button variant="secondary" onClick={handleNewDeliveryOrder} className="w-full sm:w-auto">
-                        <Bike className="w-4 h-4 me-2"/>
+                    <Button variant="secondary" onClick={handleNewDeliveryOrder} size="lg" className="px-8 py-6 text-lg">
+                        <Bike className="w-6 h-6 me-3"/>
                         {UI_TEXT.delivery[language]}
                     </Button>
                 </div>
