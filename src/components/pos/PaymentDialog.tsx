@@ -47,7 +47,7 @@ interface PaymentDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   cart: CartItem[];
-  onConfirm: (saleData: Omit<Sale, "id" | "createdAt" | "customer">) => void;
+  onConfirm: (saleData: Omit<Sale, "id" | "createdAt" | "customer" | "tableId">) => void;
   language: Language;
   customers: Customer[];
   selectedCustomerId: number | null;
@@ -82,6 +82,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const finalTotal = React.useMemo(() => subtotal - totalDiscountValue + serviceCharge, [subtotal, totalDiscountValue, serviceCharge]);
   
   const handlePayment = (method: 'cash' | 'card') => {
+    if (cart.length === 0) return;
     onConfirm({
       items: cart,
       subtotal,

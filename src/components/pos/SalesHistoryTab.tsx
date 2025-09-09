@@ -26,6 +26,7 @@ const UI_TEXT = {
   transactionId: { en: 'Transaction ID', ar: 'معرف العملية' },
   date: { en: 'Date', ar: 'التاريخ' },
   customer: { en: 'Customer', ar: 'العميل' },
+  table: { en: 'Table', ar: 'الطاولة' },
   total: { en: 'Total', ar: 'الإجمالي' },
   paymentMethod: { en: 'Payment Method', ar: 'طريقة الدفع' },
   noSales: { en: 'No sales yet.', ar: 'لا توجد مبيعات بعد.' },
@@ -57,6 +58,7 @@ const SalesHistoryTab: React.FC<SalesHistoryTabProps> = ({ sales, language }) =>
               <TableRow>
                 <TableHead>{UI_TEXT.transactionId[language]}</TableHead>
                 <TableHead>{UI_TEXT.customer[language]}</TableHead>
+                <TableHead>{UI_TEXT.table[language]}</TableHead>
                 <TableHead>{UI_TEXT.date[language]}</TableHead>
                 <TableHead>{UI_TEXT.paymentMethod[language]}</TableHead>
                 <TableHead className="text-end">{UI_TEXT.total[language]}</TableHead>
@@ -65,7 +67,7 @@ const SalesHistoryTab: React.FC<SalesHistoryTabProps> = ({ sales, language }) =>
             <TableBody>
               {sales.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={6} className="h-24 text-center">
                     {UI_TEXT.noSales[language]}
                   </TableCell>
                 </TableRow>
@@ -74,6 +76,7 @@ const SalesHistoryTab: React.FC<SalesHistoryTabProps> = ({ sales, language }) =>
                   <TableRow key={sale.id}>
                     <TableCell className="font-medium">{sale.id}</TableCell>
                     <TableCell>{sale.customer ? sale.customer.name : UI_TEXT.walkIn[language]}</TableCell>
+                    <TableCell>{sale.tableId ? `T${sale.tableId}` : '-'}</TableCell>
                     <TableCell>
                       {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', {
                           year: 'numeric',

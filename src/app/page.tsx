@@ -20,11 +20,12 @@ import {
   Receipt,
   Settings as SettingsIcon,
   BookCopy,
-  LayoutGrid
+  LayoutGrid,
+  Table as TableIcon
 } from "lucide-react";
 
-import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings, Recipe, Category } from "@/lib/types";
-import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories } from "@/lib/data";
+import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings, Recipe, Category, Table } from "@/lib/types";
+import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables } from "@/lib/data";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -57,6 +58,7 @@ import InventoryManagementTab from "@/components/pos/InventoryManagementTab";
 import FloatingCartBar from "@/components/pos/FloatingCartBar";
 import ShiftsManagementTab from "@/components/pos/ShiftsManagementTab";
 import SettingsTab from "@/components/pos/SettingsTab";
+import TablesManagementTab from "@/components/pos/TablesManagementTab";
 import {
   Select,
   SelectContent,
@@ -67,7 +69,7 @@ import {
 
 
 type Language = "en" | "ar";
-type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings";
+type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings" | "tables";
 
 const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
@@ -82,6 +84,7 @@ const UI_TEXT = {
   expenses: { en: "Expenses", ar: "المصروفات" },
   cashDrawer: { en: "Cash Drawer", ar: "الخزينة" },
   settings: { en: "Settings", ar: "الإعدادات" },
+  tables: { en: "Tables", ar: "الطاولات" },
   transactionSuccess: { en: "Transaction successful!", ar: "تمت العملية بنجاح!" },
   transactionSuccessDesc: { en: (id: string) => `Sale ID: ${id}`, ar: (id: string) => `رقم الفاتورة: ${id}`},
   quickServeLite: { en: "RMS POS", ar: "RMS POS" },
@@ -97,6 +100,7 @@ const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: Reac
     { value: 'history', label: 'salesHistory', icon: History },
     { value: 'products', label: 'productsAndRecipes', icon: ClipboardList },
     { value: 'inventory', label: 'inventory', icon: Archive },
+    { value: 'tables', label: 'tables', icon: TableIcon },
     { value: 'customers', label: 'customers', icon: Users },
     { value: 'purchases', label: 'purchases', icon: Truck },
     { value: 'shifts', label: 'shifts', icon: Briefcase },
@@ -113,6 +117,7 @@ export default function POSPage() {
   const [rawMaterials, setRawMaterials] = React.useState<RawMaterial[]>(initialRawMaterials);
   const [recipes, setRecipes] = React.useState<Recipe[]>(initialRecipes);
   const [categories, setCategories] = React.useState<Category[]>(initialCategories);
+  const [tables, setTables] = React.useState<Table[]>(initialTables);
   const [shifts, setShifts] = React.useState<Shift[]>(initialShifts);
   const [expenses, setExpenses] = React.useState<Expense[]>(initialExpenses);
   const [cashDrawerEntries, setCashDrawerEntries] = React.useState<CashDrawerEntry[]>(initialCashDrawerEntries);
@@ -125,6 +130,7 @@ export default function POSPage() {
   const [isCartSheetOpen, setCartSheetOpen] = React.useState(false);
   
   const [selectedCustomerId, setSelectedCustomerId] = React.useState<number | null>(null);
+  const [activeTableId, setActiveTableId] = React.useState<number | null>(null);
 
   const [settings, setSettings] = React.useState<Settings>({
     storeName: "RMS POS",
@@ -134,6 +140,7 @@ export default function POSPage() {
     taxRate: 15,
     receiptHeader: "Thank you for your business!",
     receiptFooter: "Please come again!",
+    enableTables: true,
     printerName: "Default Printer",
     printerConnectionType: "network",
     printerIpAddress: "192.168.1.100",
@@ -142,13 +149,53 @@ export default function POSPage() {
 
   const { toast } = useToast();
 
+  const activeCart = React.useMemo(() => {
+    if (settings.enableTables && activeTableId) {
+      return tables.find(t => t.id === activeTableId)?.cart || [];
+    }
+    return cart;
+  }, [cart, tables, activeTableId, settings.enableTables]);
+
+  const activeCustomerId = React.useMemo(() => {
+    if (settings.enableTables && activeTableId) {
+      return tables.find(t => t.id === activeTableId)?.selectedCustomerId || null;
+    }
+    return selectedCustomerId;
+  }, [selectedCustomerId, tables, activeTableId, settings.enableTables]);
+
+  const setActiveCart = (newCart: CartItem[] | ((prevCart: CartItem[]) => CartItem[])) => {
+    if (settings.enableTables && activeTableId) {
+        setTables(prevTables =>
+            prevTables.map(t =>
+                t.id === activeTableId
+                    ? { ...t, cart: typeof newCart === 'function' ? newCart(t.cart) : newCart }
+                    : t
+            )
+        );
+    } else {
+        setCart(newCart);
+    }
+  };
+
+  const setActiveCustomerId = (id: number | null) => {
+    if (settings.enableTables && activeTableId) {
+      setTables(prevTables => 
+        prevTables.map(t => 
+          t.id === activeTableId ? { ...t, selectedCustomerId: id } : t
+        )
+      );
+    } else {
+      setSelectedCustomerId(id);
+    }
+  };
+
   React.useEffect(() => {
     document.documentElement.lang = language;
     document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
   }, [language]);
 
   const addToCart = (product: Product) => {
-    setCart((prevCart) => {
+    const updater = (prevCart: CartItem[]) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
       if (existingItem) {
         return prevCart.map((item) =>
@@ -158,21 +205,47 @@ export default function POSPage() {
         );
       }
       return [...prevCart, { ...product, quantity: 1, discount: 0 }];
-    });
+    };
+    
+    if (settings.enableTables) {
+      if(activeTableId) {
+        setActiveCart(updater);
+      } else {
+        // In tables mode, you must select a table first.
+        // Maybe show a toast? For now, do nothing.
+         toast({
+            title: "Select a table",
+            description: "Please select a table to start an order.",
+            variant: "destructive"
+        });
+      }
+    } else {
+      setActiveCart(updater);
+    }
   };
 
   const clearCart = () => {
-    setCart([]);
-    setSelectedCustomerId(null);
+    if (settings.enableTables && activeTableId) {
+      setTables(prevTables =>
+        prevTables.map(t =>
+          t.id === activeTableId ? { ...t, cart: [], selectedCustomerId: null } : t
+        )
+      );
+      setActiveTableId(null);
+    } else {
+      setCart([]);
+      setSelectedCustomerId(null);
+    }
   };
 
-  const handleConfirmPayment = (saleData: Omit<Sale, "id" | "createdAt" | "customer">) => {
-    const selectedCustomer = customers.find(c => c.id === selectedCustomerId) || undefined;
+  const handleConfirmPayment = (saleData: Omit<Sale, "id" | "createdAt" | "customer" | "tableId">) => {
+    const customer = customers.find(c => c.id === activeCustomerId) || undefined;
     const newSale: Sale = {
       ...saleData,
       id: `SALE-${Date.now()}`,
       createdAt: new Date(),
-      customer: selectedCustomer,
+      customer,
+      tableId: activeTableId ?? undefined,
     };
     setSales(prevSales => [newSale, ...prevSales]);
 
@@ -192,9 +265,8 @@ export default function POSPage() {
         }
     });
     setRawMaterials(updatedRawMaterials);
-
-    setCart([]);
-    setSelectedCustomerId(null);
+    
+    clearCart();
     setPaymentDialogOpen(false);
     setCartSheetOpen(false);
     toast({
@@ -227,6 +299,10 @@ export default function POSPage() {
     setCategories(updatedCategories);
   };
   
+  const handleTablesUpdate = (updatedTables: Table[]) => {
+    setTables(updatedTables);
+  };
+  
   const handleShiftsUpdate = (updatedShifts: Shift[]) => {
     setShifts(updatedShifts);
   };
@@ -257,28 +333,72 @@ export default function POSPage() {
       });
   }, [products, searchQuery, selectedCategoryId]);
 
+  const renderSalesContent = () => (
+    <div className={`grid ${settings.enableTables ? 'grid-cols-3' : 'grid-cols-1'} gap-4 h-full`}>
+       {settings.enableTables && (
+         <div className="col-span-1">
+           <TablesManagementTab 
+              tables={tables}
+              onTablesChange={setTables}
+              activeTableId={activeTableId}
+              onSelectTable={setActiveTableId}
+              language={language}
+              onOpenCart={() => setCartSheetOpen(true)}
+           />
+         </div>
+       )}
+       <div className={settings.enableTables ? 'col-span-2' : 'col-span-1'}>
+            <Card className="shadow-none border-none h-full">
+                <CardHeader className="p-4">
+                  <div className="flex items-center gap-4">
+                      <div className="flex w-full gap-4">
+                        <div className="relative w-full">
+                            <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
+                            <Input
+                            placeholder={UI_TEXT.searchPlaceholder[language]}
+                            className={`${language === 'ar' ? 'pr-10' : 'pl-10'} text-base`}
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        <Select 
+                          onValueChange={setSelectedCategoryId} 
+                          value={selectedCategoryId}
+                          dir={language === 'ar' ? 'rtl' : 'ltr'}
+                        >
+                            <SelectTrigger className="w-[200px]">
+                                <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <ScrollArea className="h-48">
+                                <SelectItem value="all">{UI_TEXT.allCategories[language]}</SelectItem>
+                                {categories.map(c => (
+                                    <SelectItem key={c.id} value={String(c.id)}>{language === 'ar' ? c.nameAr : c.name}</SelectItem>
+                                ))}
+                              </ScrollArea>
+                            </SelectContent>
+                        </Select>
+                      </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <ScrollArea className="h-[calc(100vh-22rem)]">
+                    <ProductGrid
+                      products={filteredProducts}
+                      onAddToCart={addToCart}
+                      language={language}
+                    />
+                  </ScrollArea>
+                </CardContent>
+            </Card>
+       </div>
+    </div>
+  );
+
   const renderActiveView = () => {
     switch(activeView) {
       case 'sales':
-        return (
-          <>
-            <Card className="shadow-none border-none">
-              <CardHeader className="p-4">
-                <CardTitle>{UI_TEXT.products[language]}</CardTitle>
-                <CardDescription>
-                    {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <ProductGrid
-                  products={filteredProducts}
-                  onAddToCart={addToCart}
-                  language={language}
-                />
-              </CardContent>
-            </Card>
-          </>
-        );
+        return renderSalesContent();
       case 'dashboard':
         return <DashboardTab sales={sales} language={language} />;
       case 'history':
@@ -319,12 +439,32 @@ export default function POSPage() {
             language={language}
           />
         );
+      case 'tables':
+         return (
+          <TablesManagementTab 
+              tables={tables}
+              onTablesChange={setTables}
+              activeTableId={activeTableId}
+              onSelectTable={setActiveTableId}
+              isFullScreen={true}
+              language={language}
+              onOpenCart={() => setCartSheetOpen(true)}
+           />
+         );
       case 'settings':
         return <SettingsTab settings={settings} onSettingsChange={handleSettingsUpdate} language={language} />;
       default:
         return null;
     }
   };
+  
+  const showFloatingCart = () => {
+    if (activeView !== 'sales') return false;
+    if (settings.enableTables) {
+      return !!activeTableId && activeCart.length > 0;
+    }
+    return activeCart.length > 0;
+  }
 
   return (
     <div className="flex h-screen flex-col bg-muted/40" dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -345,7 +485,7 @@ export default function POSPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-[250px]">
                 <ScrollArea className="h-[400px]">
-                  {VIEW_OPTIONS.map(({ value, label, icon: Icon }) => (
+                  {VIEW_OPTIONS.filter(v => v.value !== 'tables' || settings.enableTables).map(({ value, label, icon: Icon }) => (
                     <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
                       {language === 'en' && <Icon className="mr-3 h-5 w-5" />}
                       <span className="flex-1 text-right">{UI_TEXT[label][language]}</span>
@@ -356,36 +496,9 @@ export default function POSPage() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {activeView === 'sales' && (
-              <div className="flex w-full gap-4">
-                <div className="relative w-full">
-                    <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
-                    <Input
-                    placeholder={UI_TEXT.searchPlaceholder[language]}
-                    className={`${language === 'ar' ? 'pr-10' : 'pl-10'} text-base`}
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    />
-                </div>
-                <Select 
-                  onValueChange={setSelectedCategoryId} 
-                  value={selectedCategoryId}
-                  dir={language === 'ar' ? 'rtl' : 'ltr'}
-                >
-                    <SelectTrigger className="w-[200px]">
-                        <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <ScrollArea className="h-48">
-                        <SelectItem value="all">{UI_TEXT.allCategories[language]}</SelectItem>
-                        {categories.map(c => (
-                            <SelectItem key={c.id} value={String(c.id)}>{language === 'ar' ? c.nameAr : c.name}</SelectItem>
-                        ))}
-                      </ScrollArea>
-                    </SelectContent>
-                </Select>
-              </div>
-            )}
+            <h1 className="text-xl font-semibold flex-1 text-right">
+              {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}
+            </h1>
         </div>
 
         <div className="flex-1 pb-24 sm:pb-28"> 
@@ -393,9 +506,9 @@ export default function POSPage() {
         </div>
       </main>
 
-      {activeView === 'sales' && cart.length > 0 && (
+      {showFloatingCart() && (
           <FloatingCartBar 
-            cart={cart}
+            cart={activeCart}
             language={language}
             onOpenCart={() => setCartSheetOpen(true)}
           />
@@ -404,26 +517,26 @@ export default function POSPage() {
       <CartPanel
         isOpen={isCartSheetOpen}
         onOpenChange={setCartSheetOpen}
-        cart={cart}
-        setCart={setCart}
+        cart={activeCart}
+        setCart={setActiveCart}
         clearCart={clearCart}
         onProcessPayment={() => setPaymentDialogOpen(true)}
         language={language}
         customers={customers}
-        selectedCustomerId={selectedCustomerId}
-        onSelectCustomer={setSelectedCustomerId}
+        selectedCustomerId={activeCustomerId}
+        onSelectCustomer={setActiveCustomerId}
         onCustomerUpdate={handleCustomerUpdate}
       />
       
       <PaymentDialog
         isOpen={isPaymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
-        cart={cart}
+        cart={activeCart}
         onConfirm={handleConfirmPayment}
         language={language}
         customers={customers}
-        selectedCustomerId={selectedCustomerId}
-        onSelectCustomer={setSelectedCustomerId}
+        selectedCustomerId={activeCustomerId}
+        onSelectCustomer={setActiveCustomerId}
         onCustomerUpdate={handleCustomerUpdate}
       />
       

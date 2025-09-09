@@ -23,6 +23,7 @@ export interface Sale {
   paymentMethod: "cash" | "card";
   createdAt: Date;
   customer?: Customer;
+  tableId?: number;
 }
 
 export interface Customer {
@@ -80,6 +81,14 @@ export interface Category {
     nameAr: string;
 }
 
+export interface Table {
+  id: number;
+  name: string;
+  cart: CartItem[];
+  selectedCustomerId: number | null;
+}
+
+
 export interface Expense {
     id: number;
     shiftId: number;
@@ -116,6 +125,7 @@ export interface Settings {
     taxRate: number;
     receiptHeader: string;
     receiptFooter: string;
+    enableTables: boolean;
     printerName?: string;
     printerConnectionType?: 'bluetooth' | 'usb' | 'network';
     printerIpAddress?: string;

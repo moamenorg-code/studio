@@ -1,4 +1,4 @@
-import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry, Recipe, Category } from './types';
+import type { Product, Customer, Supplier, Purchase, RawMaterial, Expense, Shift, CashDrawerEntry, Recipe, Category, Table } from './types';
 
 export const categories: Category[] = [
     { id: 1, name: "Hot Drinks", nameAr: "مشروبات ساخنة" },
@@ -111,6 +111,15 @@ export const recipes: Recipe[] = [
     { id: 1, name: "Espresso Shot", items: [{ rawMaterialId: 1, quantity: 0.02 }] },
     { id: 2, name: "Steamed Milk", items: [{ rawMaterialId: 1, quantity: 0.02 }, { rawMaterialId: 2, quantity: 0.2 }] },
     { id: 3, name: "Croissant Recipe", items: [{ rawMaterialId: 7, quantity: 1 }] },
+];
+
+export const tables: Table[] = [
+    { id: 1, name: "T1", cart: [], selectedCustomerId: null },
+    { id: 2, name: "T2", cart: [], selectedCustomerId: null },
+    { id: 3, name: "T3", cart: [], selectedCustomerId: null },
+    { id: 4, name: "T4", cart: [], selectedCustomerId: null },
+    { id: 5, name: "T5", cart: [], selectedCustomerId: null },
+    { id: 6, name: "T6", cart: [], selectedCustomerId: null },
 ];
 
 export const expenses: Expense[] = [];

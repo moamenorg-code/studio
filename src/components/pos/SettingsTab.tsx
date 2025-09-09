@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Separator } from '../ui/separator';
+import { Switch } from '../ui/switch';
 
 type Language = 'en' | 'ar';
 
@@ -34,6 +35,9 @@ const UI_TEXT = {
   usb: { en: 'USB', ar: 'USB' },
   network: { en: 'Network', ar: 'شبكة' },
   selectPaperWidth: { en: 'Select paper width', ar: 'اختر عرض الورق' },
+  tables: { en: 'Tables Management', ar: 'إدارة الطاولات' },
+  enableTables: { en: 'Enable Tables', ar: 'تفعيل نظام الطاولات' },
+  enableTablesDesc: { en: 'Enable this to manage orders by tables.', ar: 'فعل هذا الخيار لإدارة الطلبات حسب الطاولات.' },
   save: { en: 'Save Settings', ar: 'حفظ الإعدادات' },
   saveSuccess: { en: 'Settings saved successfully!', ar: 'تم حفظ الإعدادات بنجاح!' },
 };
@@ -56,6 +60,13 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ settings, onSettingsChange, l
     }));
   };
 
+  const handleSwitchChange = (name: keyof Settings) => (checked: boolean) => {
+    setCurrentSettings(prev => ({
+      ...prev,
+      [name]: checked,
+    }));
+  };
+
   const handleSelectChange = (name: keyof Settings) => (value: string) => {
     setCurrentSettings(prev => ({
       ...prev,
@@ -69,6 +80,10 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ settings, onSettingsChange, l
         title: UI_TEXT.saveSuccess[language],
     });
   };
+
+  React.useEffect(() => {
+    setCurrentSettings(settings);
+  }, [settings]);
 
   return (
     <Card>
@@ -93,6 +108,24 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ settings, onSettingsChange, l
           <div className="space-y-2">
             <Label htmlFor="address">{UI_TEXT.address[language]}</Label>
             <Input id="address" name="address" value={currentSettings.address} onChange={handleChange} />
+          </div>
+        </div>
+
+        <Separator />
+        
+        {/* Tables */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">{UI_TEXT.tables[language]}</h3>
+          <div className="flex items-center space-x-4 rtl:space-x-reverse rounded-md border p-4">
+            <Switch
+              id="enable-tables"
+              checked={currentSettings.enableTables}
+              onCheckedChange={handleSwitchChange('enableTables')}
+            />
+            <div className="flex-1 space-y-1">
+              <Label htmlFor="enable-tables">{UI_TEXT.enableTables[language]}</Label>
+              <p className="text-xs text-muted-foreground">{UI_TEXT.enableTablesDesc[language]}</p>
+            </div>
           </div>
         </div>
 
