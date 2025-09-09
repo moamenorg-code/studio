@@ -219,7 +219,12 @@ const CartPanel: React.FC<CartPanelProps> = ({
                                         <CommandItem
                                             key={customer.id}
                                             value={`${customer.name} ${customer.phone}`}
-                                            onSelect={() => handleSelectCustomer(customer.id)}
+                                            onSelect={(currentValue) => {
+                                              const selected = customers.find(c => `${c.name} ${c.phone}` === currentValue);
+                                              if (selected) {
+                                                handleSelectCustomer(selected.id)
+                                              }
+                                            }}
                                         >
                                             <Check
                                             className={cn(
