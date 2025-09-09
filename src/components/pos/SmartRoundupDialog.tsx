@@ -54,17 +54,20 @@ function SubmitButton({ language }: { language: Language }) {
 }
 
 const SmartRoundupDialog: React.FC<SmartRoundupDialogProps> = ({ isOpen, onOpenChange, language }) => {
-  const initialState: RoundupState = {};
-  const [state, dispatch] = React.useActionState(runSmartRoundup, initialState);
+  const [state, setState] = React.useState<RoundupState>({});
   const formRef = React.useRef<HTMLFormElement>(null);
 
   React.useEffect(() => {
     if (!isOpen) {
       formRef.current?.reset();
-      // A bit of a hack to reset the form state on close
-      dispatch({ message: 'reset' }); 
+      setState({});
     }
-  }, [isOpen, dispatch]);
+  }, [isOpen]);
+
+  const handleAction = async (formData: FormData) => {
+    const result = await runSmartRoundup(undefined, formData);
+    setState(result);
+  };
 
 
   return (
@@ -74,7 +77,7 @@ const SmartRoundupDialog: React.FC<SmartRoundupDialogProps> = ({ isOpen, onOpenC
           <DialogTitle>{UI_TEXT.title[language]}</DialogTitle>
           <DialogDescription>{UI_TEXT.description[language]}</DialogDescription>
         </DialogHeader>
-        <form ref={formRef} action={dispatch} className="space-y-4">
+        <form ref={formRef} action={handleAction} className="space-y-4">
           <div>
             <Label htmlFor="price">{UI_TEXT.originalPrice[language]}</Label>
             <Input id="price" name="price" type="number" step="0.01" required dir="ltr" />
@@ -98,7 +101,7 @@ const SmartRoundupDialog: React.FC<SmartRoundupDialogProps> = ({ isOpen, onOpenC
           </div>
         )}
         
-        {state?.message && !state.result && state.message !== 'Success' && state.message !== 'reset' &&(
+        {state?.message && !state.result && state.message !== 'Success' &&(
              <p className="mt-1 text-sm text-destructive">{state.message}</p>
         )}
 

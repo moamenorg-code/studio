@@ -19,7 +19,7 @@ export type RoundupState = {
 };
 
 export async function runSmartRoundup(
-  prevState: RoundupState,
+  prevState: RoundupState | undefined,
   formData: FormData
 ): Promise<RoundupState> {
   const validatedFields = roundupSchema.safeParse({
