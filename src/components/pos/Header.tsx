@@ -13,7 +13,7 @@ import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
 import type { ActiveView, Language, Permission, FirestoreStatus } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { cn } from '@/lib/utils';
 
 const HEADER_UI_TEXT = {
@@ -73,126 +73,128 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="flex h-16 shrink-0 items-center border-b bg-card px-4 sm:px-6">
-      <div className="flex w-full items-center gap-4">
-        {/* Buttons on the left */}
-        <div className="flex items-center gap-2">
-          <DropdownMenu dir={language === 'ar' ? 'rtl' : 'ltr'}>
-            <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-9 w-9" disabled={!isShiftOpen}>
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">{UI_TEXT.menu[language]}</span>
+      <TooltipProvider>
+        <div className="flex w-full items-center gap-4">
+          {/* Buttons on the left */}
+          <div className="flex items-center gap-2">
+            <DropdownMenu dir={language === 'ar' ? 'rtl' : 'ltr'}>
+              <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="h-9 w-9" disabled={!isShiftOpen}>
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">{UI_TEXT.menu[language]}</span>
+              </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[250px] p-0">
+                  <ScrollArea className="h-auto max-h-[70vh]">
+                      <div className="p-1">
+                          {availableViews.map(({ value, label, icon: Icon }) => (
+                          <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="py-2.5 text-base">
+                              <Icon className={language === 'ar' ? 'ms-3 h-5 w-5' : 'me-3 h-5 w-5'} />
+                              <span className="flex-1">{UI_TEXT[label][language]}</span>
+                          </DropdownMenuItem>
+                          ))}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onSelect={onLogout} className="py-2.5 text-base text-destructive">
+                              <LogOut className={language === 'ar' ? 'ms-3 h-5 w-5' : 'me-3 h-5 w-5'} />
+                              <span className="flex-1">{HEADER_UI_TEXT.logout[language]}</span>
+                          </DropdownMenuItem>
+                      </div>
+                  </ScrollArea>
+              </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="h-9 w-9">
+                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                  <span className="sr-only">{HEADER_UI_TEXT.toggleTheme[language]}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => setTheme("light")}>
+                  Light
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                  Dark
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("system")}>
+                  System
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu dir={language === 'ar' ? 'rtl' : 'ltr'}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Languages className="h-4 w-4" />
+                  <span className="hidden sm:inline">
+                    {HEADER_UI_TEXT.language[language]}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => setLanguage('en')}>
+                  {HEADER_UI_TEXT.english[language]}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage('ar')}>
+                  {HEADER_UI_TEXT.arabic[language]}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onOpenSmartRoundup}
+              className="gap-2"
+              disabled={!isShiftOpen}
+            >
+              <Bot className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                {HEADER_UI_TEXT.smartRoundup[language]}
+              </span>
             </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[250px] p-0">
-                <ScrollArea className="h-auto max-h-[70vh]">
-                    <div className="p-1">
-                        {availableViews.map(({ value, label, icon: Icon }) => (
-                        <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="py-2.5 text-base">
-                            <Icon className={language === 'ar' ? 'ms-3 h-5 w-5' : 'me-3 h-5 w-5'} />
-                            <span className="flex-1">{UI_TEXT[label][language]}</span>
-                        </DropdownMenuItem>
-                        ))}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={onLogout} className="py-2.5 text-base text-destructive">
-                            <LogOut className={language === 'ar' ? 'ms-3 h-5 w-5' : 'me-3 h-5 w-5'} />
-                            <span className="flex-1">{HEADER_UI_TEXT.logout[language]}</span>
-                        </DropdownMenuItem>
-                    </div>
-                </ScrollArea>
-            </DropdownMenuContent>
-        </DropdownMenu>
-         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-9 w-9">
-                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">{HEADER_UI_TEXT.toggleTheme[language]}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={() => setTheme("light")}>
-                Light
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("dark")}>
-                Dark
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("system")}>
-                System
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <DropdownMenu dir={language === 'ar' ? 'rtl' : 'ltr'}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Languages className="h-4 w-4" />
-                <span className="hidden sm:inline">
-                  {HEADER_UI_TEXT.language[language]}
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={() => setLanguage('en')}>
-                {HEADER_UI_TEXT.english[language]}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setLanguage('ar')}>
-                {HEADER_UI_TEXT.arabic[language]}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-           <Button
-            variant="outline"
-            size="sm"
-            onClick={onOpenSmartRoundup}
-            className="gap-2"
-            disabled={!isShiftOpen}
-          >
-            <Bot className="h-4 w-4" />
-            <span className="hidden sm:inline">
-              {HEADER_UI_TEXT.smartRoundup[language]}
-            </span>
-          </Button>
-           <Button
-            variant="outline"
-            size="sm"
-            onClick={onOpenHeldOrders}
-            className="relative gap-2"
-            disabled={!isShiftOpen}
-          >
-            <PauseCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">
-              {HEADER_UI_TEXT.heldOrders[language]}
-            </span>
-            {heldOrdersCount > 0 && (
-              <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{heldOrdersCount}</Badge>
-            )}
-          </Button>
-        </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onOpenHeldOrders}
+              className="relative gap-2"
+              disabled={!isShiftOpen}
+            >
+              <PauseCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                {HEADER_UI_TEXT.heldOrders[language]}
+              </span>
+              {heldOrdersCount > 0 && (
+                <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{heldOrdersCount}</Badge>
+              )}
+            </Button>
+          </div>
 
-        {/* Spacer */}
-        <div className="flex-grow" />
+          {/* Spacer */}
+          <div className="flex-grow" />
 
-        {/* App Name on the right */}
-        <div className="flex items-center gap-2">
-           <Tooltip>
-              <TooltipTrigger>
-                 <div className="flex items-center gap-2">
-                    <Database className="h-5 w-5 text-muted-foreground" />
-                    <div className={cn("h-2.5 w-2.5 rounded-full", 
-                      firestoreStatus === 'connecting' && 'bg-yellow-400 animate-pulse',
-                      firestoreStatus === 'connected' && 'bg-green-500',
-                      firestoreStatus === 'error' && 'bg-red-500',
-                    )}/>
-                 </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                {firestoreStatus === 'connecting' && <p>{HEADER_UI_TEXT.db_connecting[language]}</p>}
-                {firestoreStatus === 'connected' && <p>{HEADER_UI_TEXT.db_connected[language]}</p>}
-                {firestoreStatus === 'error' && <p>{HEADER_UI_TEXT.db_error[language]}</p>}
-              </TooltipContent>
-            </Tooltip>
-          <h1 className="text-xl font-bold text-primary">{appName}</h1>
+          {/* App Name on the right */}
+          <div className="flex items-center gap-2">
+            <Tooltip>
+                <TooltipTrigger>
+                  <div className="flex items-center gap-2">
+                      <Database className="h-5 w-5 text-muted-foreground" />
+                      <div className={cn("h-2.5 w-2.5 rounded-full", 
+                        firestoreStatus === 'connecting' && 'bg-yellow-400 animate-pulse',
+                        firestoreStatus === 'connected' && 'bg-green-500',
+                        firestoreStatus === 'error' && 'bg-red-500',
+                      )}/>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {firestoreStatus === 'connecting' && <p>{HEADER_UI_TEXT.db_connecting[language]}</p>}
+                  {firestoreStatus === 'connected' && <p>{HEADER_UI_TEXT.db_connected[language]}</p>}
+                  {firestoreStatus === 'error' && <p>{HEADER_UI_TEXT.db_error[language]}</p>}
+                </TooltipContent>
+              </Tooltip>
+            <h1 className="text-xl font-bold text-primary">{appName}</h1>
+          </div>
         </div>
-      </div>
+      </TooltipProvider>
     </header>
   );
 };
