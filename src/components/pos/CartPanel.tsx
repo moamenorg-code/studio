@@ -206,39 +206,35 @@ const CartPanel: React.FC<CartPanelProps> = ({
                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                             <Command>
                                 <CommandInput placeholder={UI_TEXT.searchCustomer[language]} />
-                                <CommandList>
-                                    <CommandEmpty>{UI_TEXT.noCustomerFound[language]}</CommandEmpty>
-                                    <CommandGroup>
-                                        {!isDelivery && (
-                                            <CommandItem onSelect={() => handleSelectCustomer(null)}>
-                                                <Check className={cn( "mr-2 h-4 w-4", selectedCustomerId === null ? "opacity-100" : "opacity-0" )}/>
-                                                {UI_TEXT.walkInCustomer[language]}
-                                            </CommandItem>
-                                        )}
-                                        {customers.map((customer) => (
-                                        <CommandItem
-                                            key={customer.id}
-                                            value={`${customer.name} ${customer.phone}`}
-                                            onMouseDown={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                handleSelectCustomer(customer.id);
-                                            }}
-                                        >
-                                            <Check
-                                            className={cn(
-                                                "mr-2 h-4 w-4",
-                                                selectedCustomerId === customer.id ? "opacity-100" : "opacity-0"
-                                            )}
-                                            />
-                                            <div className="flex flex-col">
-                                                <span>{customer.name}</span>
-                                                <span className="text-xs text-muted-foreground" dir="ltr">{customer.phone}</span>
-                                            </div>
-                                        </CommandItem>
-                                        ))}
-                                    </CommandGroup>
-                                </CommandList>
+                                  <CommandList>
+                                      <CommandEmpty>{UI_TEXT.noCustomerFound[language]}</CommandEmpty>
+                                      <CommandGroup>
+                                          {!isDelivery && (
+                                              <CommandItem onSelect={() => handleSelectCustomer(null)}>
+                                                  <Check className={cn( "mr-2 h-4 w-4", selectedCustomerId === null ? "opacity-100" : "opacity-0" )}/>
+                                                  {UI_TEXT.walkInCustomer[language]}
+                                              </CommandItem>
+                                          )}
+                                          {customers.map((customer) => (
+                                          <CommandItem
+                                              key={customer.id}
+                                              value={`${customer.name} ${customer.phone}`}
+                                              onSelect={() => handleSelectCustomer(customer.id)}
+                                          >
+                                              <Check
+                                              className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  selectedCustomerId === customer.id ? "opacity-100" : "opacity-0"
+                                              )}
+                                              />
+                                              <div className="flex flex-col">
+                                                  <span>{customer.name}</span>
+                                                  <span className="text-xs text-muted-foreground" dir="ltr">{customer.phone}</span>
+                                              </div>
+                                          </CommandItem>
+                                          ))}
+                                      </CommandGroup>
+                                  </CommandList>
                             </Command>
                         </PopoverContent>
                     </Popover>
