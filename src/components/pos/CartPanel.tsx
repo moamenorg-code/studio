@@ -18,7 +18,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from '@/lib/utils';
 import CustomerDialog from './CustomerDialog';
@@ -211,39 +210,44 @@ const CartPanel: React.FC<CartPanelProps> = ({
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                          <Command>
-                            <CommandInput 
+                          <div className='p-2'>
+                            <Input
                               placeholder={UI_TEXT.searchCustomer[language]}
                               value={searchQuery}
-                              onValueChange={setSearchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              className="w-full"
                             />
-                            <CommandList>
-                              <CommandEmpty>{UI_TEXT.noCustomerFound[language]}</CommandEmpty>
-                              <CommandGroup>
-                                {!isDelivery && (
-                                  <CommandItem onSelect={() => handleSelectCustomer(null)}>
-                                      <Check className={cn("mr-2 h-4 w-4", selectedCustomerId === null ? "opacity-100" : "opacity-0")} />
-                                      {UI_TEXT.walkInCustomer[language]}
-                                  </CommandItem>
-                                )}
-                                {filteredCustomers.map((customer) => (
-                                    <CommandItem
-                                      key={customer.id}
-                                      value={`${customer.name} ${customer.phone}`}
-                                      onSelect={() => handleSelectCustomer(customer.id)}
-                                    >
-                                      <Check
-                                          className={cn( "mr-2 h-4 w-4", selectedCustomerId === customer.id ? "opacity-100" : "opacity-0")}
-                                      />
-                                      <div className="flex flex-col items-start">
-                                        <span>{customer.name}</span>
-                                        <span className="text-xs text-muted-foreground" dir="ltr">{customer.phone}</span>
-                                      </div>
-                                    </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
+                          </div>
+                          <ScrollArea className="h-48">
+                            <div className="p-2 space-y-1">
+                              {!isDelivery && (
+                                <button
+                                  onClick={() => handleSelectCustomer(null)}
+                                  className={cn("w-full text-start flex items-center p-2 rounded-md hover:bg-accent", selectedCustomerId === null && "bg-accent")}
+                                >
+                                  <Check className={cn("mr-2 h-4 w-4", selectedCustomerId === null ? "opacity-100" : "opacity-0")} />
+                                  {UI_TEXT.walkInCustomer[language]}
+                                </button>
+                              )}
+                              {filteredCustomers.length > 0 ? (
+                                filteredCustomers.map((customer) => (
+                                  <button
+                                    key={customer.id}
+                                    onClick={() => handleSelectCustomer(customer.id)}
+                                    className={cn("w-full text-start flex items-center p-2 rounded-md hover:bg-accent", selectedCustomerId === customer.id && "bg-accent")}
+                                  >
+                                    <Check className={cn("mr-2 h-4 w-4", selectedCustomerId === customer.id ? "opacity-100" : "opacity-0")} />
+                                    <div className="flex flex-col items-start">
+                                      <span>{customer.name}</span>
+                                      <span className="text-xs text-muted-foreground" dir="ltr">{customer.phone}</span>
+                                    </div>
+                                  </button>
+                                ))
+                              ) : (
+                                <p className="p-2 text-center text-sm text-muted-foreground">{UI_TEXT.noCustomerFound[language]}</p>
+                              )}
+                            </div>
+                          </ScrollArea>
                         </PopoverContent>
                     </Popover>
                     {customerRequired && <p className="text-sm text-destructive">{UI_TEXT.customerRequired[language]}</p>}
