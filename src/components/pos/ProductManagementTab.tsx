@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { MoreHorizontal, PlusCircle, BookCopy } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, BookCopy, Search } from 'lucide-react';
 import type { Product, Recipe, Category } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ProductDialog from './ProductDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '../ui/input';
 
 type Language = 'en' | 'ar';
 
@@ -33,6 +34,7 @@ const UI_TEXT = {
   noProducts: { en: 'No products found.', ar: 'لم يتم العثور على منتجات.' },
   selectRecipe: { en: 'Select a recipe', ar: 'اختر وصفة' },
   selectCategory: { en: 'Select a category', ar: 'اختر فئة' },
+  searchPlaceholder: { en: 'Search by name or barcode...', ar: 'ابحث بالاسم أو الباركود...' },
 };
 
 interface ProductManagementTabProps {
@@ -46,6 +48,7 @@ interface ProductManagementTabProps {
 const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, onProductsChange, recipes, categories, language }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const [editingProduct, setEditingProduct] = React.useState<Product | null>(null);
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   const handleAddProduct = () => {
     setEditingProduct(null);
@@ -82,6 +85,16 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
       const newCategoryId = categoryId === 'none' ? undefined : Number(categoryId);
       onProductsChange(products.map(p => p.id === productId ? {...p, categoryId: newCategoryId} : p));
   }
+  
+  const filteredProducts = React.useMemo(() => {
+    if (!searchQuery) return products;
+    const lowercasedQuery = searchQuery.toLowerCase();
+    return products.filter(product => 
+      product.name.toLowerCase().includes(lowercasedQuery) ||
+      product.nameAr.toLowerCase().includes(lowercasedQuery) ||
+      (product.barcode && product.barcode.includes(lowercasedQuery))
+    );
+  }, [products, searchQuery]);
 
 
   return (
@@ -93,14 +106,25 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
               <CardTitle>{UI_TEXT.manageProducts[language]}</CardTitle>
               <CardDescription>{UI_TEXT.manageYourProducts[language]}</CardDescription>
             </div>
-            <Button onClick={handleAddProduct} className="w-full sm:w-auto">
-              <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
-              {UI_TEXT.addProduct[language]}
-            </Button>
+            <div className="flex w-full sm:w-auto flex-col sm:flex-row gap-2">
+                 <div className="relative">
+                    <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
+                    <Input
+                        placeholder={UI_TEXT.searchPlaceholder[language]}
+                        className={`${language === 'ar' ? 'pr-10' : 'pl-10'}`}
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <Button onClick={handleAddProduct} className="w-full sm:w-auto">
+                <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                {UI_TEXT.addProduct[language]}
+                </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[calc(100vh-28rem)]">
+          <ScrollArea className="h-[calc(100vh-31rem)]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -114,8 +138,8 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.length > 0 ? (
-                  products.map(product => (
+                {filteredProducts.length > 0 ? (
+                  filteredProducts.map(product => (
                     <TableRow key={product.id}>
                       <TableCell className="font-medium">{language === 'ar' ? product.nameAr : product.name}</TableCell>
                       <TableCell>{product.price.toFixed(2)}</TableCell>

@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Search } from 'lucide-react';
 import type { Purchase, Supplier, RawMaterial } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import PurchaseDialog from './PurchaseDialog';
+import { Input } from '../ui/input';
 
 type Language = 'en' | 'ar';
 
@@ -18,6 +19,7 @@ const UI_TEXT = {
   date: { en: 'Date', ar: 'التاريخ' },
   total: { en: 'Total', ar: 'الإجمالي' },
   noPurchases: { en: 'No purchases found.', ar: 'لم يتم العثور على مشتريات.' },
+  searchPlaceholder: { en: 'Search by Invoice ID or supplier...', ar: 'ابحث برقم الفاتورة أو المورد...' },
 };
 
 interface PurchaseManagementTabProps {
@@ -30,6 +32,7 @@ interface PurchaseManagementTabProps {
 const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers, rawMaterials, onRawMaterialsChange, language }) => {
   const [purchases, setPurchases] = React.useState<Purchase[]>([]);
   const [isDialogOpen, setDialogOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   const handleAddPurchase = () => {
     setDialogOpen(true);
@@ -60,6 +63,17 @@ const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers
       return suppliers.find(s => s.id === supplierId)?.name || 'Unknown';
   }
 
+  const filteredPurchases = React.useMemo(() => {
+    if (!searchQuery) return purchases;
+    const lowercasedQuery = searchQuery.toLowerCase();
+    return purchases.filter(purchase => {
+      const supplierName = getSupplierName(purchase.supplierId).toLowerCase();
+      return purchase.id.toLowerCase().includes(lowercasedQuery) ||
+             supplierName.includes(lowercasedQuery);
+    });
+  }, [purchases, searchQuery]);
+
+
   return (
     <>
       <Card className='shadow-none border-none'>
@@ -69,14 +83,25 @@ const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers
               <CardTitle>{UI_TEXT.managePurchases[language]}</CardTitle>
               <CardDescription>{UI_TEXT.manageYourPurchases[language]}</CardDescription>
             </div>
-            <Button onClick={handleAddPurchase} className="w-full sm:w-auto">
-              <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
-              {UI_TEXT.addPurchase[language]}
-            </Button>
+             <div className="flex w-full sm:w-auto flex-col sm:flex-row gap-2">
+                <div className="relative">
+                    <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
+                    <Input
+                        placeholder={UI_TEXT.searchPlaceholder[language]}
+                        className={`${language === 'ar' ? 'pr-10' : 'pl-10'}`}
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <Button onClick={handleAddPurchase} className="w-full sm:w-auto">
+                <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                {UI_TEXT.addPurchase[language]}
+                </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[calc(100vh-28rem)]">
+          <ScrollArea className="h-[calc(100vh-31rem)]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -87,8 +112,8 @@ const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {purchases.length > 0 ? (
-                  purchases.map(purchase => (
+                {filteredPurchases.length > 0 ? (
+                  filteredPurchases.map(purchase => (
                     <TableRow key={purchase.id}>
                       <TableCell className="font-medium">{purchase.id}</TableCell>
                       <TableCell>{getSupplierName(purchase.supplierId)}</TableCell>

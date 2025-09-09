@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Search } from 'lucide-react';
 import type { RawMaterial } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import RawMaterialDialog from './RawMaterialDialog';
+import { Input } from '../ui/input';
 
 type Language = 'en' | 'ar';
 
@@ -27,6 +28,7 @@ const UI_TEXT = {
   edit: { en: 'Edit', ar: 'تعديل' },
   delete: { en: 'Delete', ar: 'حذف' },
   noRawMaterials: { en: 'No raw materials found.', ar: 'لم يتم العثور على مواد خام.' },
+  searchPlaceholder: { en: 'Search by name...', ar: 'ابحث بالاسم...' },
 };
 
 interface InventoryManagementTabProps {
@@ -38,6 +40,7 @@ interface InventoryManagementTabProps {
 const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMaterials, onRawMaterialsChange, language }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const [editingRawMaterial, setEditingRawMaterial] = React.useState<RawMaterial | null>(null);
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   const handleAdd = () => {
     setEditingRawMaterial(null);
@@ -63,6 +66,15 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
     setDialogOpen(false);
   };
 
+  const filteredRawMaterials = React.useMemo(() => {
+    if (!searchQuery) return rawMaterials;
+    const lowercasedQuery = searchQuery.toLowerCase();
+    return rawMaterials.filter(material => 
+      material.name.toLowerCase().includes(lowercasedQuery) ||
+      material.nameAr.toLowerCase().includes(lowercasedQuery)
+    );
+  }, [rawMaterials, searchQuery]);
+
   return (
     <>
       <Card>
@@ -72,14 +84,25 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
               <CardTitle>{UI_TEXT.manageInventory[language]}</CardTitle>
               <CardDescription>{UI_TEXT.manageRawMaterials[language]}</CardDescription>
             </div>
-            <Button onClick={handleAdd} className="w-full sm:w-auto">
-              <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
-              {UI_TEXT.addRawMaterial[language]}
-            </Button>
+            <div className="flex w-full sm:w-auto flex-col sm:flex-row gap-2">
+                <div className="relative">
+                    <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
+                    <Input
+                        placeholder={UI_TEXT.searchPlaceholder[language]}
+                        className={`${language === 'ar' ? 'pr-10' : 'pl-10'}`}
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <Button onClick={handleAdd} className="w-full sm:w-auto">
+                    <PlusCircle className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                    {UI_TEXT.addRawMaterial[language]}
+                </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[calc(100vh-22rem)]">
+          <ScrollArea className="h-[calc(100vh-25rem)]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -92,8 +115,8 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rawMaterials.length > 0 ? (
-                  rawMaterials.map(material => (
+                {filteredRawMaterials.length > 0 ? (
+                  filteredRawMaterials.map(material => (
                     <TableRow key={material.id}>
                       <TableCell className="font-medium">{language === 'ar' ? material.nameAr : material.name}</TableCell>
                       <TableCell>{material.stock}</TableCell>
