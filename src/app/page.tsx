@@ -431,8 +431,8 @@ export default function POSPage() {
        );
     }
     return (
-        <Card className="shadow-none border-none h-full">
-            <CardHeader className="p-4">
+        <div className="h-full flex flex-col">
+            <div className="p-4 border-b">
               <div className="flex items-center gap-4">
                   <div className="flex w-full gap-4">
                     <div className="relative w-full">
@@ -463,17 +463,19 @@ export default function POSPage() {
                     </Select>
                   </div>
               </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <ScrollArea className="h-[calc(100vh-22rem)]">
-                <ProductGrid
-                  products={filteredProducts}
-                  onAddToCart={addToCart}
-                  language={language}
-                />
-              </ScrollArea>
-            </CardContent>
-        </Card>
+            </div>
+            <div className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full">
+                  <div className="p-4">
+                    <ProductGrid
+                      products={filteredProducts}
+                      onAddToCart={addToCart}
+                      language={language}
+                    />
+                  </div>
+                </ScrollArea>
+            </div>
+        </div>
     );
   }
 
@@ -554,7 +556,7 @@ export default function POSPage() {
         setLanguage={setLanguage}
         onOpenSmartRoundup={() => setSmartRoundupOpen(true)}
       />
-      <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 sm:p-6">
+      <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
         <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -581,7 +583,7 @@ export default function POSPage() {
             </h1>
         </div>
 
-        <div className="flex-1 pb-24 sm:pb-28"> 
+        <div className="flex-1 overflow-hidden pb-24 sm:pb-28"> 
           {renderActiveView()}
         </div>
       </main>
