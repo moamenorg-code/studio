@@ -38,12 +38,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
@@ -74,9 +68,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 type Language = "en" | "ar";
-type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings" | "tables";
+export type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings" | "tables";
 
-const UI_TEXT = {
+export const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
   salesHistory: { en: "Sales History", ar: "سجل المبيعات" },
   dashboard: { en: "Dashboard", ar: "لوحة التحكم" },
@@ -108,7 +102,7 @@ const UI_TEXT = {
   customerRequiredDesc: { en: 'Please select or add a customer for this delivery order.', ar: 'يرجى اختيار أو إضافة عميل لطلب التوصيل هذا.' },
 };
 
-const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType }[] = [
+export const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType }[] = [
     { value: 'sales', label: 'sales', icon: ShoppingBag },
     { value: 'dashboard', label: 'dashboard', icon: AreaChart },
     { value: 'history', label: 'salesHistory', icon: History },
@@ -578,29 +572,12 @@ export default function POSPage() {
         onOpenSmartRoundup={() => setSmartRoundupOpen(true)}
         onOpenHeldOrders={() => setHeldOrdersOpen(true)}
         heldOrdersCount={heldOrders.length}
+        activeView={activeView}
+        setActiveView={setActiveView}
+        enableTables={settings.enableTables}
       />
       <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
         <div className="flex items-center gap-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="flex-shrink-0 h-10 w-10">
-                  <Menu className="h-5 w-5" />
-                  <span className="sr-only">{UI_TEXT.menu[language]}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-[250px]">
-                <ScrollArea className="h-[400px]">
-                  {VIEW_OPTIONS.filter(v => v.value !== 'tables' || settings.enableTables).map(({ value, label, icon: Icon }) => (
-                    <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
-                      {language === 'en' && <Icon className="mr-3 h-5 w-5" />}
-                      <span className="flex-1 text-right">{UI_TEXT[label][language]}</span>
-                      {language === 'ar' && <Icon className="ml-3 h-5 w-5" />}
-                    </DropdownMenuItem>
-                  ))}
-                </ScrollArea>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
            {activeView === 'sales' && activeOrder ? (
              <>
                 <div className="relative w-full">
@@ -631,7 +608,7 @@ export default function POSPage() {
                 </Select>
              </>
            ) : (
-            <h1 className="text-xl font-semibold flex-1 text-right">
+            <h1 className="text-xl font-semibold flex-1">
               {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}
             </h1>
            )}

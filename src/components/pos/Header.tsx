@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Bot, Languages, Moon, Sun, PauseCircle } from 'lucide-react';
+import { Bot, Languages, Moon, Sun, PauseCircle, Menu } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,10 +9,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '../ui/badge';
+import { ScrollArea } from '../ui/scroll-area';
+import { ActiveView, UI_TEXT, VIEW_OPTIONS } from '@/app/page';
 
 type Language = 'en' | 'ar';
 
-const UI_TEXT = {
+const HEADER_UI_TEXT = {
   language: { en: 'Language', ar: 'اللغة' },
   english: { en: 'English', ar: 'English' },
   arabic: { en: 'العربية', ar: 'العربية' },
@@ -28,6 +30,9 @@ interface HeaderProps {
   onOpenSmartRoundup: () => void;
   onOpenHeldOrders: () => void;
   heldOrdersCount: number;
+  activeView: ActiveView;
+  setActiveView: (view: ActiveView) => void;
+  enableTables: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -37,6 +42,9 @@ const Header: React.FC<HeaderProps> = ({
   onOpenSmartRoundup,
   onOpenHeldOrders,
   heldOrdersCount,
+  activeView,
+  setActiveView,
+  enableTables,
 }) => {
   const { setTheme } = useTheme();
 
@@ -52,7 +60,7 @@ const Header: React.FC<HeaderProps> = ({
         >
           <PauseCircle className="h-4 w-4" />
           <span className="hidden sm:inline">
-            {UI_TEXT.heldOrders[language]}
+            {HEADER_UI_TEXT.heldOrders[language]}
           </span>
           {heldOrdersCount > 0 && (
             <Badge variant="destructive" className="absolute -right-2 -top-2 h-5 w-5 justify-center p-0">{heldOrdersCount}</Badge>
@@ -66,7 +74,7 @@ const Header: React.FC<HeaderProps> = ({
         >
           <Bot className="h-4 w-4" />
           <span className="hidden sm:inline">
-            {UI_TEXT.smartRoundup[language]}
+            {HEADER_UI_TEXT.smartRoundup[language]}
           </span>
         </Button>
         <DropdownMenu>
@@ -74,16 +82,16 @@ const Header: React.FC<HeaderProps> = ({
             <Button variant="outline" size="sm" className="gap-2">
               <Languages className="h-4 w-4" />
               <span className="hidden sm:inline">
-                {UI_TEXT.language[language]}
+                {HEADER_UI_TEXT.language[language]}
               </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
             <DropdownMenuItem onClick={() => setLanguage('en')}>
-              {UI_TEXT.english[language]}
+              {HEADER_UI_TEXT.english[language]}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setLanguage('ar')}>
-              {UI_TEXT.arabic[language]}
+              {HEADER_UI_TEXT.arabic[language]}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -92,7 +100,7 @@ const Header: React.FC<HeaderProps> = ({
             <Button variant="outline" size="icon" className="h-9 w-9">
               <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">{UI_TEXT.toggleTheme[language]}</span>
+              <span className="sr-only">{HEADER_UI_TEXT.toggleTheme[language]}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -106,6 +114,26 @@ const Header: React.FC<HeaderProps> = ({
               System
             </DropdownMenuItem>
           </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="h-9 w-9">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">{UI_TEXT.menu[language]}</span>
+            </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[250px]">
+            <ScrollArea className="h-[400px]">
+                {VIEW_OPTIONS.filter(v => v.value !== 'tables' || enableTables).map(({ value, label, icon: Icon }) => (
+                <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
+                    {language === 'en' && <Icon className="mr-3 h-5 w-5" />}
+                    <span className="flex-1 text-right">{UI_TEXT[label][language]}</span>
+                    {language === 'ar' && <Icon className="ml-3 h-5 w-5" />}
+                </DropdownMenuItem>
+                ))}
+            </ScrollArea>
+            </DropdownMenuContent>
         </DropdownMenu>
       </div>
     </header>
