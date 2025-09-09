@@ -65,29 +65,23 @@ const SupplierDialog: React.FC<SupplierDialogProps> = ({ isOpen, onOpenChange, o
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{supplier ? UI_TEXT.editSupplier[language] : UI_TEXT.addSupplier[language]}</DialogTitle>
           <DialogDescription>{UI_TEXT.supplierInfo[language]}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-end">
-              {UI_TEXT.name[language]}
-            </Label>
-            <Input id="name" name="name" value={formData.name || ''} onChange={handleChange} className="col-span-3" />
+          <div className="space-y-2">
+            <Label htmlFor="name">{UI_TEXT.name[language]}</Label>
+            <Input id="name" name="name" value={formData.name || ''} onChange={handleChange} />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="phone" className="text-end">
-              {UI_TEXT.phone[language]}
-            </Label>
-            <Input id="phone" name="phone" value={formData.phone || ''} onChange={handleChange} className="col-span-3" dir="ltr" />
+          <div className="space-y-2">
+            <Label htmlFor="phone">{UI_TEXT.phone[language]}</Label>
+            <Input id="phone" name="phone" value={formData.phone || ''} onChange={handleChange} dir="ltr" />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="address" className="text-end">
-              {UI_TEXT.address[language]}
-            </Label>
-            <Input id="address" name="address" value={formData.address || ''} onChange={handleChange} className="col-span-3" />
+          <div className="space-y-2">
+            <Label htmlFor="address">{UI_TEXT.address[language]}</Label>
+            <Input id="address" name="address" value={formData.address || ''} onChange={handleChange} />
           </div>
         </div>
         <DialogFooter>

@@ -14,13 +14,6 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -164,17 +157,17 @@ const CartPanel: React.FC<CartPanelProps> = ({
                     <div className="space-y-4 py-4">
                     {cart.map(item => (
                         <div key={item.id} className="flex items-center gap-4">
-                          <div className="flex-1">
-                              <p className="font-medium">{language === 'ar' ? item.nameAr : item.name}</p>
-                              <p className="text-sm text-muted-foreground">{item.price.toFixed(2)}</p>
-                          </div>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeItem(item.id)}><Trash2 className="h-4 w-4" /></Button>
+                          <p className="w-20 text-start font-medium">{(item.price * item.quantity).toFixed(2)}</p>
                           <div className="flex items-center gap-2">
                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, -1)}><MinusCircle className="h-4 w-4" /></Button>
                               <span className="w-6 text-center">{item.quantity}</span>
                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, 1)}><PlusCircle className="h-4 w-4" /></Button>
                           </div>
-                          <p className="w-20 text-end font-medium">{(item.price * item.quantity).toFixed(2)}</p>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeItem(item.id)}><Trash2 className="h-4 w-4" /></Button>
+                          <div className="flex-1 text-right">
+                              <p className="font-medium">{language === 'ar' ? item.nameAr : item.name}</p>
+                              <p className="text-sm text-muted-foreground">{item.price.toFixed(2)}</p>
+                          </div>
                         </div>
                     ))}
                     </div>
@@ -249,26 +242,26 @@ const CartPanel: React.FC<CartPanelProps> = ({
                         <span>{subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                        <Label htmlFor="discount" className="text-sm">{UI_TEXT.discount[language]}</Label>
                         <Input 
                             id="discount"
                             type="number"
                             value={overallDiscount}
                             onChange={e => setOverallDiscount(Math.max(0, e.target.valueAsNumber || 0))}
-                            className="h-8 w-24 text-end"
+                            className="h-8 w-24 text-start"
                             dir="ltr"
                         />
+                        <Label htmlFor="discount" className="text-sm">{UI_TEXT.discount[language]}</Label>
                     </div>
                     <div className="flex items-center justify-between">
-                        <Label htmlFor="service-charge" className="text-sm">{UI_TEXT.serviceCharge[language]}</Label>
-                        <Input
+                         <Input
                             id="service-charge"
                             type="number"
                             value={serviceCharge}
                             onChange={e => setServiceCharge(Math.max(0, e.target.valueAsNumber || 0))}
-                            className="h-8 w-24 text-end"
+                            className="h-8 w-24 text-start"
                             dir="ltr"
                         />
+                        <Label htmlFor="service-charge" className="text-sm">{UI_TEXT.serviceCharge[language]}</Label>
                     </div>
                 </div>
                 <Separator />
