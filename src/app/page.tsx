@@ -15,6 +15,7 @@ import {
   Truck,
   Archive,
   Search,
+  Menu,
 } from "lucide-react";
 
 import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial } from "@/lib/types";
@@ -69,6 +70,7 @@ const UI_TEXT = {
   quickServeLite: { en: "QuickServe Lite", ar: "كويك سيرف لايت" },
   view: { en: "View", ar: "عرض" },
   searchPlaceholder: { en: "Search by name or barcode...", ar: "ابحث بالاسم أو الباركود..." },
+  menu: { en: "Menu", ar: "القائمة" },
 };
 
 const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType }[] = [
@@ -178,14 +180,12 @@ export default function POSPage() {
         onOpenSmartRoundup={() => setSmartRoundupOpen(true)}
       />
       <main className="flex flex-1 flex-col overflow-auto p-4 sm:p-6">
-        <div className="mb-4">
+        <div className="mb-4 flex flex-col sm:flex-row gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full justify-between sm:w-[300px] text-lg py-6">
-                    <div className="flex items-center">
-                        <ActiveViewIcon className={language === 'ar' ? 'ml-3 h-5 w-5' : 'mr-3 h-5 w-5'} />
-                        <span>{UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}</span>
-                    </div>
+                <Button variant="outline" className="w-full sm:w-auto text-lg py-6 justify-start">
+                  <Menu className={language === 'ar' ? 'ml-3 h-5 w-5' : 'mr-3 h-5 w-5'} />
+                  <span>{UI_TEXT.menu[language]}</span>
                   <ChevronDown className={language === 'ar' ? 'mr-auto h-5 w-5' : 'ml-auto h-5 w-5'} />
                 </Button>
               </DropdownMenuTrigger>
@@ -198,6 +198,18 @@ export default function POSPage() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {activeView === 'sales' && (
+              <div className="relative flex-1">
+                <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
+                <Input
+                  placeholder={UI_TEXT.searchPlaceholder[language]}
+                  className={`${language === 'ar' ? 'pr-10' : 'pl-10'} h-full text-lg py-3`}
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                />
+              </div>
+            )}
         </div>
 
         <div className="flex-1 pb-20"> {/* Add padding to bottom to avoid overlap with floating bar */}
@@ -205,15 +217,9 @@ export default function POSPage() {
             <Card>
               <CardHeader>
                 <CardTitle>{UI_TEXT.products[language]}</CardTitle>
-                 <div className="relative mt-4">
-                    <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
-                    <Input
-                        placeholder={UI_TEXT.searchPlaceholder[language]}
-                        className={language === 'ar' ? 'pr-10' : 'pl-10'}
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                    />
-                </div>
+                <CardDescription>
+                    {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)!.label][language]}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ProductGrid
