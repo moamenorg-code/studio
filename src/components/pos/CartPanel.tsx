@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { MinusCircle, PlusCircle, Trash2, XCircle, UserPlus, UserCheck, Pause, Scissors } from 'lucide-react';
+import { MinusCircle, PlusCircle, Trash2, XCircle, UserPlus, UserCheck, Pause, Scissors, MoreVertical } from 'lucide-react';
 import type { CartItem, Customer, OrderType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,6 +9,12 @@ import {
   SheetTitle,
   SheetFooter,
 } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -44,6 +50,7 @@ const UI_TEXT = {
     confirmCustomer: { en: 'Confirm Customer & Add Items', ar: 'تأكيد العميل وإضافة الأصناف' },
     hold: { en: 'Hold', ar: 'تعليق' },
     splitBill: { en: 'Split Bill', ar: 'تقسيم الفاتورة' },
+    moreActions: { en: 'More Actions', ar: 'إجراءات إضافية' },
 };
 
 interface CartPanelProps {
@@ -164,35 +171,33 @@ const CartPanel: React.FC<CartPanelProps> = ({
             <SheetHeader>
                 <SheetTitle>{UI_TEXT.currentOrder[language]}</SheetTitle>
             </SheetHeader>
-            <div className="flex-1 overflow-hidden">
+            <ScrollArea className="flex-1 pr-4 -mr-6">
                 {cart.length === 0 && !isDelivery ? (
                 <div className="flex h-full items-center justify-center text-muted-foreground">
                     <p>{UI_TEXT.noItems[language]}</p>
                 </div>
                 ) : (
-                <ScrollArea className="h-full pr-4">
-                    <div className="space-y-4 py-4">
+                <div className="space-y-4 py-4">
                     {cart.map(item => (
                         <div key={item.id} className="flex items-center gap-4">
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeItem(item.id)}><Trash2 className="h-4 w-4" /></Button>
-                          <p className="w-20 text-start font-medium">{(item.price * item.quantity).toFixed(2)}</p>
-                          <div className="flex items-center gap-2">
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, -1)}><MinusCircle className="h-4 w-4" /></Button>
-                              <span className="w-6 text-center">{item.quantity}</span>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, 1)}><PlusCircle className="h-4 w-4" /></Button>
-                          </div>
-                          <div className="flex-1 text-right">
-                              <p className="font-medium">{language === 'ar' ? item.nameAr : item.name}</p>
-                              <p className="text-sm text-muted-foreground">{item.price.toFixed(2)}</p>
-                          </div>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeItem(item.id)}><Trash2 className="h-4 w-4" /></Button>
+                            <p className="w-20 text-start font-medium">{(item.price * item.quantity).toFixed(2)}</p>
+                            <div className="flex items-center gap-2">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, -1)}><MinusCircle className="h-4 w-4" /></Button>
+                                <span className="w-6 text-center">{item.quantity}</span>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, 1)}><PlusCircle className="h-4 w-4" /></Button>
+                            </div>
+                            <div className="flex-1 text-right">
+                                <p className="font-medium">{language === 'ar' ? item.nameAr : item.name}</p>
+                                <p className="text-sm text-muted-foreground">{item.price.toFixed(2)}</p>
+                            </div>
                         </div>
                     ))}
-                    </div>
-                </ScrollArea>
+                </div>
                 )}
-            </div>
+            </ScrollArea>
             {(cart.length > 0 || isDelivery) && (
-            <SheetFooter className="flex-col items-stretch space-y-4 border-t pt-6">
+            <SheetFooter className="flex-col items-stretch space-y-4 border-t pt-4">
                  <div className="space-y-2">
                     <Label htmlFor="customer" className="flex items-center justify-between text-sm">
                         <span className='flex items-center gap-2'>
@@ -264,26 +269,26 @@ const CartPanel: React.FC<CartPanelProps> = ({
                             <span>{subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex items-center justify-between">
+                             <Label htmlFor="discount" className="text-sm">{UI_TEXT.discount[language]}</Label>
                             <Input 
                                 id="discount"
                                 type="number"
                                 value={overallDiscount}
                                 onChange={e => setOverallDiscount(Math.max(0, e.target.valueAsNumber || 0))}
-                                className="h-8 w-24 text-start"
+                                className="h-8 w-24 text-end"
                                 dir="ltr"
                             />
-                            <Label htmlFor="discount" className="text-sm">{UI_TEXT.discount[language]}</Label>
                         </div>
                         <div className="flex items-center justify-between">
+                            <Label htmlFor="service-charge" className="text-sm">{UI_TEXT.serviceCharge[language]}</Label>
                             <Input
                                 id="service-charge"
                                 type="number"
                                 value={serviceCharge}
                                 onChange={e => setServiceCharge(Math.max(0, e.target.valueAsNumber || 0))}
-                                className="h-8 w-24 text-start"
+                                className="h-8 w-24 text-end"
                                 dir="ltr"
                             />
-                            <Label htmlFor="service-charge" className="text-sm">{UI_TEXT.serviceCharge[language]}</Label>
                         </div>
                     </div>
                     <Separator />
@@ -291,21 +296,33 @@ const CartPanel: React.FC<CartPanelProps> = ({
                         <span>{UI_TEXT.finalTotal[language]}</span>
                         <span className="text-primary">{finalTotal.toFixed(2)}</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                         <Button variant="secondary" onClick={onHoldOrder}>
-                            <Pause className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />{UI_TEXT.hold[language]}
+                    <div className="flex gap-2">
+                        <Button onClick={onProcessPayment} size="lg" className="w-full bg-green-600 text-white hover:bg-green-700">
+                            {UI_TEXT.pay[language]}
                         </Button>
-                        <Button variant="outline" onClick={clearCart}>
-                            <XCircle className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />{UI_TEXT.clearCart[language]}
-                        </Button>
+
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                               <Button variant="outline" size="lg" className="px-3">
+                                    <MoreVertical className="h-5 w-5" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align={language === 'ar' ? "start" : "end"} className="w-56">
+                                <DropdownMenuItem onSelect={onHoldOrder}>
+                                    <Pause className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />
+                                    <span>{UI_TEXT.hold[language]}</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={onSplitBill}>
+                                    <Scissors className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                                    <span>{UI_TEXT.splitBill[language]}</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={clearCart} className="text-destructive">
+                                    <XCircle className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />
+                                    <span>{UI_TEXT.clearCart[language]}</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
-                     <Button onClick={onSplitBill} size="lg" className="w-full" variant="outline">
-                        <Scissors className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
-                        {UI_TEXT.splitBill[language]}
-                    </Button>
-                     <Button onClick={onProcessPayment} size="lg" className="w-full bg-green-600 text-white hover:bg-green-700">
-                        {UI_TEXT.pay[language]}
-                    </Button>
                 </>
                 ) : (
                   isDelivery && selectedCustomerId && (
