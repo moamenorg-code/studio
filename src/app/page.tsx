@@ -180,16 +180,16 @@ export default function POSPage() {
         onOpenSmartRoundup={() => setSmartRoundupOpen(true)}
       />
       <main className="flex flex-1 flex-col overflow-auto p-4 sm:p-6">
-        <div className="mb-4 flex flex-col sm:flex-row gap-4">
+        <div className="mb-4 flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full sm:w-auto text-lg py-6 justify-start">
+                <Button variant="outline" className="text-lg py-6 justify-start shrink-0">
                   <Menu className={language === 'ar' ? 'ml-3 h-5 w-5' : 'mr-3 h-5 w-5'} />
                   <span>{UI_TEXT.menu[language]}</span>
                   <ChevronDown className={language === 'ar' ? 'mr-auto h-5 w-5' : 'ml-auto h-5 w-5'} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-full sm:w-[300px]">
+              <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-[300px]">
                 {VIEW_OPTIONS.map(({ value, label, icon: Icon }) => (
                   <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-lg py-3">
                     <Icon className={language === 'ar' ? 'ml-3 h-5 w-5' : 'mr-3 h-5 w-5'} />
@@ -200,7 +200,7 @@ export default function POSPage() {
             </DropdownMenu>
 
             {activeView === 'sales' && (
-              <div className="relative flex-1">
+              <div className="relative w-full">
                 <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
                 <Input
                   placeholder={UI_TEXT.searchPlaceholder[language]}
