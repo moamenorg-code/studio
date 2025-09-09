@@ -186,14 +186,14 @@ const POSLayout: React.FC = () => {
     setCartSheetOpen(true); // Open cart to force customer selection
   }
 
-  const clearCart = () => {
+  const clearCart = (isPayment: boolean = false) => {
     if (!activeOrder) return;
-    
-    const clearOrder = (order: any) => ({ ...order, cart: [], selectedCustomerId: null });
 
     switch (activeOrder.type) {
         case 'dine-in':
-            setTables(prev => prev.map(t => t.id === activeOrder.id ? { ...t, cart: [], selectedCustomerId: null, status: 'available' } : t));
+            // If it's a payment, we clear the table fully.
+            // If it's a cancel/clear action, we also clear it.
+            setTables(prev => prev.map(t => t.id === activeOrder.id ? { ...t, cart: [], selectedCustomerId: null } : t));
             break;
         case 'takeaway':
              setTakeawayOrders(prev => prev.filter(o => o.id !== activeOrder.id));
@@ -202,67 +202,98 @@ const POSLayout: React.FC = () => {
              setDeliveryOrders(prev => prev.filter(o => o.id !== activeOrder.id));
             break;
     }
-    setActiveOrder(null);
-  };
-
-  const handleHoldOrder = () => {
-    if (!activeOrder || activeCart.length === 0) return;
     
-    const customer = customers.find(c => c.id === activeCustomerId);
-    
-    let orderName: string | undefined;
-    if (activeOrder.type === 'dine-in') {
-      const table = tables.find(t => t.id === activeOrder.id);
-      orderName = customer ? `${table?.name} - ${customer.name}` : table?.name;
-    } else {
-      orderName = customer?.name || (activeOrder.type === 'takeaway' ? `Takeaway #${takeawayOrders.length + 1}` : `Delivery #${deliveryOrders.length + 1}`);
+    // Only deactivate the order if it's not a table being cleared from the cart panel
+    if (isPayment || activeOrder.type !== 'dine-in') {
+      setActiveOrder(null);
     }
-
-    const newHeldOrder: HeldOrder = {
-        id: Date.now(),
-        name: orderName || `Order #${activeOrder.id}`,
-        cart: activeCart,
-        orderType: activeOrder.type,
-        orderId: activeOrder.id,
-        selectedCustomerId: activeCustomerId,
-        heldAt: new Date(),
-    };
-    
-    setHeldOrders(prev => [newHeldOrder, ...prev]);
-    
-    // After holding, clear the original order source
-    clearCart();
     setCartSheetOpen(false);
-    toast({
-        title: UI_TEXT.orderHeld[language],
-    });
+  };
+  
+  const handleHoldOrder = () => {
+      if (!activeOrder || activeCart.length === 0) return;
+
+      const customer = customers.find(c => c.id === activeCustomerId);
+      let orderName: string | undefined;
+
+      // Determine order name
+      if (activeOrder.type === 'dine-in') {
+          const table = tables.find(t => t.id === activeOrder.id);
+          orderName = customer ? `${table?.name} - ${customer.name}` : table?.name;
+      } else {
+          orderName = customer?.name || (activeOrder.type === 'takeaway' ? `Takeaway #${activeOrder.id}` : `Delivery #${activeOrder.id}`);
+      }
+
+      const newHeldOrder: HeldOrder = {
+          id: Date.now(),
+          name: orderName || `Order #${activeOrder.id}`,
+          cart: activeCart,
+          orderType: activeOrder.type,
+          orderId: activeOrder.id,
+          selectedCustomerId: activeCustomerId,
+          heldAt: new Date(),
+      };
+
+      // Check if an order with the same original ID is already held
+      const existingHeldIndex = heldOrders.findIndex(o => o.orderId === newHeldOrder.orderId && o.orderType === newHeldOrder.orderType);
+      if (existingHeldIndex > -1) {
+          // Update existing held order
+          setHeldOrders(prev => {
+              const updated = [...prev];
+              updated[existingHeldIndex] = newHeldOrder;
+              return updated;
+          });
+      } else {
+          // Add new held order
+          setHeldOrders(prev => [newHeldOrder, ...prev]);
+      }
+
+
+      // If it's a takeaway or delivery order, clear it from the active list
+      if (activeOrder.type === 'takeaway') {
+          setTakeawayOrders(prev => prev.filter(o => o.id !== activeOrder.id));
+          setActiveOrder(null);
+      } else if (activeOrder.type === 'delivery') {
+          setDeliveryOrders(prev => prev.filter(o => o.id !== activeOrder.id));
+          setActiveOrder(null);
+      }
+      // For dine-in, we leave the table as is.
+      
+      setCartSheetOpen(false);
+      toast({
+          title: UI_TEXT.orderHeld[language],
+      });
   }
+
 
   const handleRestoreOrder = (heldOrder: HeldOrder) => {
     const { orderType, orderId, cart, selectedCustomerId } = heldOrder;
     
+    // Data to be restored
     const orderData = { id: orderId, cart, selectedCustomerId };
 
-    // If the order was a dine-in order, we must check if the original table is still available.
-    // For now, we will just restore it. In a real scenario, you might need to prompt the user to select a new table if the old one is occupied.
+    // Restore the order to its original source
     if (orderType === 'dine-in') {
         setTables(prev => {
             const tableExists = prev.some(t => t.id === orderId);
-            if (tableExists) {
-                return prev.map(t => t.id === orderId ? { ...t, ...orderData } : t);
-            }
-            // If table was deleted, you might handle this differently.
-            // For now, we'll just not restore it to a non-existent table.
-            return prev;
+            // If table still exists, update it. If not, this will do nothing.
+            // A more robust solution might create the table if it was deleted.
+            return tableExists ? prev.map(t => t.id === orderId ? { ...t, ...orderData } : t) : prev;
         });
     } else if (orderType === 'takeaway') {
+        // Prevent duplicates by filtering out any existing order with the same ID before adding
         setTakeawayOrders(prev => [...prev.filter(o => o.id !== orderId), orderData]);
     } else if (orderType === 'delivery') {
         setDeliveryOrders(prev => [...prev.filter(o => o.id !== orderId), orderData]);
     }
     
+    // Set the restored order as active
     setActiveOrder({ type: orderType, id: orderId });
+    
+    // Remove the order from the held list
     setHeldOrders(prev => prev.filter(o => o.id !== heldOrder.id));
+    
+    // Navigate and show UI
     setActiveView('sales');
     setHeldOrdersOpen(false);
     setCartSheetOpen(true);
@@ -310,9 +341,11 @@ const POSLayout: React.FC = () => {
     });
     setRawMaterials(updatedRawMaterials);
     
-    clearCart();
+    // After payment, remove order from held list if it was there
+    setHeldOrders(prev => prev.filter(o => !(o.orderId === activeOrder.id && o.orderType === activeOrder.type)));
+
+    clearCart(true);
     setPaymentDialogOpen(false);
-    setCartSheetOpen(false);
     
     toast({
       title: UI_TEXT.transactionSuccess[language],
@@ -559,7 +592,7 @@ const POSLayout: React.FC = () => {
         onOpenChange={setCartSheetOpen}
         cart={activeCart}
         setCart={setActiveCart}
-        clearCart={clearCart}
+        clearCart={() => clearCart(false)}
         onProcessPayment={() => setPaymentDialogOpen(true)}
         onHoldOrder={handleHoldOrder}
         language={language}
@@ -603,5 +636,3 @@ const POSLayout: React.FC = () => {
 }
 
 export default POSLayout;
-
-    
