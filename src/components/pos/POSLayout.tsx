@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, Permission, Purchase } from '@/lib/types';
+import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, Permission, Purchase, AppData } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -165,11 +165,13 @@ const POSLayout: React.FC = () => {
   }, [currentUser, roles]);
 
   const handleSetActiveView = (view: ActiveView) => {
-    const viewOption = VIEW_OPTIONS.find(v => v.value === view);
-    if (viewOption?.permission && !hasPermission(viewOption.permission)) {
-        setActiveView('unauthorized');
-    } else {
-        setActiveView(view);
+    if (currentUser) {
+        const viewOption = VIEW_OPTIONS.find(v => v.value === view);
+        if (viewOption?.permission && !hasPermission(viewOption.permission)) {
+            setActiveView('unauthorized');
+        } else {
+            setActiveView(view);
+        }
     }
   };
 
@@ -483,6 +485,47 @@ const handleHoldOrder = () => {
     barcodeScannerCallback(barcode);
     setBarcodeScannerOpen(false);
   };
+  
+    const handleRestore = (data: AppData) => {
+        setProducts(data.products);
+        setCategories(data.categories);
+        setCustomers(data.customers);
+        setDeliveryReps(data.deliveryReps);
+        setExpenses(data.expenses);
+        setCashDrawerEntries(data.cashDrawerEntries);
+        setPurchases(data.purchases);
+        setRawMaterials(data.rawMaterials);
+        setRecipes(data.recipes);
+        setRoles(data.roles);
+        setSales(data.sales);
+        setSettings(data.settings);
+        setShifts(data.shifts);
+        setSuppliers(data.suppliers);
+        setTables(data.tables);
+        setUsers(data.users);
+
+        // Reset runtime state
+        setActiveOrder(null);
+        setHeldOrders([]);
+        setTakeawayOrders([]);
+        setDeliveryOrders([]);
+        setCartSheetOpen(false);
+        setActiveView('shifts'); // Go to a neutral page
+
+        toast({
+            title: 'Restore Successful',
+            description: 'Data has been restored successfully. The application will now reload.',
+        });
+
+        // Force a reload to ensure all components re-render with new state
+        setTimeout(() => window.location.reload(), 1500);
+    };
+
+    const getAppData = (): AppData => ({
+        products, categories, customers, deliveryReps, expenses, cashDrawerEntries,
+        purchases, rawMaterials, recipes, roles, sales, settings, shifts,
+        suppliers, tables, users
+    });
 
   const filteredProducts = React.useMemo(() => {
     return products
@@ -601,7 +644,9 @@ const handleHoldOrder = () => {
                   onUsersChange={handleUsersUpdate}
                   roles={roles}
                   onRolesChange={handleRolesUpdate}
-                  language={language} 
+                  language={language}
+                  getAppData={getAppData}
+                  onRestore={handleRestore}
                 />;
       case 'unauthorized':
         return (
@@ -734,7 +779,7 @@ const handleHoldOrder = () => {
         customers={customers}
         selectedCustomerId={activeCustomerId}
         onSelectCustomer={setActiveCustomerId}
-        onCustomerUpdate={handleCustomerUpdate}
+        onCustomerUpdate={onCustomerUpdate}
         orderType={activeOrder?.type}
         deliveryReps={deliveryReps}
         settings={settings}
@@ -773,5 +818,3 @@ const handleHoldOrder = () => {
 }
 
 export default POSLayout;
-
-    

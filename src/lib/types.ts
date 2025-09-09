@@ -189,3 +189,22 @@ export interface ActiveOrder {
   type: OrderType;
   id: number;
 }
+
+export interface AppData {
+    products: Product[];
+    categories: Category[];
+    recipes: Recipe[];
+    rawMaterials: RawMaterial[];
+    customers: Customer[];
+    suppliers: Supplier[];
+    purchases: Purchase[];
+    deliveryReps: DeliveryRep[];
+    users: User[];
+    roles: Role[];
+    shifts: Shift[];
+    sales: Sale[];
+    expenses: Expense[];
+    cashDrawerEntries: CashDrawerEntry[];
+    settings: Settings;
+    tables: Table[];
+}
