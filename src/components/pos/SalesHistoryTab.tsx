@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
+import { Table as TableIcon, Package, Bike } from 'lucide-react';
 
 type Language = 'en' | 'ar';
 
@@ -26,13 +27,16 @@ const UI_TEXT = {
   transactionId: { en: 'Transaction ID', ar: 'معرف العملية' },
   date: { en: 'Date', ar: 'التاريخ' },
   customer: { en: 'Customer', ar: 'العميل' },
-  table: { en: 'Table', ar: 'الطاولة' },
+  orderType: { en: 'Order Type', ar: 'نوع الطلب' },
   total: { en: 'Total', ar: 'الإجمالي' },
   paymentMethod: { en: 'Payment Method', ar: 'طريقة الدفع' },
   noSales: { en: 'No sales yet.', ar: 'لا توجد مبيعات بعد.' },
   cash: { en: 'Cash', ar: 'نقدي' },
   card: { en: 'Card', ar: 'بطاقة' },
-  walkIn: { en: 'Walk-in', ar: 'عابر' },
+  walkIn: { en: 'Walk-in Customer', ar: 'عميل نقدي' },
+  'dine-in': { en: 'Dine-in', ar: 'طاولة' },
+  takeaway: { en: 'Takeaway', ar: 'سفري' },
+  delivery: { en: 'Delivery', ar: 'توصيل' },
 };
 
 interface SalesHistoryTabProps {
@@ -43,6 +47,25 @@ interface SalesHistoryTabProps {
 const SalesHistoryTab: React.FC<SalesHistoryTabProps> = ({ sales, language }) => {
   const formatPaymentMethod = (method: 'cash' | 'card') => {
     return UI_TEXT[method][language];
+  };
+  
+  const OrderTypeBadge = ({ type, orderId }: { type: Sale['orderType'], orderId: number }) => {
+    let icon = <Package size={14} />;
+    let text = UI_TEXT[type][language];
+    
+    if (type === 'dine-in') {
+      icon = <TableIcon size={14} />;
+      text = `${text} ${orderId}`;
+    } else if (type === 'delivery') {
+      icon = <Bike size={14} />;
+    }
+    
+    return (
+      <Badge variant="outline" className="flex items-center gap-1 w-fit">
+        {icon}
+        {text}
+      </Badge>
+    );
   };
 
   return (
@@ -58,7 +81,7 @@ const SalesHistoryTab: React.FC<SalesHistoryTabProps> = ({ sales, language }) =>
               <TableRow>
                 <TableHead>{UI_TEXT.transactionId[language]}</TableHead>
                 <TableHead>{UI_TEXT.customer[language]}</TableHead>
-                <TableHead>{UI_TEXT.table[language]}</TableHead>
+                <TableHead>{UI_TEXT.orderType[language]}</TableHead>
                 <TableHead>{UI_TEXT.date[language]}</TableHead>
                 <TableHead>{UI_TEXT.paymentMethod[language]}</TableHead>
                 <TableHead className="text-end">{UI_TEXT.total[language]}</TableHead>
@@ -76,7 +99,9 @@ const SalesHistoryTab: React.FC<SalesHistoryTabProps> = ({ sales, language }) =>
                   <TableRow key={sale.id}>
                     <TableCell className="font-medium">{sale.id}</TableCell>
                     <TableCell>{sale.customer ? sale.customer.name : UI_TEXT.walkIn[language]}</TableCell>
-                    <TableCell>{sale.tableId ? `T${sale.tableId}` : (sale.tableId === 0 ? UI_TEXT.walkIn[language] : '-')}</TableCell>
+                    <TableCell>
+                      <OrderTypeBadge type={sale.orderType} orderId={sale.orderId} />
+                    </TableCell>
                     <TableCell>
                       {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', {
                           year: 'numeric',

@@ -53,11 +53,11 @@ const CustomerManagementTab: React.FC<CustomerManagementTabProps> = ({ customers
     onCustomersChange(customers.filter(c => c.id !== customerId));
   };
   
-  const handleSaveCustomer = (customer: Customer) => {
-    if (editingCustomer && 'id' in customer) {
-        onCustomersChange(customers.map(c => (c.id === customer.id ? customer : c)));
+  const handleSaveCustomer = (customerData: Omit<Customer, 'id'> | Customer) => {
+    if ('id' in customerData && editingCustomer) {
+        onCustomersChange(customers.map(c => (c.id === customerData.id ? customerData : c)));
     } else {
-        const newCustomer = { ...customer, id: Date.now() };
+        const newCustomer = { ...customerData, id: Date.now() };
         onCustomersChange([...customers, newCustomer]);
     }
     setDialogOpen(false);

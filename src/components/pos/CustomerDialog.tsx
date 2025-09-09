@@ -60,7 +60,7 @@ const CustomerDialog: React.FC<CustomerDialogProps> = ({ isOpen, onOpenChange, o
 
   const handleSave = () => {
     if (formData.name && formData.phone) {
-      onSave(formData as Customer);
+      onSave(formData as Omit<Customer, 'id'> | Customer);
       onOpenChange(false);
     }
   };

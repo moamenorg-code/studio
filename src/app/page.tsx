@@ -22,10 +22,12 @@ import {
   BookCopy,
   LayoutGrid,
   Table as TableIcon,
-  Zap
+  Zap,
+  Package,
+  Bike
 } from "lucide-react";
 
-import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings, Recipe, Category, Table } from "@/lib/types";
+import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial, Shift, Expense, CashDrawerEntry, Settings, Recipe, Category, Table, OrderType } from "@/lib/types";
 import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables } from "@/lib/data";
 
 import { Button } from "@/components/ui/button";
@@ -94,9 +96,14 @@ const UI_TEXT = {
   menu: { en: "Menu", ar: "القائمة" },
   allCategories: { en: 'All Categories', ar: 'كل الفئات' },
   selectCategory: { en: 'Select a category', ar: 'اختر فئة' },
-  selectTablePrompt: { en: 'Select a Table', ar: 'اختر طاولة' },
-  selectTablePromptDesc: { en: 'Please go to the Tables screen to select a table and start an order.', ar: 'يرجى الذهاب إلى شاشة الطاولات لاختيار طاولة وبدء الطلب.' },
+  selectOrderTypePrompt: { en: 'Select an Order Type', ar: 'اختر نوع الطلب' },
+  selectOrderTypePromptDesc: { en: 'Please select an order type to begin.', ar: 'يرجى اختيار نوع الطلب للبدء.' },
   quickServe: { en: "Quick Serve", ar: "خدمة سريعة" },
+  dineIn: { en: "Dine-in", ar: "طاولات" },
+  takeaway: { en: "Takeaway", ar: "سفري" },
+  delivery: { en: "Delivery", ar: "توصيل" },
+  customerRequired: { en: 'Customer Required', ar: 'العميل مطلوب' },
+  customerRequiredDesc: { en: 'Please select or add a customer for this delivery order.', ar: 'يرجى اختيار أو إضافة عميل لطلب التوصيل هذا.' },
 };
 
 const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType }[] = [
@@ -135,7 +142,11 @@ export default function POSPage() {
   const [isCartSheetOpen, setCartSheetOpen] = React.useState(false);
   
   const [selectedCustomerId, setSelectedCustomerId] = React.useState<number | null>(null);
-  const [activeTableId, setActiveTableId] = React.useState<number | null>(null);
+
+  const [activeOrder, setActiveOrder] = React.useState<{ type: OrderType; id: number } | null>(null);
+  const [takeawayOrders, setTakeawayOrders] = React.useState<any[]>([]);
+  const [deliveryOrders, setDeliveryOrders] = React.useState<any[]>([]);
+
 
   const [settings, setSettings] = React.useState<Settings>({
     storeName: "RMS POS",
@@ -155,44 +166,66 @@ export default function POSPage() {
   const { toast } = useToast();
 
   const activeCart = React.useMemo(() => {
-    if (settings.enableTables && activeTableId) {
-      return tables.find(t => t.id === activeTableId)?.cart || [];
+    if (!activeOrder) return [];
+    switch (activeOrder.type) {
+        case 'dine-in':
+            return tables.find(t => t.id === activeOrder.id)?.cart || [];
+        case 'takeaway':
+            return takeawayOrders.find(o => o.id === activeOrder.id)?.cart || [];
+        case 'delivery':
+            return deliveryOrders.find(o => o.id === activeOrder.id)?.cart || [];
+        default:
+            return [];
     }
-    return cart;
-  }, [cart, tables, activeTableId, settings.enableTables]);
+  }, [tables, takeawayOrders, deliveryOrders, activeOrder]);
 
   const activeCustomerId = React.useMemo(() => {
-    if (settings.enableTables && activeTableId) {
-      return tables.find(t => t.id === activeTableId)?.selectedCustomerId || null;
+    if (!activeOrder) return null;
+     switch (activeOrder.type) {
+        case 'dine-in':
+            return tables.find(t => t.id === activeOrder.id)?.selectedCustomerId || null;
+        case 'takeaway':
+            return takeawayOrders.find(o => o.id === activeOrder.id)?.selectedCustomerId || null;
+        case 'delivery':
+            return deliveryOrders.find(o => o.id === activeOrder.id)?.selectedCustomerId || null;
+        default:
+            return null;
     }
-    return selectedCustomerId;
-  }, [selectedCustomerId, tables, activeTableId, settings.enableTables]);
+  }, [tables, takeawayOrders, deliveryOrders, activeOrder]);
+
 
   const setActiveCart = (newCart: CartItem[] | ((prevCart: CartItem[]) => CartItem[])) => {
-    if (settings.enableTables && activeTableId) {
-        setTables(prevTables =>
-            prevTables.map(t =>
-                t.id === activeTableId
-                    ? { ...t, cart: typeof newCart === 'function' ? newCart(t.cart || []) : newCart }
-                    : t
-            )
-        );
-    } else {
-        setCart(newCart);
+    if (!activeOrder) return;
+    const updater = (prevCart: CartItem[]) => typeof newCart === 'function' ? newCart(prevCart) : newCart;
+
+    switch (activeOrder.type) {
+        case 'dine-in':
+            setTables(prev => prev.map(t => t.id === activeOrder.id ? { ...t, cart: updater(t.cart || []) } : t));
+            break;
+        case 'takeaway':
+            setTakeawayOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, cart: updater(o.cart || []) } : o));
+            break;
+        case 'delivery':
+            setDeliveryOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, cart: updater(o.cart || []) } : o));
+            break;
+    }
+  };
+  
+  const setActiveCustomerId = (id: number | null) => {
+    if (!activeOrder) return;
+     switch (activeOrder.type) {
+        case 'dine-in':
+            setTables(prev => prev.map(t => t.id === activeOrder.id ? { ...t, selectedCustomerId: id } : t));
+            break;
+        case 'takeaway':
+            setTakeawayOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, selectedCustomerId: id } : o));
+            break;
+        case 'delivery':
+            setDeliveryOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, selectedCustomerId: id } : o));
+            break;
     }
   };
 
-  const setActiveCustomerId = (id: number | null) => {
-    if (settings.enableTables && activeTableId) {
-      setTables(prevTables => 
-        prevTables.map(t => 
-          t.id === activeTableId ? { ...t, selectedCustomerId: id } : t
-        )
-      );
-    } else {
-      setSelectedCustomerId(id);
-    }
-  };
 
   React.useEffect(() => {
     document.documentElement.lang = language;
@@ -200,6 +233,15 @@ export default function POSPage() {
   }, [language]);
 
   const addToCart = (product: Product) => {
+    if (!activeOrder) {
+         toast({
+            title: UI_TEXT.selectOrderTypePrompt[language],
+            description: UI_TEXT.selectOrderTypePromptDesc[language],
+            variant: "destructive"
+        });
+        return;
+    }
+
     const updater = (prevCart: CartItem[]) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
       if (existingItem) {
@@ -212,50 +254,68 @@ export default function POSPage() {
       return [...prevCart, { ...product, quantity: 1, discount: 0 }];
     };
     
-    if (settings.enableTables) {
-      if(activeTableId) {
-        setActiveCart(updater);
-      } else {
-         toast({
-            title: UI_TEXT.selectTablePrompt[language],
-            description: UI_TEXT.selectTablePromptDesc[language],
-            variant: "destructive"
-        });
-      }
-    } else {
-      setActiveCart(updater);
-    }
+    setActiveCart(updater);
   };
 
-  const handleSelectTable = (id: number | null) => {
-    setActiveTableId(id);
-    if(id) {
-        setActiveView('sales');
-    }
+  const handleSelectTable = (id: number) => {
+    setActiveOrder({ type: 'dine-in', id });
+    setActiveView('sales');
+  }
+
+  const handleNewTakeawayOrder = () => {
+    const newOrderId = Date.now();
+    setTakeawayOrders(prev => [...prev, {id: newOrderId, cart: [], selectedCustomerId: null}]);
+    setActiveOrder({ type: 'takeaway', id: newOrderId });
+  }
+
+  const handleNewDeliveryOrder = () => {
+    const newOrderId = Date.now();
+    setDeliveryOrders(prev => [...prev, {id: newOrderId, cart: [], selectedCustomerId: null}]);
+    setActiveOrder({ type: 'delivery', id: newOrderId });
+    setPaymentDialogOpen(true); // Force customer selection
   }
 
   const clearCart = () => {
-    if (settings.enableTables && activeTableId) {
-      setTables(prevTables =>
-        prevTables.map(t =>
-          t.id === activeTableId ? { ...t, cart: [], selectedCustomerId: null } : t
-        )
-      );
-      // Don't reset active table id here, so the user stays on the table
-    } else {
-      setCart([]);
-      setSelectedCustomerId(null);
+    if (!activeOrder) return;
+    
+    const clearOrder = (order: any) => ({ ...order, cart: [], selectedCustomerId: null });
+
+    switch (activeOrder.type) {
+        case 'dine-in':
+            setTables(prev => prev.map(t => t.id === activeOrder.id ? clearOrder(t) : t));
+            break;
+        case 'takeaway':
+             setTakeawayOrders(prev => prev.filter(o => o.id !== activeOrder.id));
+            break;
+        case 'delivery':
+             setDeliveryOrders(prev => prev.filter(o => o.id !== activeOrder.id));
+            break;
     }
+    setActiveOrder(null);
   };
 
-  const handleConfirmPayment = (saleData: Omit<Sale, "id" | "createdAt" | "customer" | "tableId">) => {
+  const handleConfirmPayment = (saleData: Omit<Sale, "id" | "createdAt" | "customer" | "orderType" | "orderId">) => {
+    if (!activeOrder) return;
+    
     const customer = customers.find(c => c.id === activeCustomerId) || undefined;
+    
+     if (activeOrder.type === 'delivery' && !customer) {
+        toast({
+            title: UI_TEXT.customerRequired[language],
+            description: UI_TEXT.customerRequiredDesc[language],
+            variant: "destructive"
+        });
+        setPaymentDialogOpen(true);
+        return;
+    }
+    
     const newSale: Sale = {
       ...saleData,
       id: `SALE-${Date.now()}`,
       createdAt: new Date(),
       customer,
-      tableId: activeTableId ?? undefined,
+      orderType: activeOrder.type,
+      orderId: activeOrder.id,
     };
     setSales(prevSales => [newSale, ...prevSales]);
 
@@ -280,11 +340,6 @@ export default function POSPage() {
     setPaymentDialogOpen(false);
     setCartSheetOpen(false);
     
-    // After payment, clear the table and make it available again
-     if (settings.enableTables && activeTableId) {
-        setActiveTableId(null);
-     }
-
     toast({
       title: UI_TEXT.transactionSuccess[language],
       description: UI_TEXT.transactionSuccessDesc[language](newSale.id),
@@ -350,21 +405,25 @@ export default function POSPage() {
   }, [products, searchQuery, selectedCategoryId]);
 
   const renderSalesContent = () => {
-    if (settings.enableTables && !activeTableId) {
+    if (!activeOrder) {
        return (
          <div className="flex items-center justify-center h-full">
             <Alert className="w-auto">
-                <TableIcon className="h-4 w-4" />
-                <AlertTitle>{UI_TEXT.selectTablePrompt[language]}</AlertTitle>
-                <AlertDescription>{UI_TEXT.selectTablePromptDesc[language]}</AlertDescription>
-                <div className="mt-4 flex gap-2">
-                    <Button onClick={() => setActiveView('tables')}>
+                <ShoppingBag className="h-4 w-4" />
+                <AlertTitle>{UI_TEXT.selectOrderTypePrompt[language]}</AlertTitle>
+                <AlertDescription>{UI_TEXT.selectOrderTypePromptDesc[language]}</AlertDescription>
+                <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                    <Button onClick={() => setActiveView('tables')} className="w-full sm:w-auto">
                         <TableIcon className="w-4 h-4 me-2"/>
-                        {UI_TEXT.tables[language]}
+                        {UI_TEXT.dineIn[language]}
                     </Button>
-                    <Button variant="secondary" onClick={() => setActiveTableId(0)}>
-                        <Zap className="w-4 h-4 me-2"/>
-                        {UI_TEXT.quickServe[language]}
+                    <Button variant="secondary" onClick={handleNewTakeawayOrder} className="w-full sm:w-auto">
+                        <Package className="w-4 h-4 me-2"/>
+                        {UI_TEXT.takeaway[language]}
+                    </Button>
+                    <Button variant="secondary" onClick={handleNewDeliveryOrder} className="w-full sm:w-auto">
+                        <Bike className="w-4 h-4 me-2"/>
+                        {UI_TEXT.delivery[language]}
                     </Button>
                 </div>
             </Alert>
@@ -468,7 +527,7 @@ export default function POSPage() {
           <TablesManagementTab 
               tables={tables}
               onTablesChange={handleTablesUpdate}
-              activeTableId={activeTableId}
+              activeTableId={activeOrder?.type === 'dine-in' ? activeOrder.id : null}
               onSelectTable={handleSelectTable}
               isFullScreen={true}
               language={language}
@@ -484,10 +543,7 @@ export default function POSPage() {
   
   const showFloatingCart = () => {
     if (activeView !== 'sales') return false;
-    if (settings.enableTables) {
-      return (!!activeTableId || activeTableId === 0) && activeCart.length > 0;
-    }
-    return activeCart.length > 0;
+    return !!activeOrder && activeCart.length > 0;
   }
 
   return (
@@ -562,6 +618,7 @@ export default function POSPage() {
         selectedCustomerId={activeCustomerId}
         onSelectCustomer={setActiveCustomerId}
         onCustomerUpdate={handleCustomerUpdate}
+        orderType={activeOrder?.type}
       />
       
       <SmartRoundupDialog

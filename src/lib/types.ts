@@ -13,6 +13,8 @@ export interface CartItem extends Product {
   discount: number; // percentage
 }
 
+export type OrderType = 'dine-in' | 'takeaway' | 'delivery';
+
 export interface Sale {
   id: string;
   items: CartItem[];
@@ -23,7 +25,8 @@ export interface Sale {
   paymentMethod: "cash" | "card";
   createdAt: Date;
   customer?: Customer;
-  tableId?: number | null;
+  orderType: OrderType;
+  orderId: number;
 }
 
 export interface Customer {
