@@ -9,8 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { PlusCircle, ArrowLeft, ArrowRight, Minus, Plus } from 'lucide-react';
+import { PlusCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { CartItem } from '@/lib/types';
 import { Badge } from '../ui/badge';
 
@@ -24,9 +23,6 @@ const UI_TEXT = {
   addBill: { en: 'Add New Bill', ar: 'إضافة فاتورة جديدة' },
   total: { en: 'Total', ar: 'الإجمالي' },
   pay: { en: 'Pay', ar: 'دفع' },
-  items: { en: 'items', ar: 'أصناف' },
-  move: { en: 'Move', ar: 'نقل' },
-  quantity: { en: 'Quantity', ar: 'الكمية' },
 };
 
 interface SplitBillDialogProps {
@@ -40,13 +36,13 @@ interface SplitBillDialogProps {
 
 const SplitBillDialog: React.FC<SplitBillDialogProps> = ({ isOpen, onOpenChange, cart, onProcessPayment, language, currency }) => {
   const [mainBillItems, setMainBillItems] = React.useState<CartItem[]>([]);
-  const [splits, setSplits] = React.useState<CartItem[][]>([]);
+  const [splits, setSplits] = React.useState<CartItem[][]>([[]]);
 
   React.useEffect(() => {
     if (isOpen) {
       // Deep copy to prevent modifying the original cart state directly
       setMainBillItems(JSON.parse(JSON.stringify(cart)));
-      setSplits([]);
+      setSplits([[]]); // Start with one empty new bill
     }
   }, [isOpen, cart]);
 
@@ -55,57 +51,37 @@ const SplitBillDialog: React.FC<SplitBillDialogProps> = ({ isOpen, onOpenChange,
   };
 
   const moveItem = (item: CartItem, from: 'main' | number, to: 'main' | number) => {
-    // This logic handles moving one quantity of an item
     const quantityToMove = 1;
 
-    let sourceItems: CartItem[] = [];
-    let setSourceItems: React.Dispatch<React.SetStateAction<CartItem[]>> | ((newItems: CartItem[][]) => void);
-    
-    if (from === 'main') {
-        sourceItems = mainBillItems;
-        setSourceItems = setMainBillItems;
-    } else {
-        sourceItems = splits[from];
-        setSourceItems = (updater) => {
-            const newSplits = [...splits];
-            newSplits[from] = typeof updater === 'function' ? updater(splits[from]) : updater;
-            setSplits(newSplits);
-        };
-    }
-    
-    const updatedSourceItems = [...sourceItems];
+    // --- SOURCE LOGIC ---
+    let sourceItems: CartItem[] = from === 'main' ? mainBillItems : splits[from];
+    let updatedSourceItems = [...sourceItems];
     const itemInSourceIndex = updatedSourceItems.findIndex(i => i.id === item.id);
+    
+    if (itemInSourceIndex === -1) return; // Should not happen
+
     const itemInSource = { ...updatedSourceItems[itemInSourceIndex] };
 
-    // Decrease quantity in source
     if (itemInSource.quantity > quantityToMove) {
         itemInSource.quantity -= quantityToMove;
         updatedSourceItems[itemInSourceIndex] = itemInSource;
     } else {
         updatedSourceItems.splice(itemInSourceIndex, 1);
     }
-    (setSourceItems as any)(updatedSourceItems);
-
-
-    // Add or increase quantity in destination
-    let destItems: CartItem[] = [];
-    let setDestItems: React.Dispatch<React.SetStateAction<CartItem[]>> | ((newItems: CartItem[][]) => void);
-
-    if (to === 'main') {
-        destItems = mainBillItems;
-        setDestItems = setMainBillItems;
+    
+    if (from === 'main') {
+        setMainBillItems(updatedSourceItems);
     } else {
-        destItems = splits[to];
-        setDestItems = (updater) => {
-            const newSplits = [...splits];
-            newSplits[to] = typeof updater === 'function' ? updater(splits[to]) : updater;
-            setSplits(newSplits);
-        };
+        const newSplits = [...splits];
+        newSplits[from] = updatedSourceItems;
+        setSplits(newSplits);
     }
 
-    const updatedDestItems = [...destItems];
+    // --- DESTINATION LOGIC ---
+    let destItems: CartItem[] = to === 'main' ? mainBillItems : splits[to];
+    let updatedDestItems = [...destItems];
     const itemInDestIndex = updatedDestItems.findIndex(i => i.id === item.id);
-    
+
     if (itemInDestIndex > -1) {
         const itemInDest = { ...updatedDestItems[itemInDestIndex] };
         itemInDest.quantity += quantityToMove;
@@ -113,7 +89,14 @@ const SplitBillDialog: React.FC<SplitBillDialogProps> = ({ isOpen, onOpenChange,
     } else {
         updatedDestItems.push({ ...item, quantity: quantityToMove });
     }
-     (setDestItems as any)(updatedDestItems);
+
+    if (to === 'main') {
+        setMainBillItems(updatedDestItems);
+    } else {
+        const newSplits = [...splits];
+        newSplits[to] = updatedDestItems;
+        setSplits(newSplits);
+    }
   };
   
   const calculateTotal = (items: CartItem[]) => items.reduce((acc, item) => acc + item.price * item.quantity, 0);

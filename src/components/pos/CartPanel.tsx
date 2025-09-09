@@ -52,7 +52,7 @@ interface CartPanelProps {
   cart: CartItem[];
   setCart: (cart: CartItem[] | ((prevCart: CartItem[]) => CartItem[])) => void;
   clearCart: () => void;
-  onProcessPayment: (cartToPay: CartItem[]) => void;
+  onProcessPayment: () => void;
   onHoldOrder: () => void;
   onSplitBill: () => void;
   language: Language;
@@ -303,7 +303,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
                         <Scissors className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
                         {UI_TEXT.splitBill[language]}
                     </Button>
-                     <Button onClick={() => onProcessPayment(cart)} size="lg" className="w-full bg-green-600 text-white hover:bg-green-700">
+                     <Button onClick={onProcessPayment} size="lg" className="w-full bg-green-600 text-white hover:bg-green-700">
                         {UI_TEXT.pay[language]}
                     </Button>
                 </>

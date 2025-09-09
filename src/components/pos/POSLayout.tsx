@@ -236,20 +236,23 @@ const handleHoldOrder = () => {
         selectedCustomerId: activeCustomerId,
         heldAt: new Date(),
     };
-
-    setHeldOrders(prev => [newHeldOrder, ...prev.filter(o => !(o.orderId === newHeldOrder.orderId && o.orderType === newHeldOrder.orderType))]);
     
-    // For takeaway or delivery, holding the order means clearing it from the active list.
-    // For dine-in, the order remains on the table, but is also available in the held list.
-    if (activeOrder.type === 'takeaway') {
-        setTakeawayOrders(prev => prev.filter(o => o.id !== activeOrder.id));
-        setActiveOrder(null);
-    } else if (activeOrder.type === 'delivery') {
-        setDeliveryOrders(prev => prev.filter(o => o.id !== activeOrder.id));
-        setActiveOrder(null);
+    const orderAlreadyHeld = heldOrders.some(o => o.orderId === newHeldOrder.orderId && o.orderType === newHeldOrder.orderType);
+
+    if (orderAlreadyHeld) {
+      setHeldOrders(prev => prev.map(o => o.orderId === newHeldOrder.orderId && o.orderType === newHeldOrder.orderType ? newHeldOrder : o));
+    } else {
+      setHeldOrders(prev => [newHeldOrder, ...prev]);
     }
     
-    setCartSheetOpen(false);
+    if (activeOrder.type === 'takeaway' || activeOrder.type === 'delivery') {
+      // Clear active takeaway/delivery order after holding
+      clearCart();
+    } else {
+      // For dine-in, just close the cart, don't clear it.
+      setCartSheetOpen(false);
+    }
+    
     toast({
         title: UI_TEXT.orderHeld[language],
     });
@@ -266,7 +269,7 @@ const handleHoldOrder = () => {
     if (orderType === 'dine-in') {
         setTables(prev => {
             const tableExists = prev.some(t => t.id === orderId);
-            return tableExists ? prev.map(t => t.id === orderId ? { ...t, cart, selectedCustomerId } : t) : prev;
+            return tableExists ? prev.map(t => t.id === orderId ? { ...t, ...orderData } : t) : prev;
         });
     } else if (orderType === 'takeaway') {
         setTakeawayOrders(prev => [...prev.filter(o => o.id !== orderId), orderData]);
