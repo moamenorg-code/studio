@@ -5,6 +5,7 @@ export interface Product {
   price: number;
   image: string;
   dataAiHint: string;
+  barcode?: string;
 }
 
 export interface CartItem extends Product {

@@ -8,6 +8,7 @@ export const products: Product[] = [
     price: 25.00,
     image: "https://picsum.photos/400/300?random=1",
     dataAiHint: "coffee cup",
+    barcode: "860001",
   },
   {
     id: 2,
@@ -16,6 +17,7 @@ export const products: Product[] = [
     price: 35.50,
     image: "https://picsum.photos/400/300?random=2",
     dataAiHint: "latte art",
+    barcode: "860002",
   },
   {
     id: 3,
@@ -24,6 +26,7 @@ export const products: Product[] = [
     price: 22.75,
     image: "https://picsum.photos/400/300?random=3",
     dataAiHint: "fresh croissant",
+    barcode: "860003",
   },
   {
     id: 4,
@@ -32,6 +35,7 @@ export const products: Product[] = [
     price: 45.00,
     image: "https://picsum.photos/400/300?random=4",
     dataAiHint: "slice cheesecake",
+    barcode: "860004",
   },
   {
     id: 5,
@@ -40,6 +44,7 @@ export const products: Product[] = [
     price: 30.25,
     image: "https://picsum.photos/400/300?random=5",
     dataAiHint: "iced tea",
+    barcode: "860005",
   },
   {
     id: 6,
@@ -48,6 +53,7 @@ export const products: Product[] = [
     price: 28.00,
     image: "https://picsum.photos/400/300?random=6",
     dataAiHint: "chocolate muffin",
+    barcode: "860006",
   },
     {
     id: 7,
@@ -56,6 +62,7 @@ export const products: Product[] = [
     price: 32.00,
     image: "https://picsum.photos/400/300?random=7",
     dataAiHint: "cappuccino foam",
+    barcode: "860007",
   },
   {
     id: 8,
@@ -64,6 +71,7 @@ export const products: Product[] = [
     price: 28.50,
     image: "https://picsum.photos/400/300?random=8",
     dataAiHint: "orange juice",
+    barcode: "860008",
   },
   {
     id: 9,
@@ -72,6 +80,7 @@ export const products: Product[] = [
     price: 55.00,
     image: "https://picsum.photos/400/300?random=9",
     dataAiHint: "club sandwich",
+    barcode: "860009",
   },
 ];
 

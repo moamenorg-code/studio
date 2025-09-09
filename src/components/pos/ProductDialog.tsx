@@ -21,6 +21,7 @@ const UI_TEXT = {
   nameEn: { en: 'Name (English)', ar: 'الاسم (الإنجليزية)' },
   nameAr: { en: 'Name (Arabic)', ar: 'الاسم (العربية)' },
   price: { en: 'Price', ar: 'السعر' },
+  barcode: { en: 'Barcode', ar: 'الباركود' },
   imageURL: { en: 'Image URL', ar: 'رابط الصورة' },
   aiHint: { en: 'AI Hint', ar: 'تلميح للذكاء الاصطناعي' },
   cancel: { en: 'Cancel', ar: 'إلغاء' },
@@ -46,6 +47,7 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onS
         name: '',
         nameAr: '',
         price: 0,
+        barcode: '',
         image: 'https://picsum.photos/400/300',
         dataAiHint: '',
       });
@@ -92,6 +94,12 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onS
               {UI_TEXT.price[language]}
             </Label>
             <Input id="price" name="price" type="number" value={formData.price} onChange={handleChange} className="col-span-3" dir="ltr" />
+          </div>
+           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="barcode" className="text-end">
+              {UI_TEXT.barcode[language]}
+            </Label>
+            <Input id="barcode" name="barcode" value={formData.barcode || ''} onChange={handleChange} className="col-span-3" dir="ltr" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="image" className="text-end">

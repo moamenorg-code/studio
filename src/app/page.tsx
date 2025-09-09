@@ -14,6 +14,7 @@ import {
   Building,
   Truck,
   Archive,
+  Search,
 } from "lucide-react";
 
 import type { CartItem, Product, Sale, Customer, Supplier, RawMaterial } from "@/lib/types";
@@ -33,6 +34,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/pos/Header";
 import ProductGrid from "@/components/pos/ProductGrid";
@@ -66,6 +68,7 @@ const UI_TEXT = {
   transactionSuccessDesc: { en: (id: string) => `Sale ID: ${id}`, ar: (id: string) => `رقم الفاتورة: ${id}`},
   quickServeLite: { en: "QuickServe Lite", ar: "كويك سيرف لايت" },
   view: { en: "View", ar: "عرض" },
+  searchPlaceholder: { en: "Search by name or barcode...", ar: "ابحث بالاسم أو الباركود..." },
 };
 
 const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType }[] = [
@@ -88,6 +91,7 @@ export default function POSPage() {
   const [suppliers, setSuppliers] = React.useState<Supplier[]>(initialSuppliers);
   const [rawMaterials, setRawMaterials] = React.useState<RawMaterial[]>(initialRawMaterials);
   const [activeView, setActiveView] = React.useState<ActiveView>("sales");
+  const [searchQuery, setSearchQuery] = React.useState("");
   
   const [isPaymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   const [isSmartRoundupOpen, setSmartRoundupOpen] = React.useState(false);
@@ -154,6 +158,17 @@ export default function POSPage() {
 
   const subtotal = React.useMemo(() => cart.reduce((acc, item) => acc + item.price * item.quantity, 0), [cart]);
 
+  const filteredProducts = React.useMemo(() => {
+    if (!searchQuery) return products;
+    const lowercasedQuery = searchQuery.toLowerCase();
+    return products.filter(product => 
+      product.name.toLowerCase().includes(lowercasedQuery) ||
+      product.nameAr.includes(lowercasedQuery) ||
+      (product.barcode && product.barcode.includes(lowercasedQuery))
+    );
+  }, [products, searchQuery]);
+
+
   return (
     <div className="flex h-screen flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Header
@@ -190,10 +205,19 @@ export default function POSPage() {
             <Card>
               <CardHeader>
                 <CardTitle>{UI_TEXT.products[language]}</CardTitle>
+                 <div className="relative mt-4">
+                    <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
+                    <Input
+                        placeholder={UI_TEXT.searchPlaceholder[language]}
+                        className={language === 'ar' ? 'pr-10' : 'pl-10'}
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                    />
+                </div>
               </CardHeader>
               <CardContent>
                 <ProductGrid
-                  products={products}
+                  products={filteredProducts}
                   onAddToCart={addToCart}
                   language={language}
                 />
