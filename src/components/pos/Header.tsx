@@ -66,8 +66,10 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 sm:px-6 shrink-0">
-      <h1 className="text-xl font-bold text-primary">{appName}</h1>
-      <div className="flex items-center gap-2" dir="ltr">
+       <div className="flex items-center gap-2">
+         <h1 className="text-xl font-bold text-primary">{appName}</h1>
+       </div>
+      <div className="flex items-center gap-2" dir={language === 'ar' ? 'rtl' : 'ltr'}>
         <Button
           variant="outline"
           size="sm"
