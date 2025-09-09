@@ -296,7 +296,7 @@ const SettingsTab: React.FC<SettingsTabProps> = (props) => {
       </CardHeader>
       <CardContent>
          <Tabs defaultValue="general" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="flex flex-wrap h-auto">
                 <TabsTrigger value="general"><Store className="w-4 h-4 me-2"/>{UI_TEXT.general[language]}</TabsTrigger>
                 <TabsTrigger value="users"><UserCog className="w-4 h-4 me-2"/>{UI_TEXT.usersAndRoles[language]}</TabsTrigger>
                 <TabsTrigger value="backup"><HardDrive className="w-4 h-4 me-2"/>{UI_TEXT.backupRestore[language]}</TabsTrigger>
