@@ -585,7 +585,7 @@ export default function POSPage() {
             </h1>
         </div>
 
-        <div className="flex-1 overflow-hidden pb-24 sm:pb-28"> 
+        <div className="flex-1 overflow-auto"> 
           {renderActiveView()}
         </div>
       </main>
