@@ -31,7 +31,7 @@ interface PaymentDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   cart: CartItem[];
-  onConfirm: (saleData: Omit<Sale, "id" | "createdAt" | "customer" | "orderType" | "orderId">) => void;
+  onConfirm: (saleData: Omit<Sale, "id" | "createdAt" | "customer" | "orderType" | "orderId">, paidCart: CartItem[]) => void;
   language: Language;
   customers: Customer[];
   selectedCustomerId: number | null;
@@ -84,8 +84,14 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       finalTotal,
       paymentMethod,
       deliveryRepId: selectedRepId
-    });
+    }, cart);
   };
+
+  React.useEffect(() => {
+    if (!isOpen) {
+        setSelectedRepId(undefined);
+    }
+  },[isOpen]);
 
   if (!isOpen) return null;
 

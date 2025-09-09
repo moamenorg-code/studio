@@ -23,6 +23,7 @@ import CartPanel from './CartPanel';
 import PaymentDialog from './PaymentDialog';
 import SmartRoundupDialog from './SmartRoundupDialog';
 import HeldOrdersDialog from './HeldOrdersDialog';
+import SplitBillDialog from './SplitBillDialog';
 import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps } from "@/lib/data";
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '../ui/button';
@@ -47,9 +48,11 @@ const POSLayout: React.FC = () => {
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<string>("all");
   
   const [isPaymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
+  const [paymentCart, setPaymentCart] = React.useState<CartItem[]>([]);
   const [isSmartRoundupOpen, setSmartRoundupOpen] = React.useState(false);
   const [isHeldOrdersOpen, setHeldOrdersOpen] = React.useState(false);
   const [isCartSheetOpen, setCartSheetOpen] = React.useState(false);
+  const [isSplitBillOpen, setSplitBillOpen] = React.useState(false);
   
   const [activeOrder, setActiveOrder] = React.useState<ActiveOrder | null>(null);
   const [takeawayOrders, setTakeawayOrders] = React.useState<any[]>([]);
@@ -221,7 +224,7 @@ const handleHoldOrder = () => {
         const table = tables.find(t => t.id === activeOrder.id);
         orderName = customer ? `${table?.name} - ${customer.name}` : table?.name;
     } else {
-        orderName = customer?.name || (activeOrder.type === 'takeaway' ? `Takeaway #${takeawayOrders.length + 1}` : `Delivery #${deliveryOrders.length + 1}`);
+        orderName = customer?.name || (activeOrder.type === 'takeaway' ? `Takeaway #${Date.now() % 1000}` : `Delivery #${Date.now() % 1000}`);
     }
 
     const newHeldOrder: HeldOrder = {
@@ -263,7 +266,7 @@ const handleHoldOrder = () => {
     if (orderType === 'dine-in') {
         setTables(prev => {
             const tableExists = prev.some(t => t.id === orderId);
-            return tableExists ? prev.map(t => t.id === orderId ? { ...t, ...orderData } : t) : prev;
+            return tableExists ? prev.map(t => t.id === orderId ? { ...t, cart, selectedCustomerId } : t) : prev;
         });
     } else if (orderType === 'takeaway') {
         setTakeawayOrders(prev => [...prev.filter(o => o.id !== orderId), orderData]);
@@ -278,7 +281,12 @@ const handleHoldOrder = () => {
     setCartSheetOpen(true);
   }
 
-  const handleConfirmPayment = (saleData: Omit<Sale, "id" | "createdAt" | "customer" | "orderType" | "orderId">) => {
+  const handleOpenPaymentDialog = (cartToPay: CartItem[]) => {
+    setPaymentCart(cartToPay);
+    setPaymentDialogOpen(true);
+  };
+  
+  const handleConfirmPayment = (saleData: Omit<Sale, "id" | "createdAt" | "customer" | "orderType" | "orderId">, paidCart: CartItem[]) => {
     if (!activeOrder) return;
     
     const customer = customers.find(c => c.id === activeCustomerId) || undefined;
@@ -319,10 +327,29 @@ const handleHoldOrder = () => {
     });
     setRawMaterials(updatedRawMaterials);
     
-    setHeldOrders(prev => prev.filter(o => !(o.orderId === activeOrder.id && o.orderType === activeOrder.type)));
-
-    clearCart(true);
+    // Remove paid items from the active cart
+    const remainingCart = activeCart.reduce((acc, item) => {
+        const paidItem = paidCart.find(p => p.id === item.id);
+        if (paidItem) {
+            if (item.quantity > paidItem.quantity) {
+                acc.push({ ...item, quantity: item.quantity - paidItem.quantity });
+            }
+        } else {
+            acc.push(item);
+        }
+        return acc;
+    }, [] as CartItem[]);
+    
+    setActiveCart(remainingCart);
+    
+    // If cart is empty after payment, clear the order
+    if (remainingCart.length === 0) {
+        setHeldOrders(prev => prev.filter(o => !(o.orderId === activeOrder.id && o.orderType === activeOrder.type)));
+        clearCart(true);
+    }
+    
     setPaymentDialogOpen(false);
+    setSplitBillOpen(false); // Close split bill dialog after a partial payment
     
     toast({
       title: UI_TEXT.transactionSuccess[language],
@@ -573,8 +600,9 @@ const handleHoldOrder = () => {
         cart={activeCart}
         setCart={setActiveCart}
         clearCart={() => clearCart(false)}
-        onProcessPayment={() => setPaymentDialogOpen(true)}
+        onProcessPayment={() => handleOpenPaymentDialog(activeCart)}
         onHoldOrder={handleHoldOrder}
+        onSplitBill={() => setSplitBillOpen(true)}
         language={language}
         customers={customers}
         selectedCustomerId={activeCustomerId}
@@ -586,7 +614,7 @@ const handleHoldOrder = () => {
       <PaymentDialog
         isOpen={isPaymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
-        cart={activeCart}
+        cart={paymentCart}
         onConfirm={handleConfirmPayment}
         language={language}
         customers={customers}
@@ -598,6 +626,15 @@ const handleHoldOrder = () => {
         settings={settings}
       />
       
+      <SplitBillDialog
+        isOpen={isSplitBillOpen}
+        onOpenChange={setSplitBillOpen}
+        cart={activeCart}
+        onProcessPayment={handleOpenPaymentDialog}
+        language={language}
+        currency={settings.currency}
+      />
+
       <SmartRoundupDialog
         isOpen={isSmartRoundupOpen}
         onOpenChange={setSmartRoundupOpen}
