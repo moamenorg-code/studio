@@ -1,5 +1,4 @@
 import * as React from 'react';
-import Image from 'next/image';
 import { MoreHorizontal, PlusCircle } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,6 @@ const UI_TEXT = {
   manageProducts: { en: 'Manage Products', ar: 'إدارة المنتجات' },
   manageYourProducts: { en: 'View, add, edit, and remove your products.', ar: 'عرض وإضافة وتعديل وحذف منتجاتك.' },
   addProduct: { en: 'Add Product', ar: 'إضافة منتج' },
-  image: { en: 'Image', ar: 'الصورة' },
   name: { en: 'Name', ar: 'الاسم' },
   price: { en: 'Price', ar: 'السعر' },
   actions: { en: 'Actions', ar: 'الإجراءات' },
@@ -83,9 +81,6 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="hidden w-[100px] sm:table-cell">
-                  <span className="sr-only">{UI_TEXT.image[language]}</span>
-                </TableHead>
                 <TableHead>{UI_TEXT.name[language]}</TableHead>
                 <TableHead className="text-end">{UI_TEXT.price[language]}</TableHead>
                 <TableHead>
@@ -97,16 +92,6 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
               {products.length > 0 ? (
                 products.map(product => (
                   <TableRow key={product.id}>
-                    <TableCell className="hidden sm:table-cell">
-                       <Image
-                            alt={language === 'ar' ? product.nameAr : product.name}
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src={product.image}
-                            width="64"
-                            data-ai-hint={product.dataAiHint}
-                        />
-                    </TableCell>
                     <TableCell className="font-medium">{language === 'ar' ? product.nameAr : product.name}</TableCell>
                     <TableCell className="text-end">{product.price.toFixed(2)}</TableCell>
                     <TableCell>
@@ -128,7 +113,7 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={3} className="h-24 text-center">
                     {UI_TEXT.noProducts[language]}
                   </TableCell>
                 </TableRow>

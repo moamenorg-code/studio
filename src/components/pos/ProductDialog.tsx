@@ -22,8 +22,6 @@ const UI_TEXT = {
   nameAr: { en: 'Name (Arabic)', ar: 'الاسم (العربية)' },
   price: { en: 'Price', ar: 'السعر' },
   barcode: { en: 'Barcode', ar: 'الباركود' },
-  imageURL: { en: 'Image URL', ar: 'رابط الصورة' },
-  aiHint: { en: 'AI Hint', ar: 'تلميح للذكاء الاصطناعي' },
   cancel: { en: 'Cancel', ar: 'إلغاء' },
   save: { en: 'Save', ar: 'حفظ' },
 };
@@ -48,8 +46,6 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onS
         nameAr: '',
         price: 0,
         barcode: '',
-        image: 'https://picsum.photos/400/300',
-        dataAiHint: '',
       });
     }
   }, [product, isOpen]);
@@ -100,18 +96,6 @@ const ProductDialog: React.FC<ProductDialogProps> = ({ isOpen, onOpenChange, onS
               {UI_TEXT.barcode[language]}
             </Label>
             <Input id="barcode" name="barcode" value={formData.barcode || ''} onChange={handleChange} className="col-span-3" dir="ltr" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="image" className="text-end">
-                {UI_TEXT.imageURL[language]}
-            </Label>
-            <Input id="image" name="image" value={formData.image} onChange={handleChange} className="col-span-3" />
-          </div>
-           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="dataAiHint" className="text-end">
-                {UI_TEXT.aiHint[language]}
-            </Label>
-            <Input id="dataAiHint" name="dataAiHint" value={formData.dataAiHint} onChange={handleChange} className="col-span-3" />
           </div>
         </div>
         <DialogFooter>

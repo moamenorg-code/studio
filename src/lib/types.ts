@@ -3,8 +3,6 @@ export interface Product {
   name: string;
   nameAr: string;
   price: number;
-  image: string;
-  dataAiHint: string;
   barcode?: string;
 }
 

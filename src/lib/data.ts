@@ -6,8 +6,6 @@ export const products: Product[] = [
     name: "Espresso",
     nameAr: "اسبريسو",
     price: 25.00,
-    image: "https://picsum.photos/400/300?random=1",
-    dataAiHint: "coffee cup",
     barcode: "860001",
   },
   {
@@ -15,8 +13,6 @@ export const products: Product[] = [
     name: "Latte",
     nameAr: "لاتيه",
     price: 35.50,
-    image: "https://picsum.photos/400/300?random=2",
-    dataAiHint: "latte art",
     barcode: "860002",
   },
   {
@@ -24,8 +20,6 @@ export const products: Product[] = [
     name: "Croissant",
     nameAr: "كرواسون",
     price: 22.75,
-    image: "https://picsum.photos/400/300?random=3",
-    dataAiHint: "fresh croissant",
     barcode: "860003",
   },
   {
@@ -33,8 +27,6 @@ export const products: Product[] = [
     name: "Cheesecake",
     nameAr: "تشيز كيك",
     price: 45.00,
-    image: "https://picsum.photos/400/300?random=4",
-    dataAiHint: "slice cheesecake",
     barcode: "860004",
   },
   {
@@ -42,8 +34,6 @@ export const products: Product[] = [
     name: "Iced Tea",
     nameAr: "شاي مثلج",
     price: 30.25,
-    image: "https://picsum.photos/400/300?random=5",
-    dataAiHint: "iced tea",
     barcode: "860005",
   },
   {
@@ -51,8 +41,6 @@ export const products: Product[] = [
     name: "Muffin",
     nameAr: "مافن",
     price: 28.00,
-    image: "https://picsum.photos/400/300?random=6",
-    dataAiHint: "chocolate muffin",
     barcode: "860006",
   },
     {
@@ -60,8 +48,6 @@ export const products: Product[] = [
     name: "Cappuccino",
     nameAr: "كابتشينو",
     price: 32.00,
-    image: "https://picsum.photos/400/300?random=7",
-    dataAiHint: "cappuccino foam",
     barcode: "860007",
   },
   {
@@ -69,8 +55,6 @@ export const products: Product[] = [
     name: "Orange Juice",
     nameAr: "عصير برتقال",
     price: 28.50,
-    image: "https://picsum.photos/400/300?random=8",
-    dataAiHint: "orange juice",
     barcode: "860008",
   },
   {
@@ -78,8 +62,6 @@ export const products: Product[] = [
     name: "Club Sandwich",
     nameAr: "كلوب سندويتش",
     price: 55.00,
-    image: "https://picsum.photos/400/300?random=9",
-    dataAiHint: "club sandwich",
     barcode: "860009",
   },
 ];
