@@ -125,6 +125,10 @@ export default function POSPage() {
     taxRate: 15,
     receiptHeader: "Thank you for your business!",
     receiptFooter: "Please come again!",
+    printerName: "Default Printer",
+    printerConnectionType: "network",
+    printerIpAddress: "192.168.1.100",
+    printerPaperWidth: "80mm",
   });
 
   const { toast } = useToast();

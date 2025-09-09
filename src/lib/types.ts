@@ -94,4 +94,8 @@ export interface Settings {
     taxRate: number;
     receiptHeader: string;
     receiptFooter: string;
+    printerName?: string;
+    printerConnectionType?: 'bluetooth' | 'usb' | 'network';
+    printerIpAddress?: string;
+    printerPaperWidth?: '58mm' | '80mm';
 }
