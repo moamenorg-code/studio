@@ -183,17 +183,16 @@ export default function POSPage() {
         <div className="mb-4 flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="text-lg py-6 justify-start shrink-0">
-                  <Menu className={language === 'ar' ? 'ml-3 h-5 w-5' : 'mr-3 h-5 w-5'} />
+                <Button variant="outline" className="w-[200px]">
+                  <Menu className={language === 'ar' ? 'ml-2 h-5 w-5' : 'mr-2 h-5 w-5'} />
                   <span>{UI_TEXT.menu[language]}</span>
-                  <ChevronDown className={language === 'ar' ? 'mr-auto h-5 w-5' : 'ml-auto h-5 w-5'} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-[300px]">
+              <DropdownMenuContent align={language === 'ar' ? 'end' : 'start'} className="w-[250px]">
                 {VIEW_OPTIONS.map(({ value, label, icon: Icon }) => (
-                  <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-lg py-3">
+                  <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
                     <Icon className={language === 'ar' ? 'ml-3 h-5 w-5' : 'mr-3 h-5 w-5'} />
-                    <span>{UI_TEXT[label][language]}</span>
+                    <span className="flex-1 text-right">{UI_TEXT[label][language]}</span>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -204,7 +203,7 @@ export default function POSPage() {
                 <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
                 <Input
                   placeholder={UI_TEXT.searchPlaceholder[language]}
-                  className={`${language === 'ar' ? 'pr-10' : 'pl-10'} h-full text-lg py-3`}
+                  className={`${language === 'ar' ? 'pr-10' : 'pl-10'} h-full text-base py-2.5`}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                 />
