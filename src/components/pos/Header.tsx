@@ -75,8 +75,8 @@ const Header: React.FC<HeaderProps> = ({
         {/* Spacer */}
         <div className="flex-grow" />
 
-        {/* Buttons in the middle */}
-        <div className="hidden items-center gap-2 md:flex">
+        {/* Buttons */}
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -142,9 +142,6 @@ const Header: React.FC<HeaderProps> = ({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-
-        {/* Menu button on the far right */}
          <DropdownMenu dir={language === 'ar' ? 'rtl' : 'ltr'}>
             <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon" className="h-9 w-9" disabled={!isShiftOpen}>
@@ -168,6 +165,7 @@ const Header: React.FC<HeaderProps> = ({
             </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </div>
     </header>
   );
