@@ -61,7 +61,7 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
     setDialogOpen(true);
   };
 
-  const handleDeleteProduct = (productId: number) => {
+  const handleDeleteProduct = (productId: string) => {
     onProductsChange(products.filter(p => p.id !== productId));
   };
   
@@ -71,18 +71,18 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, o
       updatedProduct = productData;
       onProductsChange(products.map(p => (p.id === updatedProduct.id ? updatedProduct : p)));
     } else {
-      updatedProduct = { ...productData, id: Date.now() };
+      updatedProduct = { ...productData, id: String(Date.now()) }; // Firestore IDs are strings
       onProductsChange([...products, updatedProduct]);
     }
     setDialogOpen(false);
   };
   
-  const handleRecipeChange = (productId: number, recipeId: string) => {
+  const handleRecipeChange = (productId: string, recipeId: string) => {
       const newRecipeId = recipeId === 'none' ? undefined : Number(recipeId);
       onProductsChange(products.map(p => p.id === productId ? {...p, recipeId: newRecipeId} : p));
   }
 
-  const handleCategoryChange = (productId: number, categoryId: string) => {
+  const handleCategoryChange = (productId: string, categoryId: string) => {
       const newCategoryId = categoryId === 'none' ? undefined : Number(categoryId);
       onProductsChange(products.map(p => p.id === productId ? {...p, categoryId: newCategoryId} : p));
   }

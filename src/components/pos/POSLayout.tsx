@@ -1,5 +1,7 @@
 import * as React from 'react';
-import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, Permission, AppData } from '@/lib/types';
+import { db } from '@/lib/firebase';
+import { collection, onSnapshot, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, AppData, Purchase } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -26,7 +28,7 @@ import HeldOrdersDialog from './HeldOrdersDialog';
 import SplitBillDialog from './SplitBillDialog';
 import LoginScreen from './LoginScreen';
 import BarcodeScanner from './BarcodeScanner';
-import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles, purchases as initialPurchases } from "@/lib/data";
+import { customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles, purchases as initialPurchases } from "@/lib/data";
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '../ui/button';
 
@@ -34,7 +36,7 @@ import { Button } from '../ui/button';
 const POSLayout: React.FC = () => {
   const [language, setLanguage] = React.useState<Language>("ar");
   const [sales, setSales] = React.useState<Sale[]>([]);
-  const [products, setProducts] = React.useState<Product[]>(initialProducts);
+  const [products, setProducts] = React.useState<Product[]>([]);
   const [customers, setCustomers] = React.useState<Customer[]>(initialCustomers);
   const [deliveryReps, setDeliveryReps] = React.useState<DeliveryRep[]>(initialDeliveryReps);
   const [suppliers, setSuppliers] = React.useState<Supplier[]>(initialSuppliers);
@@ -87,6 +89,18 @@ const POSLayout: React.FC = () => {
   });
 
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'products'), (snapshot) => {
+      const productsData = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Product, 'id'>),
+      }));
+      setProducts(productsData);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const activeShift = React.useMemo(() => shifts.find(s => s.status === 'open'), [shifts]);
 
