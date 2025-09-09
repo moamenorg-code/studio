@@ -50,16 +50,16 @@ import SalesHistoryTab from "@/components/pos/SalesHistoryTab";
 import DashboardTab from "@/components/pos/DashboardTab";
 import ProductManagementTab from "@/components/pos/ProductManagementTab";
 import CustomerManagementTab from "@/components/pos/CustomerManagementTab";
-import SupplierManagementTab from "@/components/pos/SupplierManagementTab";
 import PurchaseManagementTab from "@/components/pos/PurchaseManagementTab";
 import InventoryManagementTab from "@/components/pos/InventoryManagementTab";
 import FloatingCartBar from "@/components/pos/FloatingCartBar";
 import ShiftsManagementTab from "@/components/pos/ShiftsManagementTab";
 import SettingsTab from "@/components/pos/SettingsTab";
+import PurchasesAndSuppliersTab from "@/components/pos/PurchasesAndSuppliersTab";
 
 
 type Language = "en" | "ar";
-type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "suppliers" | "purchases" | "inventory" | "shifts" | "settings";
+type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings";
 
 const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
@@ -68,8 +68,7 @@ const UI_TEXT = {
   products: { en: "Products", ar: "المنتجات" },
   manageProducts: { en: "Manage Products", ar: "إدارة المنتجات" },
   customers: { en: "Customers", ar: "العملاء" },
-  suppliers: { en: "Suppliers", ar: "الموردين" },
-  purchases: { en: "Purchases", ar: "المشتريات" },
+  purchases: { en: "Purchases & Suppliers", ar: "المشتريات والموردين" },
   inventory: { en: "Inventory", ar: "المخزون" },
   shifts: { en: "Shifts & Cash", ar: "الشفتات والخزينة" },
   expenses: { en: "Expenses", ar: "المصروفات" },
@@ -89,7 +88,6 @@ const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: Reac
     { value: 'products', label: 'manageProducts', icon: ClipboardList },
     { value: 'inventory', label: 'inventory', icon: Archive },
     { value: 'customers', label: 'customers', icon: Users },
-    { value: 'suppliers', label: 'suppliers', icon: Building },
     { value: 'purchases', label: 'purchases', icon: Truck },
     { value: 'shifts', label: 'shifts', icon: Briefcase },
     { value: 'settings', label: 'settings', icon: SettingsIcon },
@@ -246,10 +244,14 @@ export default function POSPage() {
         return <InventoryManagementTab rawMaterials={rawMaterials} onRawMaterialsChange={handleRawMaterialUpdate} language={language} />;
       case 'customers':
         return <CustomerManagementTab customers={customers} onCustomersChange={handleCustomerUpdate} language={language} />;
-      case 'suppliers':
-        return <SupplierManagementTab suppliers={suppliers} onSuppliersChange={handleSupplierUpdate} language={language} />;
       case 'purchases':
-        return <PurchaseManagementTab suppliers={suppliers} rawMaterials={rawMaterials} onRawMaterialsChange={handleRawMaterialUpdate} language={language} />;
+        return <PurchasesAndSuppliersTab 
+                  suppliers={suppliers} 
+                  onSuppliersChange={handleSupplierUpdate} 
+                  rawMaterials={rawMaterials} 
+                  onRawMaterialsChange={handleRawMaterialUpdate}
+                  language={language} 
+               />;
       case 'shifts':
         return (
           <ShiftsManagementTab

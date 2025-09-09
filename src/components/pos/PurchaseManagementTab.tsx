@@ -62,7 +62,7 @@ const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers
 
   return (
     <>
-      <Card>
+      <Card className='shadow-none border-none'>
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -76,7 +76,7 @@ const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[calc(100vh-22rem)]">
+          <ScrollArea className="h-[calc(100vh-28rem)]">
             <Table>
               <TableHeader>
                 <TableRow>
