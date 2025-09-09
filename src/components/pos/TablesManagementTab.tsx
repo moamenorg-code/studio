@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { PlusCircle, Edit, ShoppingCart, Table as TableIcon } from 'lucide-react';
+import { PlusCircle, Edit, ShoppingCart, Table as TableIcon, ArrowRightLeft } from 'lucide-react';
 import type { Table } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,11 +10,19 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Separator } from '../ui/separator';
 
 type Language = 'en' | 'ar';
 
@@ -23,6 +31,7 @@ const UI_TEXT = {
   viewAndManageTables: { en: 'View and manage your tables.', ar: 'عرض وإدارة طاولاتك.' },
   addTable: { en: 'Add Table', ar: 'إضافة طاولة' },
   editTable: { en: 'Edit Table', ar: 'تعديل الطاولة' },
+  transferTable: { en: 'Transfer Table', ar: 'نقل الطاولة' },
   tableName: { en: 'Table Name', ar: 'اسم الطاولة' },
   save: { en: 'Save', ar: 'حفظ' },
   cancel: { en: 'Cancel', ar: 'إلغاء' },
@@ -33,6 +42,10 @@ const UI_TEXT = {
   total: { en: 'Total', ar: 'الإجمالي' },
   viewOrder: { en: 'View Order', ar: 'عرض الطلب' },
   newOrder: { en: 'New Order', ar: 'طلب جديد' },
+  actions: { en: 'Actions', ar: 'الإجراءات' },
+  selectDestination: { en: 'Select Destination Table', ar: 'اختر الطاولة الهدف' },
+  selectDestinationDesc: { en: 'Please select an available table to move the order to.', ar: 'يرجى اختيار طاولة متاحة لنقل الطلب إليها.' },
+  noAvailableTables: { en: 'No available tables to transfer to.', ar: 'لا توجد طاولات متاحة للنقل.' },
 };
 
 interface TableDialogProps {
@@ -91,10 +104,12 @@ interface TableCardProps {
     onSelect: (id: number) => void;
     onOpenCart: () => void;
     onEdit: (table: Table) => void;
+    onTransfer: (table: Table) => void;
+    onDelete: (id: number) => void;
     language: Language;
 }
 
-const TableCard: React.FC<TableCardProps> = ({ table, isActive, onSelect, onOpenCart, onEdit, language }) => {
+const TableCard: React.FC<TableCardProps> = ({ table, isActive, onSelect, onOpenCart, onEdit, onTransfer, onDelete, language }) => {
     const isOccupied = table.cart && table.cart.length > 0;
     const total = table.cart ? table.cart.reduce((sum, item) => sum + item.price * item.quantity, 0) : 0;
     const itemCount = table.cart ? table.cart.reduce((sum, item) => sum + item.quantity, 0) : 0;
@@ -115,9 +130,31 @@ const TableCard: React.FC<TableCardProps> = ({ table, isActive, onSelect, onOpen
             )}
             onClick={handleCardClick}
         >
-            <Button size="icon" variant="secondary" className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover/table-card:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); onEdit(table); }}>
-                <Edit className="h-3 w-3" />
-            </Button>
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-7 w-7" onClick={(e) => e.stopPropagation()}>
+                        <Edit className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenuItem onClick={() => onEdit(table)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        {UI_TEXT.editTable[language]}
+                    </DropdownMenuItem>
+                    {isOccupied && (
+                        <DropdownMenuItem onClick={() => onTransfer(table)}>
+                           <ArrowRightLeft className="h-4 w-4 mr-2" />
+                            {UI_TEXT.transferTable[language]}
+                        </DropdownMenuItem>
+                    )}
+                    <Separator />
+                    <DropdownMenuItem onClick={() => onDelete(table.id)} className="text-destructive">
+                        <Edit className="h-4 w-4 mr-2" />
+                        {UI_TEXT.delete[language]}
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-lg font-bold">{table.name}</CardTitle>
                 <TableIcon className={cn("h-6 w-6", isOccupied ? "text-red-500" : "text-green-500")} />
@@ -145,6 +182,48 @@ const TableCard: React.FC<TableCardProps> = ({ table, isActive, onSelect, onOpen
     );
 };
 
+interface TransferTableDialogProps {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  onTransfer: (destinationTableId: number) => void;
+  tables: Table[];
+  sourceTable: Table | null;
+  language: Language;
+}
+
+const TransferTableDialog: React.FC<TransferTableDialogProps> = ({ isOpen, onOpenChange, onTransfer, tables, sourceTable, language }) => {
+  const availableTables = tables.filter(t => t.id !== sourceTable?.id && (!t.cart || t.cart.length === 0));
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{UI_TEXT.transferTable[language]}</DialogTitle>
+          <DialogDescription>{UI_TEXT.selectDestinationDesc[language]}</DialogDescription>
+        </DialogHeader>
+        <ScrollArea className="h-72 my-4">
+            <div className="grid grid-cols-3 gap-4 p-1">
+                {availableTables.length > 0 ? (
+                    availableTables.map(table => (
+                        <Button 
+                            key={table.id}
+                            variant="outline"
+                            className="h-20 text-lg"
+                            onClick={() => onTransfer(table.id)}
+                        >
+                            {table.name}
+                        </Button>
+                    ))
+                ) : (
+                    <p className="col-span-3 text-center text-muted-foreground">{UI_TEXT.noAvailableTables[language]}</p>
+                )}
+            </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 interface TablesManagementTabProps {
   tables: Table[];
   onTablesChange: (tables: Table[]) => void;
@@ -156,18 +235,25 @@ interface TablesManagementTabProps {
 }
 
 const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTablesChange, activeTableId, onSelectTable, isFullScreen = false, onOpenCart, language }) => {
-  const [isDialogOpen, setDialogOpen] = React.useState(false);
+  const [isAddEditDialogOpen, setAddEditDialogOpen] = React.useState(false);
+  const [isTransferDialogOpen, setTransferDialogOpen] = React.useState(false);
   const [editingTable, setEditingTable] = React.useState<Table | null>(null);
+  const [transferSourceTable, setTransferSourceTable] = React.useState<Table | null>(null);
 
   const handleAdd = () => {
     setEditingTable(null);
-    setDialogOpen(true);
+    setAddEditDialogOpen(true);
   };
 
   const handleEdit = (table: Table) => {
     setEditingTable(table);
-    setDialogOpen(true);
+    setAddEditDialogOpen(true);
   };
+  
+  const handleOpenTransfer = (table: Table) => {
+    setTransferSourceTable(table);
+    setTransferDialogOpen(true);
+  }
 
   const handleDelete = (tableId: number) => {
     onTablesChange(tables.filter(t => t.id !== tableId));
@@ -188,8 +274,29 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
       };
       onTablesChange([...tables, newTable]);
     }
-    setDialogOpen(false);
+    setAddEditDialogOpen(false);
   };
+  
+  const handleConfirmTransfer = (destinationTableId: number) => {
+      if (!transferSourceTable) return;
+
+      const sourceTableData = tables.find(t => t.id === transferSourceTable.id);
+      if (!sourceTableData) return;
+
+      const updatedTables = tables.map(table => {
+          if (table.id === destinationTableId) {
+              return { ...table, cart: sourceTableData.cart, selectedCustomerId: sourceTableData.selectedCustomerId };
+          }
+          if (table.id === transferSourceTable.id) {
+              return { ...table, cart: [], selectedCustomerId: null };
+          }
+          return table;
+      });
+
+      onTablesChange(updatedTables);
+      onSelectTable(destinationTableId); // Optionally, make the destination table active
+      setTransferDialogOpen(false);
+  }
 
   return (
     <>
@@ -201,8 +308,8 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
               <CardDescription>{UI_TEXT.viewAndManageTables[language]}</CardDescription>
             </div>
             <TableDialog 
-                isOpen={isDialogOpen}
-                onOpenChange={setDialogOpen}
+                isOpen={isAddEditDialogOpen && editingTable === null}
+                onOpenChange={setAddEditDialogOpen}
                 onSave={handleSave} 
                 table={editingTable} 
                 language={language}
@@ -225,6 +332,8 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
                             onSelect={onSelectTable}
                             onOpenCart={onOpenCart}
                             onEdit={handleEdit}
+                            onTransfer={handleOpenTransfer}
+                            onDelete={handleDelete}
                             language={language}
                         />
                     ))}
@@ -233,8 +342,8 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
         </CardContent>
       </Card>
       <TableDialog 
-        isOpen={isDialogOpen && editingTable !== null}
-        onOpenChange={(open) => { if (!open) setEditingTable(null); setDialogOpen(open); }}
+        isOpen={isAddEditDialogOpen && editingTable !== null}
+        onOpenChange={(open) => { if (!open) setEditingTable(null); setAddEditDialogOpen(open); }}
         onSave={handleSave} 
         table={editingTable} 
         language={language}
@@ -242,6 +351,15 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
         {/* This is a dummy trigger, the dialog is controlled by `isOpen` state */}
         <span /> 
       </TableDialog>
+
+      <TransferTableDialog
+        isOpen={isTransferDialogOpen}
+        onOpenChange={setTransferDialogOpen}
+        onTransfer={handleConfirmTransfer}
+        tables={tables}
+        sourceTable={transferSourceTable}
+        language={language}
+      />
     </>
   );
 };

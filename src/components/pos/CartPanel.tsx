@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { MinusCircle, PlusCircle, Trash2, XCircle, UserPlus, UserCheck, Pause } from 'lucide-react';
+import { MinusCircle, PlusCircle, Trash2, XCircle, UserPlus, UserCheck, Pause, Scissors } from 'lucide-react';
 import type { CartItem, Customer, OrderType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,6 +43,7 @@ const UI_TEXT = {
     customerRequired: { en: 'Customer is required for delivery orders.', ar: 'العميل مطلوب لطلبات التوصيل.' },
     confirmCustomer: { en: 'Confirm Customer & Add Items', ar: 'تأكيد العميل وإضافة الأصناف' },
     hold: { en: 'Hold', ar: 'تعليق' },
+    splitBill: { en: 'Split Bill', ar: 'تقسيم الفاتورة' },
 };
 
 interface CartPanelProps {
@@ -296,6 +297,10 @@ const CartPanel: React.FC<CartPanelProps> = ({
                             <XCircle className={language === 'ar' ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4"} />{UI_TEXT.clearCart[language]}
                         </Button>
                     </div>
+                     <Button onClick={() => {}} size="lg" className="w-full" variant="outline" disabled>
+                        <Scissors className={language === 'ar' ? 'ml-2 h-4 w-4' : 'mr-2 h-4 w-4'} />
+                        {UI_TEXT.splitBill[language]}
+                    </Button>
                      <Button onClick={onProcessPayment} size="lg" className="w-full bg-green-600 text-white hover:bg-green-700">
                         {UI_TEXT.pay[language]}
                     </Button>

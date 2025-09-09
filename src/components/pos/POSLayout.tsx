@@ -211,18 +211,17 @@ const POSLayout: React.FC = () => {
     setCartSheetOpen(false);
   };
   
-  const handleHoldOrder = () => {
+const handleHoldOrder = () => {
     if (!activeOrder || activeCart.length === 0) return;
 
     const customer = customers.find(c => c.id === activeCustomerId);
     let orderName: string | undefined;
 
-    // Determine order name
     if (activeOrder.type === 'dine-in') {
         const table = tables.find(t => t.id === activeOrder.id);
         orderName = customer ? `${table?.name} - ${customer.name}` : table?.name;
     } else {
-        orderName = customer?.name || (activeOrder.type === 'takeaway' ? `Takeaway #${activeOrder.id}` : `Delivery #${activeOrder.id}`);
+        orderName = customer?.name || (activeOrder.type === 'takeaway' ? `Takeaway #${takeawayOrders.length + 1}` : `Delivery #${deliveryOrders.length + 1}`);
     }
 
     const newHeldOrder: HeldOrder = {
@@ -235,19 +234,10 @@ const POSLayout: React.FC = () => {
         heldAt: new Date(),
     };
 
-    const existingHeldIndex = heldOrders.findIndex(o => o.orderId === newHeldOrder.orderId && o.orderType === newHeldOrder.orderType);
-    if (existingHeldIndex > -1) {
-        setHeldOrders(prev => {
-            const updated = [...prev];
-            updated[existingHeldIndex] = newHeldOrder;
-            return updated;
-        });
-    } else {
-        setHeldOrders(prev => [newHeldOrder, ...prev]);
-    }
+    setHeldOrders(prev => [newHeldOrder, ...prev.filter(o => !(o.orderId === newHeldOrder.orderId && o.orderType === newHeldOrder.orderType))]);
     
-    // If it's a takeaway or delivery order, we clear it from the active list
-    // and deactivate the order. For dine-in, we keep the order active on the table.
+    // For takeaway or delivery, holding the order means clearing it from the active list.
+    // For dine-in, the order remains on the table, but is also available in the held list.
     if (activeOrder.type === 'takeaway') {
         setTakeawayOrders(prev => prev.filter(o => o.id !== activeOrder.id));
         setActiveOrder(null);
