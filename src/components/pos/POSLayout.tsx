@@ -24,6 +24,7 @@ import PaymentDialog from './PaymentDialog';
 import SmartRoundupDialog from './SmartRoundupDialog';
 import HeldOrdersDialog from './HeldOrdersDialog';
 import SplitBillDialog from './SplitBillDialog';
+import LoginScreen from './LoginScreen';
 import { products as initialProducts, customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles } from "@/lib/data";
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '../ui/button';
@@ -61,8 +62,7 @@ const POSLayout: React.FC = () => {
   const [deliveryOrders, setDeliveryOrders] = React.useState<any[]>([]);
   const [heldOrders, setHeldOrders] = React.useState<HeldOrder[]>([]);
 
-  // TODO: Replace with a proper login/user selection mechanism
-  const [currentUser, setCurrentUser] = React.useState<User | null>(users.find(u => u.id === 1) || null);
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
 
 
   const [settings, setSettings] = React.useState<Settings>({
@@ -168,6 +168,26 @@ const POSLayout: React.FC = () => {
     }
   };
 
+  const handleLogin = (pin: string) => {
+    const user = users.find(u => u.pin === pin);
+    if (user) {
+      setCurrentUser(user);
+      handleSetActiveView('shifts'); // Redirect to a default view after login
+    } else {
+      toast({
+        title: UI_TEXT.loginFailed[language],
+        description: UI_TEXT.loginFailedDesc[language],
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleLogout = () => {
+      setCurrentUser(null);
+      setActiveOrder(null);
+      setCartSheetOpen(false);
+  }
+
   const addToCart = (product: Product) => {
     if (!activeOrder) {
          toast({
@@ -266,10 +286,11 @@ const handleHoldOrder = () => {
       setHeldOrders(prev => [newHeldOrder, ...prev]);
     }
     
-    if (activeOrder.type === 'dine-in') {
-        setCartSheetOpen(false);
+    // For dine-in, we keep the table occupied. For others, we clear the active order.
+    if (activeOrder.type !== 'dine-in') {
+      clearCart();
     } else {
-        clearCart();
+      setCartSheetOpen(false);
     }
     
     toast({
@@ -286,14 +307,17 @@ const handleHoldOrder = () => {
 
     // Restore the order to its original source
     if (orderType === 'dine-in') {
-        setTables(prev => {
-            const tableExists = prev.some(t => t.id === orderId);
-            return tableExists ? prev.map(t => t.id === orderId ? { ...t, ...orderData } : t) : prev;
-        });
+        // Since we no longer clear the cart, we just need to set the active order.
+        // The data is already on the table.
     } else if (orderType === 'takeaway') {
-        setTakeawayOrders(prev => [...prev.filter(o => o.id !== orderId), orderData]);
+        // Make sure order doesn't already exist
+        if (!takeawayOrders.some(o => o.id === orderId)) {
+            setTakeawayOrders(prev => [...prev, orderData]);
+        }
     } else if (orderType === 'delivery') {
-        setDeliveryOrders(prev => [...prev.filter(o => o.id !== orderId), orderData]);
+        if (!deliveryOrders.some(o => o.id === orderId)) {
+            setDeliveryOrders(prev => [...prev, orderData]);
+        }
     }
     
     setActiveOrder({ type: orderType, id: orderId });
@@ -453,6 +477,10 @@ const handleHoldOrder = () => {
       });
   }, [products, searchQuery, selectedCategoryId]);
 
+    if (!currentUser) {
+        return <LoginScreen onLogin={handleLogin} users={users} language={language} />;
+    }
+
     const renderActiveView = () => {
     if (!activeShift && activeView !== 'shifts' && activeView !== 'settings') {
       return (
@@ -582,6 +610,7 @@ const handleHoldOrder = () => {
         setLanguage={setLanguage}
         onOpenSmartRoundup={() => setSmartRoundupOpen(true)}
         onOpenHeldOrders={() => setHeldOrdersOpen(true)}
+        onLogout={handleLogout}
         heldOrdersCount={heldOrders.length}
         activeView={activeView}
         setActiveView={handleSetActiveView}

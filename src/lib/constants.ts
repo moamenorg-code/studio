@@ -50,6 +50,8 @@ export const UI_TEXT = {
   switchOrder: { en: 'Switch Order', ar: 'تغيير الطلب' },
   unauthorized: { en: 'Unauthorized Access', ar: 'وصول غير مصرح به' },
   unauthorizedDesc: { en: 'You do not have permission to view this page.', ar: 'ليس لديك الصلاحية لعرض هذه الصفحة.' },
+  loginFailed: { en: 'Login Failed', ar: 'فشل تسجيل الدخول' },
+  loginFailedDesc: { en: 'The PIN you entered is incorrect.', ar: 'الرقم السري الذي أدخلته غير صحيح.' },
 };
 
 export const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType, permission?: Permission }[] = [

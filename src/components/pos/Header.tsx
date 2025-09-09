@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Bot, Languages, Moon, Sun, PauseCircle, Menu } from 'lucide-react';
+import { Bot, Languages, Moon, Sun, PauseCircle, Menu, LogOut } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
@@ -7,6 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
@@ -20,6 +21,7 @@ const HEADER_UI_TEXT = {
   smartRoundup: { en: 'Smart Roundup', ar: 'تقريب السعر الذكي' },
   toggleTheme: { en: 'Toggle theme', ar: 'تبديل السمة' },
   heldOrders: { en: 'Held Orders', ar: 'الطلبات المعلقة' },
+  logout: { en: 'Logout', ar: 'تسجيل الخروج' },
 };
 
 interface HeaderProps {
@@ -28,6 +30,7 @@ interface HeaderProps {
   setLanguage: (lang: Language) => void;
   onOpenSmartRoundup: () => void;
   onOpenHeldOrders: () => void;
+  onLogout: () => void;
   heldOrdersCount: number;
   activeView: ActiveView;
   setActiveView: (view: ActiveView) => void;
@@ -42,6 +45,7 @@ const Header: React.FC<HeaderProps> = ({
   setLanguage,
   onOpenSmartRoundup,
   onOpenHeldOrders,
+  onLogout,
   heldOrdersCount,
   activeView,
   setActiveView,
@@ -138,7 +142,7 @@ const Header: React.FC<HeaderProps> = ({
             </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[250px]">
-            <ScrollArea className="h-[400px]">
+            <ScrollArea className="h-auto max-h-[400px]">
                 {availableViews.map(({ value, label, icon: Icon }) => (
                 <DropdownMenuItem key={value} onSelect={() => setActiveView(value)} className="text-base py-2.5">
                     {language === 'en' && <Icon className="mr-3 h-5 w-5" />}
@@ -147,6 +151,12 @@ const Header: React.FC<HeaderProps> = ({
                 </DropdownMenuItem>
                 ))}
             </ScrollArea>
+             <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={onLogout} className="text-base py-2.5 text-destructive">
+                {language === 'en' && <LogOut className="mr-3 h-5 w-5" />}
+                <span className="flex-1 text-right">{HEADER_UI_TEXT.logout[language]}</span>
+                {language === 'ar' && <LogOut className="ml-3 h-5 w-5" />}
+              </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
       </div>
