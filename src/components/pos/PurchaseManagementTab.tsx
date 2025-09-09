@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { PlusCircle } from 'lucide-react';
-import type { Purchase, Supplier } from '@/lib/types';
+import type { Purchase, Supplier, RawMaterial } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import PurchaseDialog from './PurchaseDialog';
 
 type Language = 'en' | 'ar';
 
@@ -21,14 +22,38 @@ const UI_TEXT = {
 
 interface PurchaseManagementTabProps {
   suppliers: Supplier[];
+  rawMaterials: RawMaterial[];
+  onRawMaterialsChange: (materials: RawMaterial[]) => void;
   language: Language;
 }
 
-const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers, language }) => {
-    const [purchases, setPurchases] = React.useState<Purchase[]>([]);
+const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers, rawMaterials, onRawMaterialsChange, language }) => {
+  const [purchases, setPurchases] = React.useState<Purchase[]>([]);
+  const [isDialogOpen, setDialogOpen] = React.useState(false);
 
   const handleAddPurchase = () => {
-    alert('Add purchase functionality not implemented yet.');
+    setDialogOpen(true);
+  };
+  
+  const handleSavePurchase = (purchase: Omit<Purchase, 'id' | 'createdAt'>) => {
+    const newPurchase: Purchase = {
+        ...purchase,
+        id: `PUR-${Date.now()}`,
+        createdAt: new Date(),
+    };
+    setPurchases(prev => [...prev, newPurchase]);
+
+    // Update raw material stock
+    const updatedMaterials = [...rawMaterials];
+    newPurchase.items.forEach(item => {
+        const materialIndex = updatedMaterials.findIndex(m => m.id === item.rawMaterialId);
+        if (materialIndex !== -1) {
+            updatedMaterials[materialIndex].stock += item.quantity;
+        }
+    });
+    onRawMaterialsChange(updatedMaterials);
+
+    setDialogOpen(false);
   };
   
   const getSupplierName = (supplierId: number) => {
@@ -85,6 +110,14 @@ const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers
           </ScrollArea>
         </CardContent>
       </Card>
+      <PurchaseDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setDialogOpen}
+        onSave={handleSavePurchase}
+        suppliers={suppliers}
+        rawMaterials={rawMaterials}
+        language={language}
+      />
     </>
   );
 };

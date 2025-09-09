@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import RawMaterialDialog from './RawMaterialDialog';
 
 type Language = 'en' | 'ar';
 
@@ -40,20 +41,20 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
 
   const handleAdd = () => {
     setEditingRawMaterial(null);
-    alert("Functionality to add raw materials will be implemented soon.");
+    setDialogOpen(true);
   };
 
   const handleEdit = (material: RawMaterial) => {
     setEditingRawMaterial(material);
-    alert("Functionality to edit raw materials will be implemented soon.");
+    setDialogOpen(true);
   };
 
   const handleDelete = (materialId: number) => {
     onRawMaterialsChange(rawMaterials.filter(m => m.id !== materialId));
   };
   
-  const handleSave = (material: RawMaterial) => {
-    if (editingRawMaterial) {
+  const handleSave = (material: Omit<RawMaterial, 'id'> | RawMaterial) => {
+    if ('id' in material && editingRawMaterial) {
       onRawMaterialsChange(rawMaterials.map(m => (m.id === material.id ? material : m)));
     } else {
       const newMaterial = { ...material, id: Date.now() };
@@ -126,6 +127,13 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
           </ScrollArea>
         </CardContent>
       </Card>
+       <RawMaterialDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setDialogOpen}
+        onSave={handleSave}
+        rawMaterial={editingRawMaterial}
+        language={language}
+      />
     </>
   );
 };

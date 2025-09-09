@@ -197,7 +197,7 @@ export default function POSPage() {
       case 'suppliers':
         return <SupplierManagementTab suppliers={suppliers} onSuppliersChange={handleSupplierUpdate} language={language} />;
       case 'purchases':
-        return <PurchaseManagementTab suppliers={suppliers} language={language} />;
+        return <PurchaseManagementTab suppliers={suppliers} rawMaterials={rawMaterials} onRawMaterialsChange={handleRawMaterialUpdate} language={language} />;
       default:
         return null;
     }

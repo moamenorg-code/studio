@@ -36,10 +36,18 @@ export interface Supplier {
     address: string;
 }
 
+export interface PurchaseItem {
+    rawMaterialId: number;
+    name: string;
+    nameAr: string;
+    quantity: number;
+    price: number;
+}
+
 export interface Purchase {
     id: string;
     supplierId: number;
-    items: { name: string, nameAr: string, quantity: number, price: number }[];
+    items: PurchaseItem[];
     total: number;
     createdAt: Date;
 }
