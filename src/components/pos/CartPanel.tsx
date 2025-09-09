@@ -54,7 +54,7 @@ interface CartPanelProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   cart: CartItem[];
-  setCart: React.Dispatch<React.SetStateAction<CartItem[]>>;
+  setCart: (cart: CartItem[] | ((prevCart: CartItem[]) => CartItem[])) => void;
   clearCart: () => void;
   onProcessPayment: () => void;
   language: Language;
@@ -83,7 +83,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
   const [popoverOpen, setPopoverOpen] = React.useState(false)
 
   const updateQuantity = (id: number, delta: number) => {
-    setCart(currentCart => {
+    const updater = (currentCart: CartItem[]) => {
       const newCart = currentCart.map(item =>
         item.id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item
       );
@@ -92,17 +92,19 @@ const CartPanel: React.FC<CartPanelProps> = ({
         onOpenChange(false);
       }
       return filteredCart;
-    });
+    };
+    setCart(updater);
   };
   
   const removeItem = (id: number) => {
-    setCart(currentCart => {
+     const updater = (currentCart: CartItem[]) => {
       const newCart = currentCart.filter(item => item.id !== id);
       if (newCart.length === 0) {
         onOpenChange(false);
       }
       return newCart;
-    });
+    };
+    setCart(updater);
   };
 
   const subtotal = React.useMemo(() => cart.reduce((acc, item) => acc + item.price * item.quantity, 0), [cart]);

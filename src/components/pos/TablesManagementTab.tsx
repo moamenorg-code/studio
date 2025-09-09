@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { MoreHorizontal, PlusCircle, Edit, Trash2, ShoppingCart, XCircle, Table as TableIcon } from 'lucide-react';
-import type { Table, CartItem } from '@/lib/types';
+import { PlusCircle, Edit, ShoppingCart, Table as TableIcon } from 'lucide-react';
+import type { Table } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -95,9 +95,9 @@ interface TableCardProps {
 }
 
 const TableCard: React.FC<TableCardProps> = ({ table, isActive, onSelect, onOpenCart, onEdit, language }) => {
-    const isOccupied = table.cart.length > 0;
-    const total = table.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const itemCount = table.cart.reduce((sum, item) => sum + item.quantity, 0);
+    const isOccupied = table.cart && table.cart.length > 0;
+    const total = table.cart ? table.cart.reduce((sum, item) => sum + item.price * item.quantity, 0) : 0;
+    const itemCount = table.cart ? table.cart.reduce((sum, item) => sum + item.quantity, 0) : 0;
 
     const handleCardClick = () => {
         onSelect(table.id);
@@ -135,7 +135,7 @@ const TableCard: React.FC<TableCardProps> = ({ table, isActive, onSelect, onOpen
                     <div className='text-center'>
                         <div className="font-bold text-xl text-green-600 dark:text-green-400">{UI_TEXT.available[language]}</div>
                         <div className="text-xs text-muted-foreground invisible">_</div>
-                        <Button variant="ghost" size="sm" className="w-full mt-2">
+                        <Button variant="default" size="sm" className="w-full mt-2">
                             <PlusCircle className="w-4 h-4 me-2"/> {UI_TEXT.newOrder[language]}
                         </Button>
                     </div>

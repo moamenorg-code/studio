@@ -66,6 +66,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 type Language = "en" | "ar";
@@ -92,6 +93,8 @@ const UI_TEXT = {
   menu: { en: "Menu", ar: "القائمة" },
   allCategories: { en: 'All Categories', ar: 'كل الفئات' },
   selectCategory: { en: 'Select a category', ar: 'اختر فئة' },
+  selectTablePrompt: { en: 'Select a Table', ar: 'اختر طاولة' },
+  selectTablePromptDesc: { en: 'Please go to the Tables screen to select a table and start an order.', ar: 'يرجى الذهاب إلى شاشة الطاولات لاختيار طاولة وبدء الطلب.' },
 };
 
 const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType }[] = [
@@ -168,7 +171,7 @@ export default function POSPage() {
         setTables(prevTables =>
             prevTables.map(t =>
                 t.id === activeTableId
-                    ? { ...t, cart: typeof newCart === 'function' ? newCart(t.cart) : newCart }
+                    ? { ...t, cart: typeof newCart === 'function' ? newCart(t.cart || []) : newCart }
                     : t
             )
         );
@@ -211,11 +214,9 @@ export default function POSPage() {
       if(activeTableId) {
         setActiveCart(updater);
       } else {
-        // In tables mode, you must select a table first.
-        // Maybe show a toast? For now, do nothing.
          toast({
-            title: "Select a table",
-            description: "Please select a table to start an order.",
+            title: UI_TEXT.selectTablePrompt[language],
+            description: UI_TEXT.selectTablePromptDesc[language],
             variant: "destructive"
         });
       }
@@ -224,6 +225,13 @@ export default function POSPage() {
     }
   };
 
+  const handleSelectTable = (id: number | null) => {
+    setActiveTableId(id);
+    if(id) {
+        setActiveView('sales');
+    }
+  }
+
   const clearCart = () => {
     if (settings.enableTables && activeTableId) {
       setTables(prevTables =>
@@ -231,7 +239,7 @@ export default function POSPage() {
           t.id === activeTableId ? { ...t, cart: [], selectedCustomerId: null } : t
         )
       );
-      setActiveTableId(null);
+      // Don't reset active table id here, so the user stays on the table
     } else {
       setCart([]);
       setSelectedCustomerId(null);
@@ -269,6 +277,12 @@ export default function POSPage() {
     clearCart();
     setPaymentDialogOpen(false);
     setCartSheetOpen(false);
+    
+    // After payment, clear the table and make it available again
+     if (settings.enableTables && activeTableId) {
+        setActiveTableId(null);
+     }
+
     toast({
       title: UI_TEXT.transactionSuccess[language],
       description: UI_TEXT.transactionSuccessDesc[language](newSale.id),
@@ -333,67 +347,70 @@ export default function POSPage() {
       });
   }, [products, searchQuery, selectedCategoryId]);
 
-  const renderSalesContent = () => (
-    <div className={`grid ${settings.enableTables ? 'grid-cols-3' : 'grid-cols-1'} gap-4 h-full`}>
-       {settings.enableTables && (
-         <div className="col-span-1">
-           <TablesManagementTab 
-              tables={tables}
-              onTablesChange={setTables}
-              activeTableId={activeTableId}
-              onSelectTable={setActiveTableId}
-              language={language}
-              onOpenCart={() => setCartSheetOpen(true)}
-           />
+  const renderSalesContent = () => {
+    if (settings.enableTables && !activeTableId) {
+       return (
+         <div className="flex items-center justify-center h-full">
+            <Alert className="w-auto">
+                <TableIcon className="h-4 w-4" />
+                <AlertTitle>{UI_TEXT.selectTablePrompt[language]}</AlertTitle>
+                <AlertDescription>{UI_TEXT.selectTablePromptDesc[language]}</AlertDescription>
+                <div className="mt-4">
+                    <Button onClick={() => setActiveView('tables')}>
+                        {UI_TEXT.tables[language]}
+                    </Button>
+                </div>
+            </Alert>
          </div>
-       )}
-       <div className={settings.enableTables ? 'col-span-2' : 'col-span-1'}>
-            <Card className="shadow-none border-none h-full">
-                <CardHeader className="p-4">
-                  <div className="flex items-center gap-4">
-                      <div className="flex w-full gap-4">
-                        <div className="relative w-full">
-                            <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
-                            <Input
-                            placeholder={UI_TEXT.searchPlaceholder[language]}
-                            className={`${language === 'ar' ? 'pr-10' : 'pl-10'} text-base`}
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-                        <Select 
-                          onValueChange={setSelectedCategoryId} 
-                          value={selectedCategoryId}
-                          dir={language === 'ar' ? 'rtl' : 'ltr'}
-                        >
-                            <SelectTrigger className="w-[200px]">
-                                <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <ScrollArea className="h-48">
-                                <SelectItem value="all">{UI_TEXT.allCategories[language]}</SelectItem>
-                                {categories.map(c => (
-                                    <SelectItem key={c.id} value={String(c.id)}>{language === 'ar' ? c.nameAr : c.name}</SelectItem>
-                                ))}
-                              </ScrollArea>
-                            </SelectContent>
-                        </Select>
-                      </div>
+       );
+    }
+    return (
+        <Card className="shadow-none border-none h-full">
+            <CardHeader className="p-4">
+              <div className="flex items-center gap-4">
+                  <div className="flex w-full gap-4">
+                    <div className="relative w-full">
+                        <Search className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
+                        <Input
+                        placeholder={UI_TEXT.searchPlaceholder[language]}
+                        className={`${language === 'ar' ? 'pr-10' : 'pl-10'} text-base`}
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <Select 
+                      onValueChange={setSelectedCategoryId} 
+                      value={selectedCategoryId}
+                      dir={language === 'ar' ? 'rtl' : 'ltr'}
+                    >
+                        <SelectTrigger className="w-[200px]">
+                            <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <ScrollArea className="h-48">
+                            <SelectItem value="all">{UI_TEXT.allCategories[language]}</SelectItem>
+                            {categories.map(c => (
+                                <SelectItem key={c.id} value={String(c.id)}>{language === 'ar' ? c.nameAr : c.name}</SelectItem>
+                            ))}
+                          </ScrollArea>
+                        </SelectContent>
+                    </Select>
                   </div>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <ScrollArea className="h-[calc(100vh-22rem)]">
-                    <ProductGrid
-                      products={filteredProducts}
-                      onAddToCart={addToCart}
-                      language={language}
-                    />
-                  </ScrollArea>
-                </CardContent>
-            </Card>
-       </div>
-    </div>
-  );
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <ScrollArea className="h-[calc(100vh-22rem)]">
+                <ProductGrid
+                  products={filteredProducts}
+                  onAddToCart={addToCart}
+                  language={language}
+                />
+              </ScrollArea>
+            </CardContent>
+        </Card>
+    );
+  }
+
 
   const renderActiveView = () => {
     switch(activeView) {
@@ -443,9 +460,9 @@ export default function POSPage() {
          return (
           <TablesManagementTab 
               tables={tables}
-              onTablesChange={setTables}
+              onTablesChange={handleTablesUpdate}
               activeTableId={activeTableId}
-              onSelectTable={setActiveTableId}
+              onSelectTable={handleSelectTable}
               isFullScreen={true}
               language={language}
               onOpenCart={() => setCartSheetOpen(true)}
