@@ -1,0 +1,150 @@
+import * as React from 'react';
+import { MinusCircle, PlusCircle, Trash2, XCircle } from 'lucide-react';
+import type { CartItem } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+
+type Language = 'en' | 'ar';
+
+const UI_TEXT = {
+    currentOrder: { en: 'Current Order', ar: 'الطلب الحالي' },
+    item: { en: 'Item', ar: 'الصنف' },
+    qty: { en: 'Qty', ar: 'الكمية' },
+    price: { en: 'Price', ar: 'السعر' },
+    total: { en: 'Total', ar: 'الإجمالي' },
+    subtotal: { en: 'Subtotal', ar: 'المجموع الفرعي' },
+    discount: { en: 'Discount (%)', ar: 'الخصم (%)' },
+    serviceCharge: { en: 'Service Charge', ar: 'رسوم الخدمة' },
+    finalTotal: { en: 'Final Total', ar: 'الإجمالي النهائي' },
+    clearCart: { en: 'Clear Cart', ar: 'إفراغ السلة' },
+    pay: { en: 'Pay', ar: 'الدفع' },
+    noItems: { en: 'No items in cart.', ar: 'لا توجد أصناف في السلة.' },
+};
+
+interface CartPanelProps {
+  cart: CartItem[];
+  setCart: React.Dispatch<React.SetStateAction<CartItem[]>>;
+  clearCart: () => void;
+  onProcessPayment: () => void;
+  language: Language;
+}
+
+const CartPanel: React.FC<CartPanelProps> = ({ cart, setCart, clearCart, onProcessPayment, language }) => {
+  const [overallDiscount, setOverallDiscount] = React.useState(0);
+  const [serviceCharge, setServiceCharge] = React.useState(0);
+
+  const updateQuantity = (id: number, delta: number) => {
+    setCart(cart =>
+      cart.map(item =>
+        item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
+      ).filter(item => item.quantity > 0)
+    );
+  };
+  
+  const removeItem = (id: number) => {
+      setCart(cart => cart.filter(item => item.id !== id));
+  };
+
+  const subtotal = React.useMemo(() => cart.reduce((acc, item) => acc + item.price * item.quantity, 0), [cart]);
+  
+  const totalDiscountValue = React.useMemo(() => {
+    const itemDiscounts = cart.reduce((acc, item) => acc + (item.price * item.quantity * (item.discount / 100)), 0);
+    const overallDiscountValue = subtotal * (overallDiscount / 100);
+    return itemDiscounts + overallDiscountValue;
+  }, [cart, subtotal, overallDiscount]);
+  
+  const finalTotal = React.useMemo(() => subtotal - totalDiscountValue + serviceCharge, [subtotal, totalDiscountValue, serviceCharge]);
+  
+  React.useEffect(() => {
+      if (cart.length === 0) {
+          setOverallDiscount(0);
+          setServiceCharge(0);
+      }
+  }, [cart]);
+
+  return (
+    <Card className="flex h-full flex-col">
+      <CardHeader>
+        <CardTitle>{UI_TEXT.currentOrder[language]}</CardTitle>
+      </CardHeader>
+      <CardContent className="flex-1 overflow-hidden p-0">
+        {cart.length === 0 ? (
+          <div className="flex h-full items-center justify-center text-muted-foreground">
+            <p>{UI_TEXT.noItems[language]}</p>
+          </div>
+        ) : (
+          <ScrollArea className="h-full p-6">
+            <div className="space-y-4">
+              {cart.map(item => (
+                <div key={item.id} className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <p className="font-medium">{language === 'ar' ? item.nameAr : item.name}</p>
+                    <p className="text-sm text-muted-foreground">{item.price.toFixed(2)}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, -1)}><MinusCircle className="h-4 w-4" /></Button>
+                    <span>{item.quantity}</span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, 1)}><PlusCircle className="h-4 w-4" /></Button>
+                  </div>
+                  <p className="w-16 text-end font-medium">{(item.price * item.quantity).toFixed(2)}</p>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeItem(item.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        )}
+      </CardContent>
+      {cart.length > 0 && (
+      <CardFooter className="flex-col items-stretch space-y-4 border-t p-6">
+          <div className="space-y-2">
+              <div className="flex justify-between">
+                  <span>{UI_TEXT.subtotal[language]}</span>
+                  <span>{subtotal.toFixed(2)}</span>
+              </div>
+               <div className="flex items-center justify-between">
+                  <Label htmlFor="discount" className="text-sm">{UI_TEXT.discount[language]}</Label>
+                  <Input 
+                      id="discount"
+                      type="number"
+                      value={overallDiscount}
+                      onChange={e => setOverallDiscount(Math.max(0, e.target.valueAsNumber || 0))}
+                      className="h-8 w-24 text-end"
+                      dir="ltr"
+                  />
+              </div>
+              <div className="flex items-center justify-between">
+                  <Label htmlFor="service-charge" className="text-sm">{UI_TEXT.serviceCharge[language]}</Label>
+                  <Input
+                      id="service-charge"
+                      type="number"
+                      value={serviceCharge}
+                      onChange={e => setServiceCharge(Math.max(0, e.target.valueAsNumber || 0))}
+                      className="h-8 w-24 text-end"
+                      dir="ltr"
+                  />
+              </div>
+          </div>
+          <Separator />
+          <div className="flex justify-between text-xl font-bold">
+              <span>{UI_TEXT.finalTotal[language]}</span>
+              <span className="text-primary">{finalTotal.toFixed(2)}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" onClick={clearCart}>
+                  <XCircle className="me-2 h-4 w-4" />{UI_TEXT.clearCart[language]}
+              </Button>
+              <Button onClick={onProcessPayment} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                  {UI_TEXT.pay[language]}
+              </Button>
+          </div>
+      </CardFooter>
+      )}
+    </Card>
+  );
+};
+
+export default CartPanel;
