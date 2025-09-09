@@ -51,7 +51,7 @@ const HeldOrdersDialog: React.FC<HeldOrdersDialogProps> = ({ isOpen, onOpenChang
                     <div className="flex-1">
                       <p className="font-semibold">{order.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(order.heldAt)}
+                        {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(order.heldAt))}
                       </p>
                       <Badge variant="secondary" className="mt-1">{order.orderType}</Badge>
                     </div>
@@ -71,3 +71,5 @@ const HeldOrdersDialog: React.FC<HeldOrdersDialogProps> = ({ isOpen, onOpenChang
 };
 
 export default HeldOrdersDialog;
+
+    

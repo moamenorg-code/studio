@@ -209,9 +209,14 @@ const POSLayout: React.FC = () => {
     if (!activeOrder || activeCart.length === 0) return;
     
     const customer = customers.find(c => c.id === activeCustomerId);
-    const orderName = activeOrder.type === 'dine-in'
-      ? tables.find(t => t.id === activeOrder.id)?.name
-      : customer?.name || (activeOrder.type === 'takeaway' ? `Takeaway #${activeOrder.id}` : `Delivery #${activeOrder.id}`);
+    
+    let orderName: string | undefined;
+    if (activeOrder.type === 'dine-in') {
+      const table = tables.find(t => t.id === activeOrder.id);
+      orderName = customer ? `${table?.name} - ${customer.name}` : table?.name;
+    } else {
+      orderName = customer?.name || (activeOrder.type === 'takeaway' ? `Takeaway #${takeawayOrders.length + 1}` : `Delivery #${deliveryOrders.length + 1}`);
+    }
 
     const newHeldOrder: HeldOrder = {
         id: Date.now(),
@@ -224,6 +229,8 @@ const POSLayout: React.FC = () => {
     };
     
     setHeldOrders(prev => [newHeldOrder, ...prev]);
+    
+    // After holding, clear the original order source
     clearCart();
     setCartSheetOpen(false);
     toast({
@@ -236,16 +243,22 @@ const POSLayout: React.FC = () => {
     
     const orderData = { id: orderId, cart, selectedCustomerId };
 
-    switch (orderType) {
-        case 'dine-in':
-            setTables(prev => prev.map(t => t.id === orderId ? { ...t, cart, selectedCustomerId, status: 'occupied' } : t));
-            break;
-        case 'takeaway':
-            setTakeawayOrders(prev => [...prev.filter(o => o.id !== orderId), orderData]);
-            break;
-        case 'delivery':
-            setDeliveryOrders(prev => [...prev.filter(o => o.id !== orderId), orderData]);
-            break;
+    // If the order was a dine-in order, we must check if the original table is still available.
+    // For now, we will just restore it. In a real scenario, you might need to prompt the user to select a new table if the old one is occupied.
+    if (orderType === 'dine-in') {
+        setTables(prev => {
+            const tableExists = prev.some(t => t.id === orderId);
+            if (tableExists) {
+                return prev.map(t => t.id === orderId ? { ...t, ...orderData } : t);
+            }
+            // If table was deleted, you might handle this differently.
+            // For now, we'll just not restore it to a non-existent table.
+            return prev;
+        });
+    } else if (orderType === 'takeaway') {
+        setTakeawayOrders(prev => [...prev.filter(o => o.id !== orderId), orderData]);
+    } else if (orderType === 'delivery') {
+        setDeliveryOrders(prev => [...prev.filter(o => o.id !== orderId), orderData]);
     }
     
     setActiveOrder({ type: orderType, id: orderId });
@@ -590,3 +603,5 @@ const POSLayout: React.FC = () => {
 }
 
 export default POSLayout;
+
+    
