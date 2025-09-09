@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Bot, Languages, Moon, Sun, PauseCircle, Menu, LogOut } from 'lucide-react';
+import { Bot, Languages, Moon, Sun, PauseCircle, Menu, LogOut, Database } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,8 +11,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
-import type { ActiveView, Language, Permission } from '@/lib/types';
+import type { ActiveView, Language, Permission, FirestoreStatus } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { cn } from '@/lib/utils';
 
 const HEADER_UI_TEXT = {
   language: { en: 'Language', ar: 'اللغة' },
@@ -22,6 +24,9 @@ const HEADER_UI_TEXT = {
   toggleTheme: { en: 'Toggle theme', ar: 'تبديل السمة' },
   heldOrders: { en: 'Held Orders', ar: 'الطلبات المعلقة' },
   logout: { en: 'Logout', ar: 'تسجيل الخروج' },
+  db_connecting: { en: 'Connecting to database...', ar: 'جارٍ الاتصال بقاعدة البيانات...' },
+  db_connected: { en: 'Database connected', ar: 'قاعدة البيانات متصلة' },
+  db_error: { en: 'Database connection error', ar: 'خطأ في الاتصال بقاعدة البيانات' },
 };
 
 interface HeaderProps {
@@ -37,6 +42,7 @@ interface HeaderProps {
   enableTables: boolean;
   isShiftOpen: boolean;
   hasPermission: (permission: Permission) => boolean;
+  firestoreStatus: FirestoreStatus;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -52,6 +58,7 @@ const Header: React.FC<HeaderProps> = ({
   enableTables,
   isShiftOpen,
   hasPermission,
+  firestoreStatus,
 }) => {
   const { setTheme } = useTheme();
 
@@ -166,6 +173,23 @@ const Header: React.FC<HeaderProps> = ({
 
         {/* App Name on the right */}
         <div className="flex items-center gap-2">
+           <Tooltip>
+              <TooltipTrigger>
+                 <div className="flex items-center gap-2">
+                    <Database className="h-5 w-5 text-muted-foreground" />
+                    <div className={cn("h-2.5 w-2.5 rounded-full", 
+                      firestoreStatus === 'connecting' && 'bg-yellow-400 animate-pulse',
+                      firestoreStatus === 'connected' && 'bg-green-500',
+                      firestoreStatus === 'error' && 'bg-red-500',
+                    )}/>
+                 </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                {firestoreStatus === 'connecting' && <p>{HEADER_UI_TEXT.db_connecting[language]}</p>}
+                {firestoreStatus === 'connected' && <p>{HEADER_UI_TEXT.db_connected[language]}</p>}
+                {firestoreStatus === 'error' && <p>{HEADER_UI_TEXT.db_error[language]}</p>}
+              </TooltipContent>
+            </Tooltip>
           <h1 className="text-xl font-bold text-primary">{appName}</h1>
         </div>
       </div>

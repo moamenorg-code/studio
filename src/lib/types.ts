@@ -208,3 +208,5 @@ export interface AppData {
     settings: Settings;
     tables: Table[];
 }
+
+export type FirestoreStatus = 'connecting' | 'connected' | 'error';

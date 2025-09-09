@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
-import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, AppData, Purchase } from '@/lib/types';
+import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, AppData, FirestoreStatus } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -50,6 +50,7 @@ const POSLayout: React.FC = () => {
   const [users, setUsers] = React.useState<User[]>(initialUsers);
   const [roles, setRoles] = React.useState<Role[]>(initialRoles);
   const [purchases, setPurchases] = React.useState<Purchase[]>(initialPurchases);
+  const [firestoreStatus, setFirestoreStatus] = React.useState<FirestoreStatus>('connecting');
   
   const [activeView, setActiveView] = React.useState<ActiveView>("shifts");
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -91,12 +92,18 @@ const POSLayout: React.FC = () => {
   const { toast } = useToast();
 
   React.useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'products'), (snapshot) => {
+    const unsubscribe = onSnapshot(collection(db, 'products'), 
+    (snapshot) => {
       const productsData = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
         id: doc.id,
         ...(doc.data() as Omit<Product, 'id'>),
       }));
       setProducts(productsData);
+      setFirestoreStatus('connected');
+    },
+    (error) => {
+      console.error("Firestore snapshot error:", error);
+      setFirestoreStatus('error');
     });
 
     return () => unsubscribe();
@@ -697,6 +704,7 @@ const handleHoldOrder = () => {
         enableTables={settings.enableTables}
         isShiftOpen={!!activeShift}
         hasPermission={hasPermission}
+        firestoreStatus={firestoreStatus}
       />
       <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
         <div className="flex items-center gap-4 shrink-0">
