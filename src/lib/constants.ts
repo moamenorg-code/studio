@@ -47,6 +47,7 @@ export const UI_TEXT = {
   confirmCustomer: { en: 'Confirm Customer & Add Items', ar: 'تأكيد العميل وإضافة الأصناف' },
   noActiveShift: { en: 'No Active Shift', ar: 'لا يوجد شفت نشط' },
   noActiveShiftDesc: { en: 'You must start a new shift to use the POS.', ar: 'يجب أن تبدأ شفتًا جديدًا لاستخدام نقطة البيع.' },
+  switchOrder: { en: 'Switch Order', ar: 'تغيير الطلب' },
 };
 
 export const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType }[] = [
