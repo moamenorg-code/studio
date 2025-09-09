@@ -96,18 +96,18 @@ const CartPanel: React.FC<CartPanelProps> = ({ isOpen, onOpenChange, cart, setCa
                 <ScrollArea className="h-full pr-4">
                     <div className="space-y-4 py-4">
                     {cart.map(item => (
-                        <div key={item.id} className="flex items-center gap-4">
-                        <div className="flex-1">
-                            <p className="font-medium">{language === 'ar' ? item.nameAr : item.name}</p>
-                            <p className="text-sm text-muted-foreground">{item.price.toFixed(2)}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, -1)}><MinusCircle className="h-4 w-4" /></Button>
-                            <span className="w-6 text-center">{item.quantity}</span>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, 1)}><PlusCircle className="h-4 w-4" /></Button>
-                        </div>
-                        <p className="w-20 text-end font-medium">{(item.price * item.quantity).toFixed(2)}</p>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeItem(item.id)}><Trash2 className="h-4 w-4" /></Button>
+                        <div key={item.id} className={`flex items-center gap-4 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
+                          <div className={`flex-1 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
+                              <p className="font-medium">{language === 'ar' ? item.nameAr : item.name}</p>
+                              <p className="text-sm text-muted-foreground">{item.price.toFixed(2)}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, -1)}><MinusCircle className="h-4 w-4" /></Button>
+                              <span className="w-6 text-center">{item.quantity}</span>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, 1)}><PlusCircle className="h-4 w-4" /></Button>
+                          </div>
+                          <p className="w-20 text-end font-medium">{(item.price * item.quantity).toFixed(2)}</p>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeItem(item.id)}><Trash2 className="h-4 w-4" /></Button>
                         </div>
                     ))}
                     </div>
