@@ -18,7 +18,7 @@ import CustomerManagementTab from './CustomerManagementTab';
 import PurchasesAndSuppliersTab from './PurchasesAndSuppliersTab';
 import DeliveryRepsTab from './DeliveryRepsTab';
 import ShiftsManagementTab from './ShiftsManagementTab';
-import TablesManagementTab from './TablesManagementTab';
+import TablesManagementTab from './tables/TablesManagementTab';
 import SettingsTab from './SettingsTab';
 import FloatingCartBar from './FloatingCartBar';
 import CartPanel from './CartPanel';
@@ -373,7 +373,7 @@ const handleHoldOrder = () => {
   };
   
   const handleConfirmPayment = (saleData: Omit<Sale, "id" | "createdAt" | "customer" | "orderType" | "orderId">, paidCart: CartItem[]) => {
-    if (!activeOrder) return;
+    if (!activeOrder || !currentUser) return;
     
     const customer = customers.find(c => c.id === activeCustomerId) || undefined;
     
@@ -394,6 +394,7 @@ const handleHoldOrder = () => {
       customer,
       orderType: activeOrder.type,
       orderId: activeOrder.id,
+      userId: currentUser.id,
     };
     setSales(prevSales => [newSale, ...prevSales]);
 
@@ -606,6 +607,7 @@ const handleHoldOrder = () => {
                   categories={categories}
                   recipes={recipes}
                   rawMaterials={rawMaterials}
+                  users={users}
                   language={language}
                 />;
       case 'history':

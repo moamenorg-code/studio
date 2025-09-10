@@ -28,6 +28,7 @@ export interface Sale {
   orderType: OrderType;
   orderId: number;
   deliveryRepId?: number;
+  userId?: number;
 }
 
 export interface Customer {
