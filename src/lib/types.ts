@@ -76,7 +76,8 @@ export interface RawMaterial {
     unit: string; // e.g., kg, liter, piece
     stock: number;
     barcode?: string;
-    cost?: number;
+    cost: number;
+    lowStockThreshold: number;
 }
 
 export interface RecipeItem {
