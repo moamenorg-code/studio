@@ -68,6 +68,10 @@ interface CartPanelProps {
   onSelectCustomer: (id: number | null) => void;
   onCustomerUpdate: (customers: Customer[]) => void;
   orderType?: OrderType;
+  overallDiscount: number;
+  setOverallDiscount: (value: number) => void;
+  serviceCharge: number;
+  setServiceCharge: (value: number) => void;
 }
 
 const CartPanel: React.FC<CartPanelProps> = ({ 
@@ -85,9 +89,11 @@ const CartPanel: React.FC<CartPanelProps> = ({
     onSelectCustomer,
     onCustomerUpdate,
     orderType,
+    overallDiscount,
+    setOverallDiscount,
+    serviceCharge,
+    setServiceCharge,
 }) => {
-  const [overallDiscount, setOverallDiscount] = React.useState(0);
-  const [serviceCharge, setServiceCharge] = React.useState(0);
   const [isCustomerDialogOpen, setCustomerDialogOpen] = React.useState(false);
   const [popoverOpen, setPopoverOpen] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -128,11 +134,13 @@ const CartPanel: React.FC<CartPanelProps> = ({
   const finalTotal = React.useMemo(() => subtotal - totalDiscountValue + serviceCharge, [subtotal, totalDiscountValue, serviceCharge]);
   
   React.useEffect(() => {
-      if (cart.length === 0) {
+      if (cart.length === 0 && !isOpen) {
           setOverallDiscount(0);
-          setServiceCharge(0);
+          if (orderType !== 'delivery') {
+            setServiceCharge(0);
+          }
       }
-  }, [cart]);
+  }, [cart, isOpen, orderType, setOverallDiscount, setServiceCharge]);
 
   const handleSelectCustomer = (customerId: number | null) => {
       onSelectCustomer(customerId);
@@ -288,6 +296,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
                                 onChange={e => setServiceCharge(Math.max(0, e.target.valueAsNumber || 0))}
                                 className="h-8 w-24 text-end"
                                 dir="ltr"
+                                disabled={isDelivery}
                             />
                         </div>
                     </div>

@@ -99,6 +99,8 @@ export interface Table {
   name: string;
   cart: CartItem[];
   selectedCustomerId: number | null;
+  overallDiscount: number;
+  serviceCharge: number;
 }
 
 export interface HeldOrder {
@@ -109,6 +111,8 @@ export interface HeldOrder {
   orderId: number;
   selectedCustomerId: number | null;
   heldAt: Date;
+  overallDiscount: number;
+  serviceCharge: number;
 }
 
 

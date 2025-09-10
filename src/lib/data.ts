@@ -127,12 +127,12 @@ export const recipes: Recipe[] = [
 ];
 
 export const tables: Table[] = [
-    { id: 1, name: "T1", cart: [], selectedCustomerId: null },
-    { id: 2, name: "T2", cart: [], selectedCustomerId: null },
-    { id: 3, name: "T3", cart: [], selectedCustomerId: null },
-    { id: 4, name: "T4", cart: [], selectedCustomerId: null },
-    { id: 5, name: "T5", cart: [], selectedCustomerId: null },
-    { id: 6, name: "T6", cart: [], selectedCustomerId: null },
+    { id: 1, name: "T1", cart: [], selectedCustomerId: null, overallDiscount: 0, serviceCharge: 0 },
+    { id: 2, name: "T2", cart: [], selectedCustomerId: null, overallDiscount: 0, serviceCharge: 0 },
+    { id: 3, name: "T3", cart: [], selectedCustomerId: null, overallDiscount: 0, serviceCharge: 0 },
+    { id: 4, name: "T4", cart: [], selectedCustomerId: null, overallDiscount: 0, serviceCharge: 0 },
+    { id: 5, name: "T5", cart: [], selectedCustomerId: null, overallDiscount: 0, serviceCharge: 0 },
+    { id: 6, name: "T6", cart: [], selectedCustomerId: null, overallDiscount: 0, serviceCharge: 0 },
 ];
 
 export const roles: Role[] = [

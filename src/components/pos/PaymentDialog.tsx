@@ -40,6 +40,8 @@ interface PaymentDialogProps {
   orderType?: OrderType;
   deliveryReps: DeliveryRep[];
   settings: Settings;
+  overallDiscount: number;
+  serviceCharge: number;
 }
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({ 
@@ -51,18 +53,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     orderType,
     deliveryReps,
     settings,
+    overallDiscount,
+    serviceCharge,
  }) => {
-  const [overallDiscount] = React.useState(0);
-  const [serviceCharge, setServiceCharge] = React.useState(0);
   const [selectedRepId, setSelectedRepId] = React.useState<number | undefined>();
-
-  React.useEffect(() => {
-    if (orderType === 'delivery') {
-      setServiceCharge(settings.deliveryFee || 0);
-    } else {
-      setServiceCharge(0);
-    }
-  }, [orderType, settings.deliveryFee]);
 
   const subtotal = React.useMemo(() => cart.reduce((acc, item) => acc + item.price * item.quantity, 0), [cart]);
   
@@ -121,7 +115,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                 </Select>
                  <div className="flex justify-between text-sm text-muted-foreground">
                     <span>{UI_TEXT.deliveryFee[language]}</span>
-                    <span>{settings.deliveryFee.toFixed(2)}</span>
+                    <span>{serviceCharge.toFixed(2)}</span>
                 </div>
               </div>
           )}

@@ -66,8 +66,11 @@ const POSLayout: React.FC = () => {
   const [barcodeScannerCallback, setBarcodeScannerCallback] = React.useState<(barcode: string) => void>(() => () => {});
   
   const [activeOrder, setActiveOrder] = React.useState<ActiveOrder | null>(null);
-  const [takeawayOrders, setTakeawayOrders] = React.useState<any[]>([]);
-  const [deliveryOrders, setDeliveryOrders] = React.useState<any[]>([]);
+  type TakeawayOrder = { id: number; cart: CartItem[]; selectedCustomerId: number | null; overallDiscount: number; serviceCharge: number; };
+  const [takeawayOrders, setTakeawayOrders] = React.useState<TakeawayOrder[]>([]);
+  type DeliveryOrder = { id: number; cart: CartItem[]; selectedCustomerId: number | null; overallDiscount: number; serviceCharge: number; };
+  const [deliveryOrders, setDeliveryOrders] = React.useState<DeliveryOrder[]>([]);
+
   const [heldOrders, setHeldOrders] = React.useState<HeldOrder[]>([]);
 
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
@@ -111,34 +114,24 @@ const POSLayout: React.FC = () => {
 
   const activeShift = React.useMemo(() => shifts.find(s => s.status === 'open'), [shifts]);
 
-  const activeCart = React.useMemo(() => {
-    if (!activeOrder) return [];
+  const getActiveOrderData = () => {
+    if (!activeOrder) return null;
     switch (activeOrder.type) {
         case 'dine-in':
-            return tables.find(t => t.id === activeOrder.id)?.cart || [];
+            return tables.find(t => t.id === activeOrder.id);
         case 'takeaway':
-            return takeawayOrders.find(o => o.id === activeOrder.id)?.cart || [];
+            return takeawayOrders.find(o => o.id === activeOrder.id);
         case 'delivery':
-            return deliveryOrders.find(o => o.id === activeOrder.id)?.cart || [];
-        default:
-            return [];
-    }
-  }, [tables, takeawayOrders, deliveryOrders, activeOrder]);
-
-  const activeCustomerId = React.useMemo(() => {
-    if (!activeOrder) return null;
-     switch (activeOrder.type) {
-        case 'dine-in':
-            return tables.find(t => t.id === activeOrder.id)?.selectedCustomerId || null;
-        case 'takeaway':
-            return takeawayOrders.find(o => o.id === activeOrder.id)?.selectedCustomerId || null;
-        case 'delivery':
-            return deliveryOrders.find(o => o.id === activeOrder.id)?.selectedCustomerId || null;
+            return deliveryOrders.find(o => o.id === activeOrder.id);
         default:
             return null;
     }
-  }, [tables, takeawayOrders, deliveryOrders, activeOrder]);
+  };
 
+  const activeCart = React.useMemo(() => getActiveOrderData()?.cart || [], [tables, takeawayOrders, deliveryOrders, activeOrder]);
+  const activeCustomerId = React.useMemo(() => getActiveOrderData()?.selectedCustomerId || null, [tables, takeawayOrders, deliveryOrders, activeOrder]);
+  const activeOverallDiscount = React.useMemo(() => getActiveOrderData()?.overallDiscount || 0, [tables, takeawayOrders, deliveryOrders, activeOrder]);
+  const activeServiceCharge = React.useMemo(() => getActiveOrderData()?.serviceCharge || 0, [tables, takeawayOrders, deliveryOrders, activeOrder]);
 
   const setActiveCart = (newCart: CartItem[] | ((prevCart: CartItem[]) => CartItem[])) => {
     if (!activeOrder) return;
@@ -172,6 +165,22 @@ const POSLayout: React.FC = () => {
     }
   };
 
+    const setOrderProperty = (key: 'overallDiscount' | 'serviceCharge', value: number) => {
+        if (!activeOrder) return;
+        switch (activeOrder.type) {
+            case 'dine-in':
+                setTables(prev => prev.map(t => t.id === activeOrder.id ? { ...t, [key]: value } : t));
+                break;
+            case 'takeaway':
+                setTakeawayOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, [key]: value } : o));
+                break;
+            case 'delivery':
+                setDeliveryOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, [key]: value } : o));
+                break;
+        }
+    };
+    const setActiveOverallDiscount = (value: number) => setOrderProperty('overallDiscount', value);
+    const setActiveServiceCharge = (value: number) => setOrderProperty('serviceCharge', value);
 
   React.useEffect(() => {
     document.documentElement.lang = language;
@@ -249,13 +258,13 @@ const POSLayout: React.FC = () => {
 
   const handleNewTakeawayOrder = () => {
     const newOrderId = Date.now();
-    setTakeawayOrders(prev => [...prev, {id: newOrderId, cart: [], selectedCustomerId: null}]);
+    setTakeawayOrders(prev => [...prev, {id: newOrderId, cart: [], selectedCustomerId: null, overallDiscount: 0, serviceCharge: 0}]);
     setActiveOrder({ type: 'takeaway', id: newOrderId });
   }
 
   const handleNewDeliveryOrder = () => {
     const newOrderId = Date.now();
-    setDeliveryOrders(prev => [...prev, {id: newOrderId, cart: [], selectedCustomerId: null}]);
+    setDeliveryOrders(prev => [...prev, {id: newOrderId, cart: [], selectedCustomerId: null, overallDiscount: 0, serviceCharge: settings.deliveryFee}]);
     setActiveOrder({ type: 'delivery', id: newOrderId });
     setCartSheetOpen(true); // Open cart to force customer selection
   }
@@ -266,7 +275,7 @@ const POSLayout: React.FC = () => {
     switch (activeOrder.type) {
         case 'dine-in':
              if (isPayment) {
-                setTables(prev => prev.map(t => t.id === activeOrder.id ? { ...t, cart: [], selectedCustomerId: null } : t));
+                setTables(prev => prev.map(t => t.id === activeOrder.id ? { ...t, cart: [], selectedCustomerId: null, overallDiscount: 0, serviceCharge: 0 } : t));
              }
             break;
         case 'takeaway':
@@ -305,6 +314,8 @@ const handleHoldOrder = () => {
         orderId: activeOrder.id,
         selectedCustomerId: activeCustomerId,
         heldAt: new Date(),
+        overallDiscount: activeOverallDiscount,
+        serviceCharge: activeServiceCharge,
     };
     
     const orderAlreadyHeld = heldOrders.some(o => o.orderId === newHeldOrder.orderId && o.orderType === newHeldOrder.orderType);
@@ -330,17 +341,15 @@ const handleHoldOrder = () => {
 
 
   const handleRestoreOrder = (heldOrder: HeldOrder) => {
-    const { orderType, orderId, cart, selectedCustomerId } = heldOrder;
+    const { orderType, orderId, cart, selectedCustomerId, overallDiscount, serviceCharge } = heldOrder;
     
     // Data to be restored
-    const orderData = { id: orderId, cart, selectedCustomerId };
+    const orderData = { id: orderId, cart, selectedCustomerId, overallDiscount, serviceCharge };
 
     // Restore the order to its original source
     if (orderType === 'dine-in') {
-        // Since we no longer clear the cart, we just need to set the active order.
-        // The data is already on the table.
+        setTables(prev => prev.map(t => t.id === orderId ? { ...t, ...orderData } : t));
     } else if (orderType === 'takeaway') {
-        // Make sure order doesn't already exist
         if (!takeawayOrders.some(o => o.id === orderId)) {
             setTakeawayOrders(prev => [...prev, orderData]);
         }
@@ -785,6 +794,10 @@ const handleHoldOrder = () => {
         onSelectCustomer={setActiveCustomerId}
         onCustomerUpdate={handleCustomerUpdate}
         orderType={activeOrder?.type}
+        overallDiscount={activeOverallDiscount}
+        serviceCharge={activeServiceCharge}
+        setOverallDiscount={setActiveOverallDiscount}
+        setServiceCharge={setActiveServiceCharge}
       />
       
       <PaymentDialog
@@ -800,6 +813,8 @@ const handleHoldOrder = () => {
         orderType={activeOrder?.type}
         deliveryReps={deliveryReps}
         settings={settings}
+        overallDiscount={activeOverallDiscount}
+        serviceCharge={activeServiceCharge}
       />
       
       <SplitBillDialog
