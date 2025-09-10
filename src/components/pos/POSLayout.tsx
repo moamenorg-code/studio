@@ -32,12 +32,14 @@ import { customers as initialCustomers, suppliers as initialSuppliers, rawMateri
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '../ui/button';
 
+// Helper function moved outside the component to prevent re-creation on re-renders.
 const hasPermission = (permission: Permission, user: User | null, roles: Role[]): boolean => {
     if (!user) return false;
     const userRole = roles.find(r => r.id === user.roleId);
     if (!userRole) return false;
     return userRole.permissions[permission] || false;
 };
+
 
 const POSLayout: React.FC = () => {
   const [language, setLanguage] = React.useState<Language>("ar");
@@ -120,7 +122,7 @@ const POSLayout: React.FC = () => {
 
   const activeShift = React.useMemo(() => shifts.find(s => s.status === 'open'), [shifts]);
 
-  const getActiveOrderData = () => {
+  const getActiveOrderData = React.useCallback(() => {
     if (!activeOrder) return null;
     switch (activeOrder.type) {
         case 'dine-in':
@@ -132,14 +134,15 @@ const POSLayout: React.FC = () => {
         default:
             return null;
     }
-  };
+  }, [activeOrder, tables, takeawayOrders, deliveryOrders]);
 
-  const activeCart = React.useMemo(() => getActiveOrderData()?.cart || [], [tables, takeawayOrders, deliveryOrders, activeOrder]);
-  const activeCustomerId = React.useMemo(() => getActiveOrderData()?.selectedCustomerId || null, [tables, takeawayOrders, deliveryOrders, activeOrder]);
-  const activeOverallDiscount = React.useMemo(() => getActiveOrderData()?.overallDiscount || 0, [tables, takeawayOrders, deliveryOrders, activeOrder]);
-  const activeServiceCharge = React.useMemo(() => getActiveOrderData()?.serviceCharge || 0, [tables, takeawayOrders, deliveryOrders, activeOrder]);
 
-  const setActiveCart = (newCart: CartItem[] | ((prevCart: CartItem[]) => CartItem[])) => {
+  const activeCart = React.useMemo(() => getActiveOrderData()?.cart || [], [getActiveOrderData]);
+  const activeCustomerId = React.useMemo(() => getActiveOrderData()?.selectedCustomerId || null, [getActiveOrderData]);
+  const activeOverallDiscount = React.useMemo(() => getActiveOrderData()?.overallDiscount || 0, [getActiveOrderData]);
+  const activeServiceCharge = React.useMemo(() => getActiveOrderData()?.serviceCharge || 0, [getActiveOrderData]);
+
+  const setActiveCart = React.useCallback((newCart: CartItem[] | ((prevCart: CartItem[]) => CartItem[])) => {
     if (!activeOrder) return;
     const updater = (prevCart: CartItem[]) => typeof newCart === 'function' ? newCart(prevCart) : newCart;
 
@@ -154,9 +157,9 @@ const POSLayout: React.FC = () => {
             setDeliveryOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, cart: updater(o.cart || []) } : o));
             break;
     }
-  };
+  }, [activeOrder]);
   
-  const setActiveCustomerId = (id: number | null) => {
+  const setActiveCustomerId = React.useCallback((id: number | null) => {
     if (!activeOrder) return;
      switch (activeOrder.type) {
         case 'dine-in':
@@ -169,9 +172,10 @@ const POSLayout: React.FC = () => {
             setDeliveryOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, selectedCustomerId: id } : o));
             break;
     }
-  };
+  }, [activeOrder]);
 
-    const setOrderProperty = (key: 'overallDiscount' | 'serviceCharge', value: number) => {
+
+    const setOrderProperty = React.useCallback((key: 'overallDiscount' | 'serviceCharge', value: number) => {
         if (!activeOrder) return;
         switch (activeOrder.type) {
             case 'dine-in':
@@ -184,39 +188,28 @@ const POSLayout: React.FC = () => {
                 setDeliveryOrders(prev => prev.map(o => o.id === activeOrder.id ? { ...o, [key]: value } : o));
                 break;
         }
-    };
-    const setActiveOverallDiscount = (value: number) => setOrderProperty('overallDiscount', value);
-    const setActiveServiceCharge = (value: number) => setOrderProperty('serviceCharge', value);
+    }, [activeOrder]);
+    const setActiveOverallDiscount = React.useCallback((value: number) => setOrderProperty('overallDiscount', value), [setOrderProperty]);
+    const setActiveServiceCharge = React.useCallback((value: number) => setOrderProperty('serviceCharge', value), [setOrderProperty]);
 
   React.useEffect(() => {
     document.documentElement.lang = language;
     document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
   }, [language]);
   
-  const handleSetActiveView = React.useCallback((view: ActiveView) => {
-    const viewOption = VIEW_OPTIONS.find(v => v.value === view);
-    if (!viewOption) return;
-
-    if (!viewOption.permission || hasPermission(viewOption.permission, currentUser, roles)) {
-        setActiveView(view);
-    } else {
-        setActiveView('unauthorized');
-    }
-  }, [currentUser, roles]);
-  
   React.useEffect(() => {
     const viewOption = VIEW_OPTIONS.find(v => v.value === activeView);
     if (currentUser && viewOption?.permission && !hasPermission(viewOption.permission, currentUser, roles)) {
         setActiveView('unauthorized');
     }
-  }, [currentUser, activeView, roles]);
+  }, [currentUser, roles, activeView]);
 
-  const handleLogin = (pin: string) => {
+  const handleLogin = React.useCallback((pin: string) => {
     const user = users.find(u => u.pin === pin);
     if (user) {
       setCurrentUser(user);
-      const userRole = roles.find(r => r.id === user.roleId);
-      const canAccessShifts = userRole?.permissions['access_shifts'];
+      // Let the useEffect handle the view change based on permission
+      const canAccessShifts = hasPermission('access_shifts', user, roles);
       setActiveView(canAccessShifts ? 'shifts' : 'sales');
     } else {
       toast({
@@ -225,7 +218,7 @@ const POSLayout: React.FC = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [users, roles, language, toast]);
   
   const handleLogout = () => {
       setCurrentUser(null);
@@ -260,19 +253,21 @@ const POSLayout: React.FC = () => {
 
   const handleSelectTable = (id: number) => {
     setActiveOrder({ type: 'dine-in', id });
-    handleSetActiveView('sales');
+    setActiveView('sales');
   }
 
   const handleNewTakeawayOrder = () => {
     const newOrderId = Date.now();
     setTakeawayOrders(prev => [...prev, {id: newOrderId, cart: [], selectedCustomerId: null, overallDiscount: 0, serviceCharge: 0}]);
     setActiveOrder({ type: 'takeaway', id: newOrderId });
+    setActiveView('sales');
   }
 
   const handleNewDeliveryOrder = () => {
     const newOrderId = Date.now();
     setDeliveryOrders(prev => [...prev, {id: newOrderId, cart: [], selectedCustomerId: null, overallDiscount: 0, serviceCharge: settings.deliveryFee}]);
     setActiveOrder({ type: 'delivery', id: newOrderId });
+    setActiveView('sales');
     setCartSheetOpen(true); // Open cart to force customer selection
   }
 
@@ -368,7 +363,7 @@ const handleHoldOrder = () => {
     
     setActiveOrder({ type: orderType, id: orderId });
     setHeldOrders(prev => prev.filter(o => o.id !== heldOrder.id));
-    handleSetActiveView('sales');
+    setActiveView('sales');
     setHeldOrdersOpen(false);
     setCartSheetOpen(true);
   }
@@ -378,7 +373,7 @@ const handleHoldOrder = () => {
     setPaymentDialogOpen(true);
   };
   
-  const handleConfirmPayment = (saleData: Omit<Sale, "id" | "createdAt" | "customer" | "orderType" | "orderId">, paidCart: CartItem[]) => {
+  const handleConfirmPayment = (saleData: Omit<Sale, "id" | "createdAt" | "customer" | "orderType" | "orderId" | "userId">, paidCart: CartItem[]) => {
     if (!activeOrder || !currentUser) return;
     
     const customer = customers.find(c => c.id === activeCustomerId) || undefined;
@@ -481,7 +476,7 @@ const handleHoldOrder = () => {
   const handleShiftsUpdate = (updatedShifts: Shift[]) => {
     setShifts(updatedShifts);
     if (updatedShifts.some(s => s.status === 'open') && !activeShift) {
-      handleSetActiveView('sales');
+      setActiveView('sales');
     }
   };
 
@@ -601,7 +596,7 @@ const handleHoldOrder = () => {
                     onAddToCart={addToCart}
                     onNewTakeawayOrder={handleNewTakeawayOrder}
                     onNewDeliveryOrder={handleNewDeliveryOrder}
-                    onSetActiveView={handleSetActiveView}
+                    onSetActiveView={setActiveView}
                     tablesEnabled={settings.enableTables}
                 />;
       case 'dashboard':
@@ -724,7 +719,7 @@ const handleHoldOrder = () => {
         onLogout={handleLogout}
         heldOrdersCount={heldOrders.length}
         activeView={activeView}
-        setActiveView={handleSetActiveView}
+        setActiveView={setActiveView}
         enableTables={settings.enableTables}
         isShiftOpen={!!activeShift}
         hasPermission={(p) => hasPermission(p, currentUser, roles)}

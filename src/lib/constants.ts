@@ -16,8 +16,8 @@ import type { ActiveView, Permission } from './types';
 
 export const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
-  reports: { en: "Reports", ar: "التقارير" },
   dashboard: { en: "Dashboard", ar: "لوحة التحكم" },
+  reports: { en: "Reports", ar: "التقارير" },
   products: { en: "Products", ar: "المنتجات" },
   productsAndRecipes: { en: "Products & Recipes", ar: "المنتجات والوصفات" },
   customers: { en: "Customers", ar: "العملاء" },

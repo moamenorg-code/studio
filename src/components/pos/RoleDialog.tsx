@@ -13,22 +13,9 @@ import { Label } from '@/components/ui/label';
 import { Role, Permission } from '@/lib/types';
 import { Checkbox } from '../ui/checkbox';
 import { ScrollArea } from '../ui/scroll-area';
+import { PERMISSIONS_LIST } from '@/lib/constants';
 
 type Language = 'en' | 'ar';
-
-const PERMISSION_TEXT: Record<Permission, { en: string, ar: string }> = {
-    access_dashboard: { en: 'Access Dashboard', ar: 'الوصول إلى لوحة التحكم' },
-    access_sales_history: { en: 'Access Sales History', ar: 'الوصول إلى سجل المبيعات' },
-    access_products: { en: 'Manage Products', ar: 'إدارة المنتجات' },
-    access_inventory: { en: 'Manage Inventory', ar: 'إدارة المخزون' },
-    access_customers: { en: 'Manage Customers', ar: 'إدارة العملاء' },
-    access_purchases: { en: 'Manage Purchases', ar: 'إدارة المشتريات' },
-    access_delivery: { en: 'Manage Delivery', ar: 'إدارة التوصيل' },
-    access_shifts: { en: 'Manage Shifts', ar: 'إدارة الشفتات' },
-    access_settings: { en: 'Access Settings', ar: 'الوصول إلى الإعدادات' },
-    access_tables: { en: 'Manage Tables', ar: 'إدارة الطاولات' },
-};
-
 
 const UI_TEXT = {
   editRole: { en: 'Edit Role', ar: 'تعديل الدور' },
@@ -102,22 +89,19 @@ const RoleDialog: React.FC<RoleDialogProps> = ({ isOpen, onOpenChange, onSave, r
             <Label>{UI_TEXT.permissions[language]}</Label>
             <ScrollArea className="h-60 rounded-md border p-4">
                 <div className="space-y-4">
-                    {Object.keys(PERMISSION_TEXT).map(pKey => {
-                        const permissionKey = pKey as Permission;
-                        return (
-                            <div key={permissionKey} className="flex flex-row items-center justify-between">
-                                <Label htmlFor={permissionKey} className="flex-1 font-normal">
-                                    {PERMISSION_TEXT[permissionKey][language]}
-                                </Label>
-                                <Checkbox
-                                    id={permissionKey}
-                                    checked={!!formData.permissions?.[permissionKey]}
-                                    onCheckedChange={handlePermissionChange(permissionKey)}
-                                    disabled={role?.id === 1}
-                                />
-                            </div>
-                        )
-                    })}
+                    {PERMISSIONS_LIST.map(p => (
+                        <div key={p.key} className="flex flex-row items-center justify-between">
+                            <Label htmlFor={p.key} className="flex-1 font-normal">
+                                {p.text[language]}
+                            </Label>
+                            <Checkbox
+                                id={p.key}
+                                checked={!!formData.permissions?.[p.key]}
+                                onCheckedChange={handlePermissionChange(p.key)}
+                                disabled={role?.id === 1}
+                            />
+                        </div>
+                    ))}
                 </div>
             </ScrollArea>
           </div>
