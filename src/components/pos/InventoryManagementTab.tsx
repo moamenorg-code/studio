@@ -11,7 +11,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import RawMaterialDialog from './RawMaterialDialog';
 import { Input } from '../ui/input';
 import { cn } from '@/lib/utils';
@@ -188,16 +187,16 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
                 </Button>
             </div>
             
-          <ScrollArea className={cn("transition-all duration-300", isSummaryOpen ? "h-[calc(100vh-36rem)]" : "h-[calc(100vh-25rem)]")}>
+          <div className={cn("overflow-x-auto transition-all duration-300", isSummaryOpen ? "h-[calc(100vh-36rem)]" : "h-[calc(100vh-25rem)]")}>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{UI_TEXT.actions[language]}</TableHead>
-                  <TableHead>{UI_TEXT.value[language]}</TableHead>
-                  <TableHead>{UI_TEXT.cost[language]}</TableHead>
-                  <TableHead>{UI_TEXT.unit[language]}</TableHead>
-                  <TableHead>{UI_TEXT.stock[language]}</TableHead>
                   <TableHead>{UI_TEXT.name[language]}</TableHead>
+                  <TableHead>{UI_TEXT.stock[language]}</TableHead>
+                  <TableHead>{UI_TEXT.unit[language]}</TableHead>
+                  <TableHead>{UI_TEXT.cost[language]}</TableHead>
+                  <TableHead>{UI_TEXT.value[language]}</TableHead>
+                  <TableHead>{UI_TEXT.actions[language]}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -206,6 +205,11 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
                     const isLowStock = material.stock <= material.lowStockThreshold;
                     return (
                         <TableRow key={material.id} className={cn(isLowStock && "bg-destructive/10 hover:bg-destructive/20")}>
+                          <TableCell className="font-medium">{language === 'ar' ? material.nameAr : material.name}</TableCell>
+                          <TableCell className={cn("text-center", isLowStock && "font-bold text-destructive")}>{material.stock}</TableCell>
+                          <TableCell className="text-center">{material.unit}</TableCell>
+                          <TableCell className="text-center">{material.cost.toFixed(2)}</TableCell>
+                          <TableCell className="text-center font-semibold">{(material.stock * material.cost).toFixed(2)}</TableCell>
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -221,11 +225,6 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
-                          <TableCell className="text-center font-semibold">{(material.stock * material.cost).toFixed(2)}</TableCell>
-                          <TableCell className="text-center">{material.cost.toFixed(2)}</TableCell>
-                          <TableCell className="text-center">{material.unit}</TableCell>
-                          <TableCell className={cn("text-center", isLowStock && "font-bold text-destructive")}>{material.stock}</TableCell>
-                          <TableCell className="font-medium">{language === 'ar' ? material.nameAr : material.name}</TableCell>
                         </TableRow>
                     );
                   })
@@ -238,7 +237,7 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
                 )}
               </TableBody>
             </Table>
-          </ScrollArea>
+          </div>
         </CardContent>
       </Card>
        <RawMaterialDialog
