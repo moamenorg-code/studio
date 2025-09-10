@@ -133,7 +133,7 @@ const ShiftDialog: React.FC<ShiftDialogProps> = ({ isOpen, onOpenChange, onSave,
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>{UI_TEXT.cancel[language]}</Button>
-          <Button onClick={handleSave} variant={activeShift ? "destructive" : "default"}>{activeShift ? UI_TEXT.end[language] : UI_TEXT.start[language]}</Button>
+          <Button onClick={handleSave} className={activeShift ? '' : 'bg-green-600 hover:bg-green-700'} variant={activeShift ? "destructive" : "default"}>{activeShift ? UI_TEXT.end[language] : UI_TEXT.start[language]}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -126,7 +126,7 @@ const BackupRestoreTab: React.FC<BackupRestoreTabProps> = ({ language, getAppDat
           <CardContent>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="default">
+                <Button variant="destructive">
                   <DatabaseZap className="me-2 h-4 w-4" />
                   {UI_TEXT.seedButton[language]}
                 </Button>
@@ -142,7 +142,7 @@ const BackupRestoreTab: React.FC<BackupRestoreTabProps> = ({ language, getAppDat
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>{UI_TEXT.cancel[language]}</AlertDialogCancel>
-                  <AlertDialogAction onClick={onSeedData}>{UI_TEXT.continue[language]}</AlertDialogAction>
+                  <AlertDialogAction onClick={onSeedData} className="bg-destructive hover:bg-destructive/90">{UI_TEXT.continue[language]}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

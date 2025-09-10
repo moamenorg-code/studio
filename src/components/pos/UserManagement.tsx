@@ -194,7 +194,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>{UI_TEXT.cancel[language]}</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDeleteUser(user.id)}>{UI_TEXT.continue[language]}</AlertDialogAction>
+                                    <AlertDialogAction onClick={() => handleDeleteUser(user.id)} className="bg-destructive hover:bg-destructive/90">{UI_TEXT.continue[language]}</AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
@@ -260,7 +260,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>{UI_TEXT.cancel[language]}</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDeleteRole(role.id)}>{UI_TEXT.continue[language]}</AlertDialogAction>
+                                    <AlertDialogAction onClick={() => handleDeleteRole(role.id)} className="bg-destructive hover:bg-destructive/90">{UI_TEXT.continue[language]}</AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>

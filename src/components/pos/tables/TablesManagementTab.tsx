@@ -172,7 +172,7 @@ const TableCard: React.FC<TableCardProps> = ({ table, isActive, onSelect, onOpen
                     <div className='text-center'>
                         <div className="font-bold text-xl text-green-600 dark:text-green-400">{UI_TEXT.available[language]}</div>
                         <div className="text-xs text-muted-foreground invisible">_</div>
-                        <Button variant="default" size="sm" className="w-full mt-2">
+                        <Button variant="default" size="sm" className="w-full mt-2 bg-green-600 hover:bg-green-700">
                             <PlusCircle className="w-4 h-4 me-2"/> {UI_TEXT.newOrder[language]}
                         </Button>
                     </div>
