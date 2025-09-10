@@ -189,7 +189,7 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
             </div>
             
           <ScrollArea className={cn("transition-all duration-300", isSummaryOpen ? "h-[calc(100vh-36rem)]" : "h-[calc(100vh-25rem)]")}>
-            <Table dir="ltr">
+            <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{UI_TEXT.name[language]}</TableHead>
@@ -208,11 +208,11 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
                     const isLowStock = material.stock <= material.lowStockThreshold;
                     return (
                         <TableRow key={material.id} className={cn(isLowStock && "bg-destructive/10 hover:bg-destructive/20")}>
-                          <TableCell className="font-medium" dir={language === 'ar' ? 'rtl' : 'ltr'}>{language === 'ar' ? material.nameAr : material.name}</TableCell>
-                          <TableCell className={cn(isLowStock && "font-bold text-destructive")}>{material.stock}</TableCell>
-                          <TableCell>{material.unit}</TableCell>
-                          <TableCell>{material.cost.toFixed(2)}</TableCell>
-                          <TableCell className="font-semibold">{(material.stock * material.cost).toFixed(2)}</TableCell>
+                          <TableCell className="font-medium">{language === 'ar' ? material.nameAr : material.name}</TableCell>
+                          <TableCell className={cn("text-center", isLowStock && "font-bold text-destructive")}>{material.stock}</TableCell>
+                          <TableCell className="text-center">{material.unit}</TableCell>
+                          <TableCell className="text-center">{material.cost.toFixed(2)}</TableCell>
+                          <TableCell className="text-center font-semibold">{(material.stock * material.cost).toFixed(2)}</TableCell>
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
