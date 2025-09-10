@@ -164,7 +164,6 @@ export interface Settings {
 
 export type Permission = 
     | 'access_dashboard'
-    | 'access_sales_history'
     | 'access_products'
     | 'access_inventory'
     | 'access_customers'
@@ -190,7 +189,7 @@ export interface User {
 
 
 export type Language = "en" | "ar";
-export type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings" | "tables" | "deliveryReps" | "unauthorized" | "reports";
+export type ActiveView = "sales" | "dashboard" | "reports" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings" | "tables" | "deliveryReps" | "unauthorized";
 
 export interface ActiveOrder {
   type: OrderType;

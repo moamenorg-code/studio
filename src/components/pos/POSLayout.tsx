@@ -11,7 +11,7 @@ import { Search, Briefcase, RefreshCcw, ShieldAlert, ScanLine } from 'lucide-rea
 import Header from './Header';
 import SalesView from './SalesView';
 import DashboardTab from './DashboardTab';
-import SalesHistoryTab from './SalesHistoryTab';
+import ReportsTab from './ReportsTab';
 import ProductsAndRecipesTab from './ProductsAndRecipesTab';
 import InventoryManagementTab from './InventoryManagementTab';
 import CustomerManagementTab from './CustomerManagementTab';
@@ -28,7 +28,6 @@ import HeldOrdersDialog from './HeldOrdersDialog';
 import SplitBillDialog from './SplitBillDialog';
 import LoginScreen from './LoginScreen';
 import BarcodeScanner from './BarcodeScanner';
-import ReportsTab from './ReportsTab';
 import { customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles, purchases as initialPurchases, sales as initialSales } from "@/lib/data";
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '../ui/button';
@@ -601,17 +600,14 @@ const handleHoldOrder = () => {
       case 'dashboard':
         return <DashboardTab sales={sales} language={language} />;
       case 'reports':
-        return <ReportsTab
-                  sales={sales}
-                  products={products}
-                  categories={categories}
-                  recipes={recipes}
-                  rawMaterials={rawMaterials}
-                  users={users}
-                  language={language}
-                />;
-      case 'history':
-        return <SalesHistoryTab sales={sales} language={language} />;
+        return (
+          <ReportsTab
+            sales={sales}
+            purchases={purchases}
+            expenses={expenses}
+            language={language}
+          />
+        );
       case 'products':
         return <ProductsAndRecipesTab 
                     products={products} 
