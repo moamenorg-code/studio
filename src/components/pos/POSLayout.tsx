@@ -57,7 +57,7 @@ const POSLayout: React.FC = () => {
   const [cashDrawerEntries, setCashDrawerEntries] = React.useState<CashDrawerEntry[]>(initialCashDrawerEntries);
   const [users, setUsers] = React.useState<User[]>(initialUsers);
   const [roles, setRoles] = React.useState<Role[]>(initialRoles);
-  const [purchases, setPurchases] = React.useState<Purchase[]>(initialPurchases);
+  const [purchases, setPurchases] = React.useState<any[]>(initialPurchases);
   const [firestoreStatus, setFirestoreStatus] = React.useState<FirestoreStatus>('connecting');
   
   const [activeView, setActiveView] = React.useState<ActiveView>("shifts");
@@ -197,18 +197,23 @@ const POSLayout: React.FC = () => {
     document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
   }, [language]);
   
-  React.useEffect(() => {
-    const viewOption = VIEW_OPTIONS.find(v => v.value === activeView);
-    if (currentUser && viewOption?.permission && !hasPermission(viewOption.permission, currentUser, roles)) {
+    const handleSetActiveView = React.useCallback((view: ActiveView) => {
+    const viewOption = VIEW_OPTIONS.find(v => v.value === view);
+    if (viewOption?.permission) {
+      if (hasPermission(viewOption.permission, currentUser, roles)) {
+        setActiveView(view);
+      } else {
         setActiveView('unauthorized');
+      }
+    } else {
+      setActiveView(view);
     }
-  }, [currentUser, roles, activeView]);
+  }, [currentUser, roles]);
 
   const handleLogin = React.useCallback((pin: string) => {
     const user = users.find(u => u.pin === pin);
     if (user) {
       setCurrentUser(user);
-      // Let the useEffect handle the view change based on permission
       const canAccessShifts = hasPermission('access_shifts', user, roles);
       setActiveView(canAccessShifts ? 'shifts' : 'sales');
     } else {
@@ -510,51 +515,46 @@ const handleHoldOrder = () => {
     setBarcodeScannerOpen(true);
   };
 
-  const handleBarcodeDetect = (barcode: string) => {
-    barcodeScannerCallback(barcode);
-    setBarcodeScannerOpen(false);
+  const handleRestore = (data: AppData) => {
+      setProducts(data.products);
+      setCategories(data.categories);
+      setCustomers(data.customers);
+      setDeliveryReps(data.deliveryReps);
+      setExpenses(data.expenses);
+      setCashDrawerEntries(data.cashDrawerEntries);
+      setPurchases(data.purchases);
+      setRawMaterials(data.rawMaterials);
+      setRecipes(data.recipes);
+      setRoles(data.roles);
+      setSales(data.sales);
+      setSettings(data.settings);
+      setShifts(data.shifts);
+      setSuppliers(data.suppliers);
+      setTables(data.tables);
+      setUsers(data.users);
+
+      // Reset runtime state
+      setActiveOrder(null);
+      setHeldOrders([]);
+      setTakeawayOrders([]);
+      setDeliveryOrders([]);
+      setCartSheetOpen(false);
+      setActiveView('shifts'); // Go to a neutral page
+
+      toast({
+          title: 'Restore Successful',
+          description: 'Data has been restored successfully. The application will now reload.',
+      });
+
+      // Force a reload to ensure all components re-render with new state
+      setTimeout(() => window.location.reload(), 1500);
   };
-  
-    const handleRestore = (data: AppData) => {
-        setProducts(data.products);
-        setCategories(data.categories);
-        setCustomers(data.customers);
-        setDeliveryReps(data.deliveryReps);
-        setExpenses(data.expenses);
-        setCashDrawerEntries(data.cashDrawerEntries);
-        setPurchases(data.purchases);
-        setRawMaterials(data.rawMaterials);
-        setRecipes(data.recipes);
-        setRoles(data.roles);
-        setSales(data.sales);
-        setSettings(data.settings);
-        setShifts(data.shifts);
-        setSuppliers(data.suppliers);
-        setTables(data.tables);
-        setUsers(data.users);
 
-        // Reset runtime state
-        setActiveOrder(null);
-        setHeldOrders([]);
-        setTakeawayOrders([]);
-        setDeliveryOrders([]);
-        setCartSheetOpen(false);
-        setActiveView('shifts'); // Go to a neutral page
-
-        toast({
-            title: 'Restore Successful',
-            description: 'Data has been restored successfully. The application will now reload.',
-        });
-
-        // Force a reload to ensure all components re-render with new state
-        setTimeout(() => window.location.reload(), 1500);
-    };
-
-    const getAppData = (): AppData => ({
-        products, categories, customers, deliveryReps, expenses, cashDrawerEntries,
-        purchases, rawMaterials, recipes, roles, sales, settings, shifts,
-        suppliers, tables, users
-    });
+  const getAppData = (): AppData => ({
+      products, categories, customers, deliveryReps, expenses, cashDrawerEntries,
+      purchases, rawMaterials, recipes, roles, sales, settings, shifts,
+      suppliers, tables, users
+  });
 
   const filteredProducts = React.useMemo(() => {
     return products
@@ -596,7 +596,7 @@ const handleHoldOrder = () => {
                     onAddToCart={addToCart}
                     onNewTakeawayOrder={handleNewTakeawayOrder}
                     onNewDeliveryOrder={handleNewDeliveryOrder}
-                    onSetActiveView={setActiveView}
+                    onSetActiveView={handleSetActiveView}
                     tablesEnabled={settings.enableTables}
                 />;
       case 'dashboard':
@@ -607,6 +607,7 @@ const handleHoldOrder = () => {
             sales={sales}
             purchases={purchases}
             expenses={expenses}
+            suppliers={suppliers}
             language={language}
           />
         );
@@ -678,7 +679,7 @@ const handleHoldOrder = () => {
                   users={users}
                   onUsersChange={handleUsersUpdate}
                   roles={roles}
-                  onRolesChange={handleRolesUpdate}
+                  onRolesChange={handleRolesChange}
                   language={language}
                   getAppData={getAppData}
                   onRestore={handleRestore}
@@ -719,7 +720,7 @@ const handleHoldOrder = () => {
         onLogout={handleLogout}
         heldOrdersCount={heldOrders.length}
         activeView={activeView}
-        setActiveView={setActiveView}
+        setActiveView={handleSetActiveView}
         enableTables={settings.enableTables}
         isShiftOpen={!!activeShift}
         hasPermission={(p) => hasPermission(p, currentUser, roles)}

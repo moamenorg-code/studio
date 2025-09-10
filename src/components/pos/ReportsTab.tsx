@@ -1,21 +1,19 @@
 import * as React from 'react';
-import type { Sale, Purchase, Expense, Language } from '@/lib/types';
+import type { Sale, Purchase, Expense, Language, Supplier } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { FileText, ShoppingCart, Truck, Percent, HandCoins } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FileText, ShoppingCart, Truck, Percent, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 
 type Language = 'en' | 'ar';
 
 const UI_TEXT: Record<string, Record<Language, string>> = {
-    reports: { en: 'Reports', ar: 'التقارير' },
-    detailedReports: { en: 'Detailed reports for sales, purchases, and more.', ar: 'تقارير مفصلة للمبيعات والمشتريات والمزيد.' },
+    reports: { en: 'Financial Reports', ar: 'التقارير المالية' },
+    detailedReports: { en: 'Detailed financial analysis of your operations.', ar: 'تحليل مالي مفصل لعملياتك.' },
     sales: { en: 'Sales', ar: 'المبيعات' },
     purchases: { en: 'Purchases', ar: 'المشتريات' },
     discounts: { en: 'Discounts', ar: 'الخصومات' },
-    deliveryFees: { en: 'Delivery Fees', ar: 'رسوم التوصيل' },
     expenses: { en: 'Expenses', ar: 'المصروفات' },
     transactionId: { en: 'Transaction ID', ar: 'رقم الفاتورة' },
     date: { en: 'Date', ar: 'التاريخ' },
@@ -31,8 +29,10 @@ const UI_TEXT: Record<string, Record<Language, string>> = {
     noExpenses: { en: 'No expenses found.', ar: 'لا توجد مصروفات.' },
     discount: { en: 'Discount', ar: 'الخصم' },
     noDiscounts: { en: 'No discounts recorded.', ar: 'لا توجد خصومات مسجلة.' },
-    deliveryFee: { en: 'Delivery Fee', ar: 'رسوم التوصيل' },
-    noDeliveryFees: { en: 'No delivery fees recorded.', ar: 'لا توجد رسوم توصيل مسجلة.' },
+    totalSales: { en: 'Total Sales', ar: 'إجمالي المبيعات' },
+    totalExpenses: { en: 'Total Expenses', ar: 'إجمالي المصروفات' },
+    netProfit: { en: 'Net Profit', ar: 'صافي الربح' },
+    totalDiscounts: { en: 'Total Discounts', ar: 'إجمالي الخصومات' },
 };
 
 const SalesReport: React.FC<{ sales: Sale[], language: Language }> = ({ sales, language }) => (
@@ -64,7 +64,12 @@ const SalesReport: React.FC<{ sales: Sale[], language: Language }> = ({ sales, l
     </Table>
 );
 
-const PurchasesReport: React.FC<{ purchases: Purchase[], language: Language }> = ({ purchases, language }) => (
+const PurchasesReport: React.FC<{ purchases: Purchase[], suppliers: Supplier[], language: Language }> = ({ purchases, suppliers, language }) => {
+    const getSupplierName = (supplierId: number) => {
+        return suppliers.find(s => s.id === supplierId)?.name || `ID: ${supplierId}`;
+    };
+
+    return (
      <Table>
         <TableHeader>
             <TableRow>
@@ -79,7 +84,7 @@ const PurchasesReport: React.FC<{ purchases: Purchase[], language: Language }> =
                 <TableRow key={purchase.id}>
                     <TableCell className="font-medium">{purchase.id}</TableCell>
                     <TableCell>{new Date(purchase.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell>Supplier ID: {purchase.supplierId}</TableCell>
+                    <TableCell>{getSupplierName(purchase.supplierId)}</TableCell>
                     <TableCell className="text-right">{purchase.total.toFixed(2)}</TableCell>
                 </TableRow>
             )) : (
@@ -89,7 +94,8 @@ const PurchasesReport: React.FC<{ purchases: Purchase[], language: Language }> =
             )}
         </TableBody>
     </Table>
-);
+    );
+};
 
 const ExpensesReport: React.FC<{ expenses: Expense[], language: Language }> = ({ expenses, language }) => (
     <Table>
@@ -144,78 +150,95 @@ const DiscountsReport: React.FC<{ sales: Sale[], language: Language }> = ({ sale
     );
 }
 
-const DeliveryFeesReport: React.FC<{ sales: Sale[], language: Language }> = ({ sales, language }) => {
-    const deliverySales = sales.filter(s => s.orderType === 'delivery' && s.serviceCharge > 0);
-    return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>{UI_TEXT.transactionId[language]}</TableHead>
-                    <TableHead>{UI_TEXT.date[language]}</TableHead>
-                    <TableHead className="text-right">{UI_TEXT.deliveryFee[language]}</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {deliverySales.length > 0 ? deliverySales.map(sale => (
-                    <TableRow key={sale.id}>
-                        <TableCell>{sale.id}</TableCell>
-                        <TableCell>{new Date(sale.createdAt).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-right">{sale.serviceCharge.toFixed(2)}</TableCell>
-                    </TableRow>
-                )) : (
-                    <TableRow>
-                        <TableCell colSpan={3} className="h-24 text-center">{UI_TEXT.noDeliveryFees[language]}</TableCell>
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
-    );
-};
-
-
 interface ReportsTabProps {
     sales: Sale[];
     purchases: Purchase[];
     expenses: Expense[];
+    suppliers: Supplier[];
     language: Language;
 }
 
-const ReportsTab: React.FC<ReportsTabProps> = ({ sales, purchases, expenses, language }) => {
+const ReportsTab: React.FC<ReportsTabProps> = ({ sales, purchases, expenses, suppliers, language }) => {
+    const totalSales = React.useMemo(() => sales.reduce((sum, sale) => sum + sale.finalTotal, 0), [sales]);
+    const totalExpenses = React.useMemo(() => expenses.reduce((sum, expense) => sum + expense.amount, 0), [expenses]);
+    const totalPurchases = React.useMemo(() => purchases.reduce((sum, purchase) => sum + purchase.total, 0), [purchases]);
+    const totalDiscounts = React.useMemo(() => sales.reduce((sum, sale) => sum + sale.totalDiscountValue, 0), [sales]);
+    const netProfit = totalSales - totalExpenses - totalPurchases;
+
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{UI_TEXT.reports[language]}</CardTitle>
-                <CardDescription>{UI_TEXT.detailedReports[language]}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Tabs defaultValue="sales" dir={language}>
-                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
-                        <TabsTrigger value="sales"><ShoppingCart className="w-4 h-4 me-2" />{UI_TEXT.sales[language]}</TabsTrigger>
-                        <TabsTrigger value="purchases"><Truck className="w-4 h-4 me-2" />{UI_TEXT.purchases[language]}</TabsTrigger>
-                        <TabsTrigger value="expenses"><FileText className="w-4 h-4 me-2" />{UI_TEXT.expenses[language]}</TabsTrigger>
-                        <TabsTrigger value="discounts"><Percent className="w-4 h-4 me-2" />{UI_TEXT.discounts[language]}</TabsTrigger>
-                        <TabsTrigger value="delivery"><HandCoins className="w-4 h-4 me-2" />{UI_TEXT.deliveryFees[language]}</TabsTrigger>
-                    </TabsList>
-                    <ScrollArea className="h-[calc(100vh-22rem)] mt-4">
-                        <TabsContent value="sales">
+        <div className='space-y-6'>
+            <Card>
+                <CardHeader>
+                    <CardTitle>{UI_TEXT.reports[language]}</CardTitle>
+                    <CardDescription>{UI_TEXT.detailedReports[language]}</CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">{UI_TEXT.totalSales[language]}</CardTitle>
+                            <TrendingUp className="h-4 w-4 text-muted-foreground text-green-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{totalSales.toFixed(2)}</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">{UI_TEXT.totalExpenses[language]}</CardTitle>
+                            <TrendingDown className="h-4 w-4 text-muted-foreground text-red-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{totalExpenses.toFixed(2)}</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">{UI_TEXT.netProfit[language]}</CardTitle>
+                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {netProfit.toFixed(2)}
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">{UI_TEXT.totalDiscounts[language]}</CardTitle>
+                            <Percent className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{totalDiscounts.toFixed(2)}</div>
+                        </CardContent>
+                    </Card>
+                </CardContent>
+            </Card>
+
+            <Tabs defaultValue="sales" dir={language}>
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+                    <TabsTrigger value="sales"><ShoppingCart className="w-4 h-4 me-2" />{UI_TEXT.sales[language]}</TabsTrigger>
+                    <TabsTrigger value="purchases"><Truck className="w-4 h-4 me-2" />{UI_TEXT.purchases[language]}</TabsTrigger>
+                    <TabsTrigger value="expenses"><FileText className="w-4 h-4 me-2" />{UI_TEXT.expenses[language]}</TabsTrigger>
+                    <TabsTrigger value="discounts"><Percent className="w-4 h-4 me-2" />{UI_TEXT.discounts[language]}</TabsTrigger>
+                </TabsList>
+                <div className="mt-4 rounded-md border">
+                    <ScrollArea className="h-[calc(100vh-32rem)]">
+                        <TabsContent value="sales" className="m-0">
                             <SalesReport sales={sales} language={language} />
                         </TabsContent>
-                        <TabsContent value="purchases">
-                            <PurchasesReport purchases={purchases} language={language} />
+                        <TabsContent value="purchases" className="m-0">
+                            <PurchasesReport purchases={purchases} suppliers={suppliers} language={language} />
                         </TabsContent>
-                         <TabsContent value="expenses">
+                         <TabsContent value="expenses" className="m-0">
                             <ExpensesReport expenses={expenses} language={language} />
                         </TabsContent>
-                         <TabsContent value="discounts">
+                         <TabsContent value="discounts" className="m-0">
                             <DiscountsReport sales={sales} language={language} />
                         </TabsContent>
-                         <TabsContent value="delivery">
-                            <DeliveryFeesReport sales={sales} language={language} />
-                        </TabsContent>
                     </ScrollArea>
-                </Tabs>
-            </CardContent>
-        </Card>
+                </div>
+            </Tabs>
+        </div>
     );
 };
 
