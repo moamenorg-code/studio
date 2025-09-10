@@ -77,7 +77,7 @@
       "electron/main.js",
       "src",
       "public",
-      ".next",
+      "out",
       "node_modules",
       "package.json"
     ],
