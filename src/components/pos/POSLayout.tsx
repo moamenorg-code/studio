@@ -194,7 +194,7 @@ const POSLayout: React.FC = () => {
     return userRole.permissions[permission] || false;
   }, [currentUser, roles]);
 
-  const handleSetActiveView = (view: ActiveView) => {
+  const handleSetActiveView = React.useCallback((view: ActiveView) => {
     if (currentUser) {
         const viewOption = VIEW_OPTIONS.find(v => v.value === view);
         if (viewOption?.permission && !hasPermission(viewOption.permission, currentUser)) {
@@ -203,7 +203,7 @@ const POSLayout: React.FC = () => {
             setActiveView(view);
         }
     }
-  };
+  }, [currentUser, hasPermission]);
 
   const handleLogin = (pin: string) => {
     const user = users.find(u => u.pin === pin);
