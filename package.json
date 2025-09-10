@@ -12,7 +12,9 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "electron:dev": "concurrently -k \"cross-env BROWSER=none yarn dev\" \"wait-on http://localhost:9002 && tsc -p electron && electron .\"",
-    "electron:build": "yarn build && tsc -p electron && electron-builder"
+    "electron:build": "yarn build && tsc -p electron && electron-builder",
+    "fb:login:ci": "npx firebase-tools login:ci",
+    "fb:set-token": "npx firebase-tools --token"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",
