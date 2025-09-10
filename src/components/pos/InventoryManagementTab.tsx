@@ -111,12 +111,12 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
 
   return (
     <>
-      <Card>
+      <Card className="flex flex-col h-full">
         <CardHeader>
           <CardTitle>{UI_TEXT.manageInventory[language]}</CardTitle>
           <CardDescription>{UI_TEXT.manageRawMaterials[language]}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1 flex flex-col">
             {/* Summary Cards */}
             <Collapsible open={isSummaryOpen} onOpenChange={setIsSummaryOpen}>
                  <CollapsibleTrigger asChild>
@@ -187,16 +187,16 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
                 </Button>
             </div>
             
-          <div className={cn("overflow-x-auto transition-all duration-300", isSummaryOpen ? "h-[calc(100vh-36rem)]" : "h-[calc(100vh-25rem)]")}>
+          <div className="flex-1 overflow-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{UI_TEXT.name[language]}</TableHead>
-                  <TableHead>{UI_TEXT.stock[language]}</TableHead>
-                  <TableHead>{UI_TEXT.unit[language]}</TableHead>
-                  <TableHead>{UI_TEXT.cost[language]}</TableHead>
-                  <TableHead>{UI_TEXT.value[language]}</TableHead>
-                  <TableHead>{UI_TEXT.actions[language]}</TableHead>
+                  <TableHead className="text-center">{UI_TEXT.stock[language]}</TableHead>
+                  <TableHead className="text-center">{UI_TEXT.unit[language]}</TableHead>
+                  <TableHead className="text-center">{UI_TEXT.cost[language]}</TableHead>
+                  <TableHead className="text-center">{UI_TEXT.value[language]}</TableHead>
+                  <TableHead className="text-end">{UI_TEXT.actions[language]}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -210,7 +210,7 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
                           <TableCell className="text-center">{material.unit}</TableCell>
                           <TableCell className="text-center">{material.cost.toFixed(2)}</TableCell>
                           <TableCell className="text-center font-semibold">{(material.stock * material.cost).toFixed(2)}</TableCell>
-                          <TableCell>
+                          <TableCell className="text-end">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button aria-haspopup="true" size="icon" variant="ghost">

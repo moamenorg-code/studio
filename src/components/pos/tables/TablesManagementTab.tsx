@@ -302,7 +302,7 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
 
   return (
     <>
-      <Card className={cn(isFullScreen ? "" : "h-full")}>
+      <Card className={cn(isFullScreen ? "h-full flex flex-col" : "")}>
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -323,24 +323,22 @@ const TablesManagementTab: React.FC<TablesManagementTabProps> = ({ tables, onTab
             </TableDialog>
           </div>
         </CardHeader>
-        <CardContent>
-           <ScrollArea className={cn(isFullScreen ? 'h-[calc(100vh-18rem)]' : 'h-[calc(100vh-22rem)]')}>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {tables.map(table => (
-                        <TableCard 
-                            key={table.id}
-                            table={table}
-                            isActive={table.id === activeTableId}
-                            onSelect={onSelectTable}
-                            onOpenCart={onOpenCart}
-                            onEdit={handleEdit}
-                            onTransfer={handleOpenTransfer}
-                            onDelete={handleDelete}
-                            language={language}
-                        />
-                    ))}
-                </div>
-            </ScrollArea>
+        <CardContent className={cn(isFullScreen && "flex-1 overflow-auto")}>
+           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {tables.map(table => (
+                  <TableCard 
+                      key={table.id}
+                      table={table}
+                      isActive={table.id === activeTableId}
+                      onSelect={onSelectTable}
+                      onOpenCart={onOpenCart}
+                      onEdit={handleEdit}
+                      onTransfer={handleOpenTransfer}
+                      onDelete={handleDelete}
+                      language={language}
+                  />
+              ))}
+          </div>
         </CardContent>
       </Card>
       <TableDialog 

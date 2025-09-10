@@ -4,7 +4,6 @@ import type { Expense, Shift } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import ExpenseDialog from './ExpenseDialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -51,7 +50,7 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({ expenses, onExpensesChange, l
   
   if (!activeShift) {
     return (
-        <Card className="h-full flex items-center justify-center">
+        <Card className="h-full flex items-center justify-center border-none shadow-none">
             <Alert className="w-auto">
                 <Receipt className="h-4 w-4" />
                 <AlertTitle>{UI_TEXT.noActiveShift[language]}</AlertTitle>
@@ -64,7 +63,7 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({ expenses, onExpensesChange, l
 
   return (
     <>
-      <Card>
+      <Card className="flex flex-col h-full border-none shadow-none">
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -77,37 +76,35 @@ const ExpensesTab: React.FC<ExpensesTabProps> = ({ expenses, onExpensesChange, l
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[calc(100vh-28rem)]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{UI_TEXT.description[language]}</TableHead>
-                  <TableHead>{UI_TEXT.date[language]}</TableHead>
-                  <TableHead className="text-end">{UI_TEXT.amount[language]}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {expensesForActiveShift.length > 0 ? (
-                  expensesForActiveShift.map(expense => (
-                    <TableRow key={expense.id}>
-                      <TableCell className="font-medium">{expense.description}</TableCell>
-                      <TableCell>
-                        {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(expense.createdAt)}
-                      </TableCell>
-                      <TableCell className="text-end">{expense.amount.toFixed(2)}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={3} className="h-24 text-center">
-                      {UI_TEXT.noExpenses[language]}
+        <CardContent className="flex-1 overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{UI_TEXT.description[language]}</TableHead>
+                <TableHead>{UI_TEXT.date[language]}</TableHead>
+                <TableHead className="text-end">{UI_TEXT.amount[language]}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {expensesForActiveShift.length > 0 ? (
+                expensesForActiveShift.map(expense => (
+                  <TableRow key={expense.id}>
+                    <TableCell className="font-medium">{expense.description}</TableCell>
+                    <TableCell>
+                      {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(expense.createdAt)}
                     </TableCell>
+                    <TableCell className="text-end">{expense.amount.toFixed(2)}</TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </ScrollArea>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={3} className="h-24 text-center">
+                    {UI_TEXT.noExpenses[language]}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
       <ExpenseDialog

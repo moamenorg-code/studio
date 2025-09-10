@@ -57,7 +57,7 @@ const CashDrawerTab: React.FC<CashDrawerTabProps> = ({ entries, onEntriesChange,
 
   if (!activeShift) {
     return (
-        <Card className="h-full flex items-center justify-center">
+        <Card className="h-full flex items-center justify-center border-none shadow-none">
             <Alert className="w-auto">
                 <Wallet className="h-4 w-4" />
                 <AlertTitle>{UI_TEXT.noActiveShift[language]}</AlertTitle>
@@ -69,7 +69,7 @@ const CashDrawerTab: React.FC<CashDrawerTabProps> = ({ entries, onEntriesChange,
 
   return (
     <>
-      <Card>
+      <Card className="flex flex-col h-full border-none shadow-none">
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -82,46 +82,44 @@ const CashDrawerTab: React.FC<CashDrawerTabProps> = ({ entries, onEntriesChange,
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[calc(100vh-28rem)]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{UI_TEXT.type[language]}</TableHead>
-                  <TableHead>{UI_TEXT.reason[language]}</TableHead>
-                  <TableHead>{UI_TEXT.date[language]}</TableHead>
-                  <TableHead className="text-end">{UI_TEXT.amount[language]}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {entriesForActiveShift.length > 0 ? (
-                  entriesForActiveShift.map(entry => (
-                    <TableRow key={entry.id}>
-                      <TableCell>
-                        <Badge variant={entry.type === 'cash_in' ? 'default' : 'destructive'} className="flex items-center gap-1 w-fit">
-                           {entry.type === 'cash_in' ? <ArrowUpCircle size={14} /> : <ArrowDownCircle size={14} />}
-                           {entry.type === 'cash_in' ? UI_TEXT.cashIn[language] : UI_TEXT.cashOut[language]}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">{entry.reason}</TableCell>
-                       <TableCell>
-                        {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(entry.createdAt)}
-                      </TableCell>
-                      <TableCell className={`text-end font-semibold ${entry.type === 'cash_in' ? 'text-green-600' : 'text-red-600'}`}>
-                        {entry.amount.toFixed(2)}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                      {UI_TEXT.noEntries[language]}
+        <CardContent className="flex-1 overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{UI_TEXT.type[language]}</TableHead>
+                <TableHead>{UI_TEXT.reason[language]}</TableHead>
+                <TableHead>{UI_TEXT.date[language]}</TableHead>
+                <TableHead className="text-end">{UI_TEXT.amount[language]}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {entriesForActiveShift.length > 0 ? (
+                entriesForActiveShift.map(entry => (
+                  <TableRow key={entry.id}>
+                    <TableCell>
+                      <Badge variant={entry.type === 'cash_in' ? 'default' : 'destructive'} className="flex items-center gap-1 w-fit">
+                         {entry.type === 'cash_in' ? <ArrowUpCircle size={14} /> : <ArrowDownCircle size={14} />}
+                         {entry.type === 'cash_in' ? UI_TEXT.cashIn[language] : UI_TEXT.cashOut[language]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-medium">{entry.reason}</TableCell>
+                     <TableCell>
+                      {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(entry.createdAt)}
+                    </TableCell>
+                    <TableCell className={`text-end font-semibold ${entry.type === 'cash_in' ? 'text-green-600' : 'text-red-600'}`}>
+                      {entry.amount.toFixed(2)}
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </ScrollArea>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center">
+                    {UI_TEXT.noEntries[language]}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
       <CashDrawerDialog

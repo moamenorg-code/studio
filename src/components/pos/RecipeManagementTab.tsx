@@ -11,7 +11,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import RecipeDialog from './RecipeDialog';
 import { Badge } from '../ui/badge';
 
@@ -72,7 +71,7 @@ const RecipeManagementTab: React.FC<RecipeManagementTabProps> = ({ recipes, onRe
 
   return (
     <>
-      <Card className='shadow-none border-none'>
+      <Card className='shadow-none border-none flex flex-col h-full'>
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -85,57 +84,55 @@ const RecipeManagementTab: React.FC<RecipeManagementTabProps> = ({ recipes, onRe
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[calc(100vh-28rem)]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{UI_TEXT.name[language]}</TableHead>
-                  <TableHead>{UI_TEXT.ingredients[language]}</TableHead>
-                  <TableHead>
-                    <span className="sr-only">{UI_TEXT.actions[language]}</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recipes.length > 0 ? (
-                  recipes.map(recipe => (
-                    <TableRow key={recipe.id}>
-                      <TableCell className="font-medium">{recipe.name}</TableCell>
-                      <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {recipe.items.map((item, index) => (
-                                <Badge key={index} variant="secondary">{getIngredientName(item.rawMaterialId)} ({item.quantity})</Badge>
-                            ))}
-                          </div>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
-                            <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEditRecipe(recipe)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteRecipe(recipe.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={3} className="h-24 text-center">
-                      {UI_TEXT.noRecipes[language]}
+        <CardContent className="flex-1 overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{UI_TEXT.name[language]}</TableHead>
+                <TableHead>{UI_TEXT.ingredients[language]}</TableHead>
+                <TableHead>
+                  <span className="sr-only">{UI_TEXT.actions[language]}</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recipes.length > 0 ? (
+                recipes.map(recipe => (
+                  <TableRow key={recipe.id}>
+                    <TableCell className="font-medium">{recipe.name}</TableCell>
+                    <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {recipe.items.map((item, index) => (
+                              <Badge key={index} variant="secondary">{getIngredientName(item.rawMaterialId)} ({item.quantity})</Badge>
+                          ))}
+                        </div>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
+                          <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEditRecipe(recipe)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteRecipe(recipe.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </ScrollArea>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={3} className="h-24 text-center">
+                    {UI_TEXT.noRecipes[language]}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
       <RecipeDialog 

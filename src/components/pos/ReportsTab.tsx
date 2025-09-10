@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, ShoppingCart, Truck, Percent, TrendingUp, TrendingDown, DollarSign, ChevronsUpDown, Table as TableIcon, Bike, Package, User as UserIcon } from 'lucide-react';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { Button } from '../ui/button';
-import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 
 
@@ -243,7 +242,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ sales, purchases, expenses, sup
     const netProfit = totalSales - totalExpenses - totalPurchases;
 
     return (
-        <div className='space-y-6'>
+        <div className='space-y-6 flex flex-col'>
             <Card>
                 <CardHeader>
                     <CardTitle>{UI_TEXT.reports[language]}</CardTitle>
@@ -304,28 +303,26 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ sales, purchases, expenses, sup
                 </CardContent>
             </Card>
 
-            <Tabs defaultValue="sales" dir={language}>
+            <Tabs defaultValue="sales" dir={language} className="flex-1 flex flex-col">
                 <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
                     <TabsTrigger value="sales"><ShoppingCart className="w-4 h-4 me-2" />{UI_TEXT.sales[language]}</TabsTrigger>
                     <TabsTrigger value="purchases"><Truck className="w-4 h-4 me-2" />{UI_TEXT.purchases[language]}</TabsTrigger>
                     <TabsTrigger value="expenses"><FileText className="w-4 h-4 me-2" />{UI_TEXT.expenses[language]}</TabsTrigger>
                     <TabsTrigger value="discounts"><Percent className="w-4 h-4 me-2" />{UI_TEXT.discounts[language]}</TabsTrigger>
                 </TabsList>
-                <div className="mt-4 rounded-md border">
-                    <div className={cn("overflow-x-auto transition-all duration-300", isSummaryOpen ? "h-[calc(100vh-42rem)]" : "h-[calc(100vh-28rem)]")}>
-                        <TabsContent value="sales" className="m-0">
-                            <SalesReport sales={sales} users={users} language={language} />
-                        </TabsContent>
-                        <TabsContent value="purchases" className="m-0">
-                            <PurchasesReport purchases={purchases} suppliers={suppliers} language={language} />
-                        </TabsContent>
-                         <TabsContent value="expenses" className="m-0">
-                            <ExpensesReport expenses={expenses} language={language} />
-                        </TabsContent>
-                         <TabsContent value="discounts" className="m-0">
-                            <DiscountsReport sales={sales} language={language} />
-                        </TabsContent>
-                    </div>
+                <div className="mt-4 rounded-md border flex-1 overflow-auto">
+                    <TabsContent value="sales" className="m-0 h-full">
+                        <SalesReport sales={sales} users={users} language={language} />
+                    </TabsContent>
+                    <TabsContent value="purchases" className="m-0 h-full">
+                        <PurchasesReport purchases={purchases} suppliers={suppliers} language={language} />
+                    </TabsContent>
+                      <TabsContent value="expenses" className="m-0 h-full">
+                        <ExpensesReport expenses={expenses} language={language} />
+                    </TabsContent>
+                      <TabsContent value="discounts" className="m-0 h-full">
+                        <DiscountsReport sales={sales} language={language} />
+                    </TabsContent>
                 </div>
             </Tabs>
         </div>

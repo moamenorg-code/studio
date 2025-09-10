@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import ShiftDialog from './ShiftDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ExpensesTab from './ExpensesTab';
@@ -103,7 +102,7 @@ const ShiftsManagementTab: React.FC<ShiftsManagementTabProps> = ({
 
   return (
     <>
-      <Card>
+      <Card className="h-full flex flex-col">
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -125,61 +124,59 @@ const ShiftsManagementTab: React.FC<ShiftsManagementTabProps> = ({
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-            <Tabs defaultValue="shifts" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+        <CardContent className="flex-1 flex flex-col">
+            <Tabs defaultValue="shifts" dir={language === 'ar' ? 'rtl' : 'ltr'} className="flex-1 flex flex-col">
                 <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="shifts"><Briefcase className="w-4 h-4 me-2"/>{UI_TEXT.shifts[language]}</TabsTrigger>
                     <TabsTrigger value="expenses"><Receipt className="w-4 h-4 me-2"/>{UI_TEXT.expenses[language]}</TabsTrigger>
                     <TabsTrigger value="cash_drawer"><Wallet className="w-4 h-4 me-2"/>{UI_TEXT.cashDrawer[language]}</TabsTrigger>
                 </TabsList>
-                <TabsContent value="shifts">
-                    <ScrollArea className="h-[calc(100vh-25rem)]">
-                        <Table>
-                        <TableHeader>
-                            <TableRow>
-                            <TableHead>{UI_TEXT.status[language]}</TableHead>
-                            <TableHead>{UI_TEXT.startTime[language]}</TableHead>
-                            <TableHead>{UI_TEXT.endTime[language]}</TableHead>
-                            <TableHead>{UI_TEXT.startingCash[language]}</TableHead>
-                            <TableHead>{UI_TEXT.totalSales[language]}</TableHead>
-                            <TableHead>{UI_TEXT.endingCash[language]}</TableHead>
-                            <TableHead className="text-end">{UI_TEXT.difference[language]}</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {sortedShifts.length > 0 ? (
-                            sortedShifts.map(shift => {
-                                const difference = shift.endingCash !== null ? shift.endingCash - (shift.startingCash + shift.totalSales - shift.totalExpenses) : null;
-                                return (
-                                    <TableRow key={shift.id}>
-                                    <TableCell>
-                                        <Badge variant={shift.status === 'open' ? 'default' : 'secondary'}>
-                                        {shift.status === 'open' ? UI_TEXT.open[language] : UI_TEXT.closed[language]}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>{new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(shift.startTime))}</TableCell>
-                                    <TableCell>{shift.endTime ? new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(shift.endTime)) : '-'}</TableCell>
-                                    <TableCell>{shift.startingCash.toFixed(2)}</TableCell>
-                                    <TableCell>{shift.totalSales.toFixed(2)}</TableCell>
-                                    <TableCell>{shift.endingCash !== null ? shift.endingCash.toFixed(2) : '-'}</TableCell>
-                                    <TableCell className={`text-end font-medium ${difference === null ? '' : (difference === 0 ? '' : (difference > 0 ? 'text-green-600' : 'text-red-600'))}`}>
-                                        {difference !== null ? difference.toFixed(2) : '-'}
-                                    </TableCell>
-                                    </TableRow>
-                                );
-                            })
-                            ) : (
-                            <TableRow>
-                                <TableCell colSpan={7} className="h-24 text-center">
-                                {UI_TEXT.noShifts[language]}
-                                </TableCell>
-                            </TableRow>
-                            )}
-                        </TableBody>
-                        </Table>
-                    </ScrollArea>
+                <TabsContent value="shifts" className="flex-1 overflow-auto mt-4">
+                    <Table>
+                      <TableHeader>
+                          <TableRow>
+                          <TableHead>{UI_TEXT.status[language]}</TableHead>
+                          <TableHead>{UI_TEXT.startTime[language]}</TableHead>
+                          <TableHead>{UI_TEXT.endTime[language]}</TableHead>
+                          <TableHead>{UI_TEXT.startingCash[language]}</TableHead>
+                          <TableHead>{UI_TEXT.totalSales[language]}</TableHead>
+                          <TableHead>{UI_TEXT.endingCash[language]}</TableHead>
+                          <TableHead className="text-end">{UI_TEXT.difference[language]}</TableHead>
+                          </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                          {sortedShifts.length > 0 ? (
+                          sortedShifts.map(shift => {
+                              const difference = shift.endingCash !== null ? shift.endingCash - (shift.startingCash + shift.totalSales - shift.totalExpenses) : null;
+                              return (
+                                  <TableRow key={shift.id}>
+                                  <TableCell>
+                                      <Badge variant={shift.status === 'open' ? 'default' : 'secondary'}>
+                                      {shift.status === 'open' ? UI_TEXT.open[language] : UI_TEXT.closed[language]}
+                                      </Badge>
+                                  </TableCell>
+                                  <TableCell>{new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(shift.startTime))}</TableCell>
+                                  <TableCell>{shift.endTime ? new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(shift.endTime)) : '-'}</TableCell>
+                                  <TableCell>{shift.startingCash.toFixed(2)}</TableCell>
+                                  <TableCell>{shift.totalSales.toFixed(2)}</TableCell>
+                                  <TableCell>{shift.endingCash !== null ? shift.endingCash.toFixed(2) : '-'}</TableCell>
+                                  <TableCell className={`text-end font-medium ${difference === null ? '' : (difference === 0 ? '' : (difference > 0 ? 'text-green-600' : 'text-red-600'))}`}>
+                                      {difference !== null ? difference.toFixed(2) : '-'}
+                                  </TableCell>
+                                  </TableRow>
+                              );
+                          })
+                          ) : (
+                          <TableRow>
+                              <TableCell colSpan={7} className="h-24 text-center">
+                              {UI_TEXT.noShifts[language]}
+                              </TableCell>
+                          </TableRow>
+                          )}
+                      </TableBody>
+                    </Table>
                 </TabsContent>
-                <TabsContent value="expenses">
+                <TabsContent value="expenses" className="flex-1 overflow-hidden mt-4">
                     <ExpensesTab 
                         expenses={expenses}
                         onExpensesChange={onExpensesChange}
@@ -187,7 +184,7 @@ const ShiftsManagementTab: React.FC<ShiftsManagementTabProps> = ({
                         activeShift={activeShift}
                     />
                 </TabsContent>
-                <TabsContent value="cash_drawer">
+                <TabsContent value="cash_drawer" className="flex-1 overflow-hidden mt-4">
                     <CashDrawerTab 
                         entries={cashDrawerEntries}
                         onEntriesChange={onCashDrawerChange}

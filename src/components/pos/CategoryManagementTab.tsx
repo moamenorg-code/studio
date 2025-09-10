@@ -11,7 +11,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import CategoryDialog from './CategoryDialog';
 
 type Language = 'en' | 'ar';
@@ -63,7 +62,7 @@ const CategoryManagementTab: React.FC<CategoryManagementTabProps> = ({ categorie
 
   return (
     <>
-      <Card className='shadow-none border-none'>
+      <Card className='shadow-none border-none flex flex-col h-full'>
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -76,49 +75,47 @@ const CategoryManagementTab: React.FC<CategoryManagementTabProps> = ({ categorie
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[calc(100vh-28rem)]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{UI_TEXT.name[language]}</TableHead>
-                  <TableHead>
-                    <span className="sr-only">{UI_TEXT.actions[language]}</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {categories.length > 0 ? (
-                  categories.map(category => (
-                    <TableRow key={category.id}>
-                      <TableCell className="font-medium">{language === 'ar' ? category.nameAr : category.name}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
-                            <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEdit(category)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDelete(category.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={2} className="h-24 text-center">
-                      {UI_TEXT.noCategories[language]}
+        <CardContent className="flex-1 overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{UI_TEXT.name[language]}</TableHead>
+                <TableHead>
+                  <span className="sr-only">{UI_TEXT.actions[language]}</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {categories.length > 0 ? (
+                categories.map(category => (
+                  <TableRow key={category.id}>
+                    <TableCell className="font-medium">{language === 'ar' ? category.nameAr : category.name}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
+                          <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEdit(category)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDelete(category.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </ScrollArea>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={2} className="h-24 text-center">
+                    {UI_TEXT.noCategories[language]}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
       <CategoryDialog

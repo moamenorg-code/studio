@@ -4,7 +4,6 @@ import type { Purchase, Supplier, RawMaterial, Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import PurchaseDialog from './PurchaseDialog';
 import { Input } from '../ui/input';
 
@@ -79,7 +78,7 @@ const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers
 
   return (
     <>
-      <Card className='shadow-none border-none'>
+      <Card className='shadow-none border-none flex flex-col h-full'>
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -103,39 +102,37 @@ const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[calc(100vh-31rem)]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{UI_TEXT.invoiceId[language]}</TableHead>
-                  <TableHead>{UI_TEXT.supplier[language]}</TableHead>
-                  <TableHead>{UI_TEXT.date[language]}</TableHead>
-                  <TableHead className="text-end">{UI_TEXT.total[language]}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPurchases.length > 0 ? (
-                  filteredPurchases.map(purchase => (
-                    <TableRow key={purchase.id}>
-                      <TableCell className="font-medium">{purchase.id}</TableCell>
-                      <TableCell>{getSupplierName(purchase.supplierId)}</TableCell>
-                      <TableCell>
-                        {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US').format(purchase.createdAt)}
-                      </TableCell>
-                      <TableCell className="text-end">{purchase.total.toFixed(2)}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                      {UI_TEXT.noPurchases[language]}
+        <CardContent className="flex-1 overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{UI_TEXT.invoiceId[language]}</TableHead>
+                <TableHead>{UI_TEXT.supplier[language]}</TableHead>
+                <TableHead>{UI_TEXT.date[language]}</TableHead>
+                <TableHead className="text-end">{UI_TEXT.total[language]}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredPurchases.length > 0 ? (
+                filteredPurchases.map(purchase => (
+                  <TableRow key={purchase.id}>
+                    <TableCell className="font-medium">{purchase.id}</TableCell>
+                    <TableCell>{getSupplierName(purchase.supplierId)}</TableCell>
+                    <TableCell>
+                      {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US').format(purchase.createdAt)}
                     </TableCell>
+                    <TableCell className="text-end">{purchase.total.toFixed(2)}</TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </ScrollArea>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center">
+                    {UI_TEXT.noPurchases[language]}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
       <PurchaseDialog

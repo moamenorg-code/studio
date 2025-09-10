@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowLeft, Package, DollarSign, ArrowLeftRight, User, Phone, Percent } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Language = 'en' | 'ar';
 
@@ -35,7 +34,7 @@ interface RepDetailViewProps {
 
 const RepDetailView: React.FC<RepDetailViewProps> = ({ repData, onBack, language }) => {
   return (
-    <Card className="h-full">
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -48,7 +47,7 @@ const RepDetailView: React.FC<RepDetailViewProps> = ({ repData, onBack, language
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 flex flex-col">
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-3 mb-6">
           <Card>
@@ -100,45 +99,43 @@ const RepDetailView: React.FC<RepDetailViewProps> = ({ repData, onBack, language
          </div>
 
         {/* Sales Table */}
-        <Card>
+        <Card className="flex-1 flex flex-col">
           <CardHeader>
             <CardTitle>{UI_TEXT.salesHistory[language]}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[calc(100vh-40rem)]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{UI_TEXT.transactionId[language]}</TableHead>
-                    <TableHead>{UI_TEXT.customer[language]}</TableHead>
-                    <TableHead>{UI_TEXT.date[language]}</TableHead>
-                    <TableHead className="text-end">{UI_TEXT.total[language]}</TableHead>
-                    <TableHead className="text-end">{UI_TEXT.commission[language]}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {repData.sales.length > 0 ? (
-                    repData.sales.map((sale: Sale) => (
-                      <TableRow key={sale.id}>
-                        <TableCell className="font-medium">{sale.id}</TableCell>
-                        <TableCell>{sale.customer ? sale.customer.name : UI_TEXT.walkIn[language]}</TableCell>
-                        <TableCell>{new Date(sale.createdAt).toLocaleString(language === 'ar' ? 'ar-EG' : 'en-US')}</TableCell>
-                        <TableCell className="text-end">{sale.finalTotal.toFixed(2)}</TableCell>
-                        <TableCell className="text-end font-semibold text-primary">
-                          {(sale.finalTotal * (repData.commissionRate / 100)).toFixed(2)}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} className="h-24 text-center">
-                        {UI_TEXT.noSales[language]}
+          <CardContent className="flex-1 overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{UI_TEXT.transactionId[language]}</TableHead>
+                  <TableHead>{UI_TEXT.customer[language]}</TableHead>
+                  <TableHead>{UI_TEXT.date[language]}</TableHead>
+                  <TableHead className="text-end">{UI_TEXT.total[language]}</TableHead>
+                  <TableHead className="text-end">{UI_TEXT.commission[language]}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {repData.sales.length > 0 ? (
+                  repData.sales.map((sale: Sale) => (
+                    <TableRow key={sale.id}>
+                      <TableCell className="font-medium">{sale.id}</TableCell>
+                      <TableCell>{sale.customer ? sale.customer.name : UI_TEXT.walkIn[language]}</TableCell>
+                      <TableCell>{new Date(sale.createdAt).toLocaleString(language === 'ar' ? 'ar-EG' : 'en-US')}</TableCell>
+                      <TableCell className="text-end">{sale.finalTotal.toFixed(2)}</TableCell>
+                      <TableCell className="text-end font-semibold text-primary">
+                        {(sale.finalTotal * (repData.commissionRate / 100)).toFixed(2)}
                       </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </ScrollArea>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      {UI_TEXT.noSales[language]}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </CardContent>

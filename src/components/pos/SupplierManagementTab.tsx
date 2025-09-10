@@ -11,7 +11,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import SupplierDialog from './SupplierDialog';
 
 type Language = 'en' | 'ar';
@@ -66,7 +65,7 @@ const SupplierManagementTab: React.FC<SupplierManagementTabProps> = ({ suppliers
 
   return (
     <>
-      <Card className='shadow-none border-none'>
+      <Card className='shadow-none border-none flex flex-col h-full'>
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -79,53 +78,51 @@ const SupplierManagementTab: React.FC<SupplierManagementTabProps> = ({ suppliers
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[calc(100vh-28rem)]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{UI_TEXT.name[language]}</TableHead>
-                  <TableHead>{UI_TEXT.phone[language]}</TableHead>
-                  <TableHead className="hidden md:table-cell">{UI_TEXT.address[language]}</TableHead>
-                  <TableHead>
-                    <span className="sr-only">{UI_TEXT.actions[language]}</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {suppliers.length > 0 ? (
-                  suppliers.map(supplier => (
-                    <TableRow key={supplier.id}>
-                      <TableCell className="font-medium">{supplier.name}</TableCell>
-                      <TableCell dir="ltr">{supplier.phone}</TableCell>
-                      <TableCell className="hidden md:table-cell">{supplier.address}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
-                            <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEditSupplier(supplier)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteSupplier(supplier.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                      {UI_TEXT.noSuppliers[language]}
+        <CardContent className="flex-1 overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{UI_TEXT.name[language]}</TableHead>
+                <TableHead>{UI_TEXT.phone[language]}</TableHead>
+                <TableHead className="hidden md:table-cell">{UI_TEXT.address[language]}</TableHead>
+                <TableHead>
+                  <span className="sr-only">{UI_TEXT.actions[language]}</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {suppliers.length > 0 ? (
+                suppliers.map(supplier => (
+                  <TableRow key={supplier.id}>
+                    <TableCell className="font-medium">{supplier.name}</TableCell>
+                    <TableCell dir="ltr">{supplier.phone}</TableCell>
+                    <TableCell className="hidden md:table-cell">{supplier.address}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
+                          <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEditSupplier(supplier)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteSupplier(supplier.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </ScrollArea>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center">
+                    {UI_TEXT.noSuppliers[language]}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
       <SupplierDialog

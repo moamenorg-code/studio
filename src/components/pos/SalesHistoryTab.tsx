@@ -16,7 +16,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '../ui/scroll-area';
 import { Table as TableIcon, Package, Bike } from 'lucide-react';
 
 type Language = 'en' | 'ar';
@@ -69,60 +68,58 @@ const SalesHistoryTab: React.FC<SalesHistoryTabProps> = ({ sales, language }) =>
   };
 
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <CardTitle>{UI_TEXT.salesHistory[language]}</CardTitle>
         <CardDescription>{UI_TEXT.allTransactions[language]}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[calc(100vh-14rem)]">
-          <Table>
-            <TableHeader>
+      <CardContent className="flex-1 overflow-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{UI_TEXT.transactionId[language]}</TableHead>
+              <TableHead>{UI_TEXT.customer[language]}</TableHead>
+              <TableHead>{UI_TEXT.orderType[language]}</TableHead>
+              <TableHead>{UI_TEXT.date[language]}</TableHead>
+              <TableHead>{UI_TEXT.paymentMethod[language]}</TableHead>
+              <TableHead className="text-end">{UI_TEXT.total[language]}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sales.length === 0 ? (
               <TableRow>
-                <TableHead>{UI_TEXT.transactionId[language]}</TableHead>
-                <TableHead>{UI_TEXT.customer[language]}</TableHead>
-                <TableHead>{UI_TEXT.orderType[language]}</TableHead>
-                <TableHead>{UI_TEXT.date[language]}</TableHead>
-                <TableHead>{UI_TEXT.paymentMethod[language]}</TableHead>
-                <TableHead className="text-end">{UI_TEXT.total[language]}</TableHead>
+                <TableCell colSpan={6} className="h-24 text-center">
+                  {UI_TEXT.noSales[language]}
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sales.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    {UI_TEXT.noSales[language]}
+            ) : (
+              sales.map((sale) => (
+                <TableRow key={sale.id}>
+                  <TableCell className="font-medium">{sale.id}</TableCell>
+                  <TableCell>{sale.customer ? sale.customer.name : UI_TEXT.walkIn[language]}</TableCell>
+                  <TableCell>
+                    <OrderTypeBadge type={sale.orderType} orderId={sale.orderId} />
                   </TableCell>
+                  <TableCell>
+                    {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    }).format(sale.createdAt)}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={sale.paymentMethod === 'card' ? 'default' : 'secondary'}>
+                      {formatPaymentMethod(sale.paymentMethod)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-end">{sale.finalTotal.toFixed(2)}</TableCell>
                 </TableRow>
-              ) : (
-                sales.map((sale) => (
-                  <TableRow key={sale.id}>
-                    <TableCell className="font-medium">{sale.id}</TableCell>
-                    <TableCell>{sale.customer ? sale.customer.name : UI_TEXT.walkIn[language]}</TableCell>
-                    <TableCell>
-                      <OrderTypeBadge type={sale.orderType} orderId={sale.orderId} />
-                    </TableCell>
-                    <TableCell>
-                      {new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                      }).format(sale.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={sale.paymentMethod === 'card' ? 'default' : 'secondary'}>
-                        {formatPaymentMethod(sale.paymentMethod)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-end">{sale.finalTotal.toFixed(2)}</TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );

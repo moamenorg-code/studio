@@ -10,7 +10,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Popover,
   PopoverContent,
@@ -220,7 +219,7 @@ const DeliveryRepsTab: React.FC<DeliveryRepsTabProps> = ({ reps, onRepsChange, s
 
   return (
     <>
-      <Card>
+      <Card className="flex flex-col h-full">
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -284,7 +283,7 @@ const DeliveryRepsTab: React.FC<DeliveryRepsTabProps> = ({ reps, onRepsChange, s
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1 flex flex-col">
             <div className="grid gap-4 md:grid-cols-3 mb-6">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -314,7 +313,7 @@ const DeliveryRepsTab: React.FC<DeliveryRepsTabProps> = ({ reps, onRepsChange, s
                     </CardContent>
                 </Card>
             </div>
-          <ScrollArea className="h-[calc(100vh-32rem)]">
+          <div className="flex-1 overflow-auto">
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {repStats.length > 0 ? (
                   repStats.map(rep => (
@@ -333,7 +332,7 @@ const DeliveryRepsTab: React.FC<DeliveryRepsTabProps> = ({ reps, onRepsChange, s
                     </div>
                 )}
               </div>
-          </ScrollArea>
+          </div>
         </CardContent>
       </Card>
       <DeliveryRepDialog 

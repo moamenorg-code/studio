@@ -737,7 +737,7 @@ const handleHoldOrder = () => {
         firestoreStatus={firestoreStatus}
       />
       <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
-        <div className="flex items-center gap-4 shrink-0">
+        <div className="flex shrink-0 items-center gap-4">
            {showSearchBar() ? (
              <>
                 <div className="relative flex-1">

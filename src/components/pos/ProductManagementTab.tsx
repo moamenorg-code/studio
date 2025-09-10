@@ -11,7 +11,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import ProductDialog from './ProductDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '../ui/input';
@@ -126,7 +125,7 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, r
 
   return (
     <>
-      <Card className='shadow-none border-none'>
+      <Card className='shadow-none border-none flex flex-col h-full'>
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -159,87 +158,85 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, r
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[calc(100vh-31rem)]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{UI_TEXT.name[language]}</TableHead>
-                  <TableHead>{UI_TEXT.price[language]}</TableHead>
-                  <TableHead>{UI_TEXT.category[language]}</TableHead>
-                  <TableHead>{UI_TEXT.recipe[language]}</TableHead>
-                  <TableHead>
-                    <span className="sr-only">{UI_TEXT.actions[language]}</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.length > 0 ? (
-                  filteredProducts.map(product => (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-medium">{language === 'ar' ? product.nameAr : product.name}</TableCell>
-                      <TableCell>{product.price.toFixed(2)}</TableCell>
-                      <TableCell>
-                        <Select 
-                            onValueChange={(value) => handleCategoryChange(product.id, value)} 
-                            value={product.categoryId ? String(product.categoryId) : 'none'}
-                            dir={language === 'ar' ? 'rtl' : 'ltr'}
-                        >
-                            <SelectTrigger className="h-9 w-[150px]">
-                                <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">{UI_TEXT.noCategory[language]}</SelectItem>
-                                {categories.map(c => (
-                                    <SelectItem key={c.id} value={String(c.id)}>{language === 'ar' ? c.nameAr : c.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Select 
-                            onValueChange={(value) => handleRecipeChange(product.id, value)} 
-                            value={product.recipeId ? String(product.recipeId) : 'none'}
-                            dir={language === 'ar' ? 'rtl' : 'ltr'}
-                        >
-                            <SelectTrigger className="h-9 w-[150px]">
-                                <SelectValue placeholder={UI_TEXT.selectRecipe[language]} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">{UI_TEXT.noRecipe[language]}</SelectItem>
-                                {recipes.map(r => (
-                                    <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
-                            <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEditProduct(product)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      {UI_TEXT.noProducts[language]}
+        <CardContent className="flex-1 overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{UI_TEXT.name[language]}</TableHead>
+                <TableHead>{UI_TEXT.price[language]}</TableHead>
+                <TableHead>{UI_TEXT.category[language]}</TableHead>
+                <TableHead>{UI_TEXT.recipe[language]}</TableHead>
+                <TableHead>
+                  <span className="sr-only">{UI_TEXT.actions[language]}</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map(product => (
+                  <TableRow key={product.id}>
+                    <TableCell className="font-medium">{language === 'ar' ? product.nameAr : product.name}</TableCell>
+                    <TableCell>{product.price.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <Select 
+                          onValueChange={(value) => handleCategoryChange(product.id, value)} 
+                          value={product.categoryId ? String(product.categoryId) : 'none'}
+                          dir={language === 'ar' ? 'rtl' : 'ltr'}
+                      >
+                          <SelectTrigger className="h-9 w-[150px]">
+                              <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
+                          </SelectTrigger>
+                          <SelectContent>
+                              <SelectItem value="none">{UI_TEXT.noCategory[language]}</SelectItem>
+                              {categories.map(c => (
+                                  <SelectItem key={c.id} value={String(c.id)}>{language === 'ar' ? c.nameAr : c.name}</SelectItem>
+                              ))}
+                          </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Select 
+                          onValueChange={(value) => handleRecipeChange(product.id, value)} 
+                          value={product.recipeId ? String(product.recipeId) : 'none'}
+                          dir={language === 'ar' ? 'rtl' : 'ltr'}
+                      >
+                          <SelectTrigger className="h-9 w-[150px]">
+                              <SelectValue placeholder={UI_TEXT.selectRecipe[language]} />
+                          </SelectTrigger>
+                          <SelectContent>
+                              <SelectItem value="none">{UI_TEXT.noRecipe[language]}</SelectItem>
+                              {recipes.map(r => (
+                                  <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>
+                              ))}
+                          </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align={language === 'ar' ? 'start' : 'end'}>
+                          <DropdownMenuLabel>{UI_TEXT.actions[language]}</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEditProduct(product)}>{UI_TEXT.edit[language]}</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)} className="text-destructive">{UI_TEXT.delete[language]}</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </ScrollArea>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center">
+                    {UI_TEXT.noProducts[language]}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
       <ProductDialog 
