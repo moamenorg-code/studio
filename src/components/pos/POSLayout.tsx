@@ -31,6 +31,7 @@ import BarcodeScanner from './BarcodeScanner';
 import { customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles, purchases as initialPurchases, sales as initialSales, products as initialProducts } from "@/lib/data";
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '../ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 // Helper function moved outside the component to prevent re-creation on re-renders.
 const hasPermission = (permission: Permission, user: User | null, roles: Role[]): boolean => {
@@ -737,9 +738,10 @@ const handleHoldOrder = () => {
         firestoreStatus={firestoreStatus}
       />
       <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
-        <div className="flex shrink-0 items-center gap-4">
+        <div className="flex flex-none items-center gap-4">
            {showSearchBar() ? (
-             <>
+            <TooltipProvider>
+             <div className="flex flex-1 items-center gap-2">
                 <div className="relative flex-1">
                     <Search className={`absolute ${language === 'ar' ? 'right-10' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
                     <Input
@@ -763,7 +765,7 @@ const handleHoldOrder = () => {
                   value={selectedCategoryId}
                   dir={language === 'ar' ? 'rtl' : 'ltr'}
                 >
-                    <SelectTrigger className="w-auto sm:w-[200px]">
+                    <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
                     </SelectTrigger>
                     <SelectContent>
@@ -775,11 +777,18 @@ const handleHoldOrder = () => {
                       </ScrollArea>
                     </SelectContent>
                 </Select>
-                 <Button variant="outline" onClick={() => setActiveOrder(null)}>
-                    <RefreshCcw className="w-4 h-4 me-2" />
-                    {UI_TEXT.switchOrder[language]}
-                 </Button>
-             </>
+                 <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="outline" size="icon" onClick={() => setActiveOrder(null)}>
+                            <RefreshCcw className="w-4 h-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{UI_TEXT.switchOrder[language]}</p>
+                    </TooltipContent>
+                 </Tooltip>
+             </div>
+             </TooltipProvider>
            ) : (
             <h1 className="text-xl font-semibold flex-1">
               {UI_TEXT[VIEW_OPTIONS.find(v => v.value === activeView)?.label || 'unauthorized']?.[language]}
