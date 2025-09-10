@@ -24,11 +24,12 @@ const UI_TEXT = {
   name: { en: 'Name', ar: 'الاسم' },
   stock: { en: 'Stock', ar: 'الكمية المتاحة' },
   unit: { en: 'Unit', ar: 'الوحدة' },
+  barcode: { en: 'Barcode', ar: 'الباركود' },
   actions: { en: 'Actions', ar: 'الإجراءات' },
   edit: { en: 'Edit', ar: 'تعديل' },
   delete: { en: 'Delete', ar: 'حذف' },
   noRawMaterials: { en: 'No raw materials found.', ar: 'لم يتم العثور على مواد خام.' },
-  searchPlaceholder: { en: 'Search by name...', ar: 'ابحث بالاسم...' },
+  searchPlaceholder: { en: 'Search by name or barcode...', ar: 'ابحث بالاسم أو الباركود...' },
 };
 
 interface InventoryManagementTabProps {
@@ -71,7 +72,8 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
     const lowercasedQuery = searchQuery.toLowerCase();
     return rawMaterials.filter(material => 
       material.name.toLowerCase().includes(lowercasedQuery) ||
-      material.nameAr.toLowerCase().includes(lowercasedQuery)
+      material.nameAr.toLowerCase().includes(lowercasedQuery) ||
+      (material.barcode && material.barcode.includes(lowercasedQuery))
     );
   }, [rawMaterials, searchQuery]);
 
@@ -109,6 +111,7 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
                   <TableHead>{UI_TEXT.name[language]}</TableHead>
                   <TableHead>{UI_TEXT.stock[language]}</TableHead>
                   <TableHead>{UI_TEXT.unit[language]}</TableHead>
+                  <TableHead>{UI_TEXT.barcode[language]}</TableHead>
                   <TableHead>
                     <span className="sr-only">{UI_TEXT.actions[language]}</span>
                   </TableHead>
@@ -121,6 +124,7 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
                       <TableCell className="font-medium">{language === 'ar' ? material.nameAr : material.name}</TableCell>
                       <TableCell>{material.stock}</TableCell>
                       <TableCell>{material.unit}</TableCell>
+                      <TableCell dir="ltr">{material.barcode || '-'}</TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -140,7 +144,7 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       {UI_TEXT.noRawMaterials[language]}
                     </TableCell>
                   </TableRow>

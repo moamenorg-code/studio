@@ -22,6 +22,7 @@ const UI_TEXT = {
   nameAr: { en: 'Name (Arabic)', ar: 'الاسم (العربية)' },
   stock: { en: 'Stock', ar: 'الكمية' },
   unit: { en: 'Unit', ar: 'الوحدة' },
+  barcode: { en: 'Barcode', ar: 'الباركود' },
   cancel: { en: 'Cancel', ar: 'إلغاء' },
   save: { en: 'Save', ar: 'حفظ' },
 };
@@ -47,6 +48,7 @@ const RawMaterialDialog: React.FC<RawMaterialDialogProps> = ({ isOpen, onOpenCha
             nameAr: '',
             stock: 0,
             unit: '',
+            barcode: '',
           });
         }
     }
@@ -93,6 +95,10 @@ const RawMaterialDialog: React.FC<RawMaterialDialogProps> = ({ isOpen, onOpenCha
                 <Input id="unit" name="unit" value={formData.unit || ''} onChange={handleChange} />
             </div>
           </div>
+           <div className="space-y-2">
+                <Label htmlFor="barcode">{UI_TEXT.barcode[language]}</Label>
+                <Input id="barcode" name="barcode" value={formData.barcode || ''} onChange={handleChange} dir="ltr" />
+            </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>{UI_TEXT.cancel[language]}</Button>
