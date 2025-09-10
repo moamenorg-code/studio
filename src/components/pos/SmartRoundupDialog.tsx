@@ -36,7 +36,7 @@ interface SmartRoundupDialogProps {
 
 function SubmitButton({ language, isPending }: { language: Language, isPending: boolean }) {
   return (
-    <Button type="submit" disabled={isPending} className="w-full">
+    <Button type="submit" disabled={true} className="w-full">
       {isPending ? (
         <>
           <Sparkles className={language === 'ar' ? "ml-2 h-4 w-4 animate-spin" : "mr-2 h-4 w-4 animate-spin"} />
@@ -78,7 +78,7 @@ const SmartRoundupDialog: React.FC<SmartRoundupDialogProps> = ({ isOpen, onOpenC
         <form ref={formRef} action={formAction} className="space-y-4">
           <div>
             <Label htmlFor="price">{UI_TEXT.originalPrice[language]}</Label>
-            <Input id="price" name="price" type="number" step="0.01" required dir="ltr" />
+            <Input id="price" name="price" type="number" step="0.01" required dir="ltr" disabled={true} />
             {localState?.errors?.price && (
               <p className="mt-1 text-sm text-destructive">{localState.errors.price[0]}</p>
             )}
@@ -99,7 +99,7 @@ const SmartRoundupDialog: React.FC<SmartRoundupDialogProps> = ({ isOpen, onOpenC
           </div>
         )}
         
-        {localState?.message && !localState.result && localState.message !== 'Success' &&(
+        {localState?.message && (
              <p className="mt-1 text-sm text-destructive">{localState.message}</p>
         )}
 
