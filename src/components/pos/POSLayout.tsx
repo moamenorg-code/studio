@@ -617,6 +617,7 @@ const handleHoldOrder = () => {
             purchases={purchases}
             expenses={expenses}
             suppliers={suppliers}
+            users={users}
             language={language}
           />
         );
