@@ -742,7 +742,7 @@ const handleHoldOrder = () => {
            {showSearchBar() ? (
             <TooltipProvider>
              <div className="flex w-full items-center gap-2">
-                <div className="relative flex-1">
+                <div className="relative w-full">
                     <Search className={`absolute ${language === 'ar' ? 'right-10' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
                     <Input
                     placeholder={UI_TEXT.searchPlaceholder[language]}
@@ -765,7 +765,7 @@ const handleHoldOrder = () => {
                   value={selectedCategoryId}
                   dir={language === 'ar' ? 'rtl' : 'ltr'}
                 >
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-[250px]">
                         <SelectValue placeholder={UI_TEXT.selectCategory[language]} />
                     </SelectTrigger>
                     <SelectContent>
