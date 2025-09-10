@@ -11,12 +11,12 @@ import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
 import UserManagement from './UserManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserCog, Store, Cloud, HardDrive, DatabaseZap } from 'lucide-react';
+import { UserCog, Store, Cloud, HardDrive, DatabaseZap, Palette } from 'lucide-react';
 import BackupRestoreTab from './BackupRestoreTab';
 import { db } from '@/lib/firebase';
 import { writeBatch, doc, collection } from 'firebase/firestore';
 import { products as initialProducts, categories as initialCategories, rawMaterials as initialRawMaterials, recipes as initialRecipes, roles as initialRoles, users as initialUsers, customers as initialCustomers, deliveryReps as initialDeliveryReps, suppliers as initialSuppliers, tables as initialTables, sales as initialSales, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, purchases as initialPurchases } from '@/lib/data';
-
+import ThemeSwitcher from './ThemeSwitcher';
 
 type Language = 'en' | 'ar';
 
@@ -52,6 +52,7 @@ const UI_TEXT = {
   saveSuccess: { en: 'Settings saved successfully!', ar: 'تم حفظ الإعدادات بنجاح!' },
   general: { en: 'General', ar: 'عام' },
   backupRestore: { en: 'Backup & Restore', ar: 'النسخ الاحتياطي والاستعادة' },
+  appearance: { en: 'Appearance', ar: 'المظهر' },
   seedSuccess: { en: 'Database seeded successfully!', ar: 'تمت تهيئة قاعدة البيانات بنجاح!' },
   seedError: { en: 'Error seeding database', ar: 'خطأ في تهيئة قاعدة البيانات' },
 };
@@ -298,11 +299,15 @@ const SettingsTab: React.FC<SettingsTabProps> = (props) => {
          <Tabs defaultValue="general" dir={language === 'ar' ? 'rtl' : 'ltr'}>
             <TabsList className="flex flex-wrap h-auto">
                 <TabsTrigger value="general"><Store className="w-4 h-4 me-2"/>{UI_TEXT.general[language]}</TabsTrigger>
+                <TabsTrigger value="appearance"><Palette className="w-4 h-4 me-2"/>{UI_TEXT.appearance[language]}</TabsTrigger>
                 <TabsTrigger value="users"><UserCog className="w-4 h-4 me-2"/>{UI_TEXT.usersAndRoles[language]}</TabsTrigger>
                 <TabsTrigger value="backup"><HardDrive className="w-4 h-4 me-2"/>{UI_TEXT.backupRestore[language]}</TabsTrigger>
             </TabsList>
             <TabsContent value="general" className="pt-4">
                 <GeneralSettingsTab {...props} />
+            </TabsContent>
+            <TabsContent value="appearance" className="pt-4">
+                <ThemeSwitcher language={language} />
             </TabsContent>
             <TabsContent value="users" className="pt-4">
                 <UserManagement 
