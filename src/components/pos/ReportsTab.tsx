@@ -3,10 +3,15 @@ import type { Sale, Purchase, Expense, Language, Supplier, User } from '@/lib/ty
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, ShoppingCart, Truck, Percent, TrendingUp, TrendingDown, DollarSign, ChevronsUpDown, Table as TableIcon, Bike, Package, User as UserIcon } from 'lucide-react';
+import { FileText, ShoppingCart, Truck, Percent, TrendingUp, TrendingDown, DollarSign, ChevronsUpDown, Table as TableIcon, Bike, Package, User as UserIcon, Calendar as CalendarIcon } from 'lucide-react';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
+import { DateRange } from 'react-day-picker';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { Calendar } from '../ui/calendar';
 
 
 type Language = 'en' | 'ar';
@@ -50,6 +55,7 @@ const UI_TEXT: Record<string, Record<Language, string>> = {
     delivery: { en: 'Delivery', ar: 'توصيل' },
     user: { en: 'User', ar: 'الموظف' },
     unknownUser: { en: 'Unknown User', ar: 'موظف غير معروف' },
+    pickDate: { en: 'Pick a date range', ar: 'اختر نطاقًا زمنيًا' },
 };
 
 const OrderTypeBadge: React.FC<{ type: Sale['orderType'], orderId: number, language: Language }> = ({ type, orderId, language }) => {
@@ -235,18 +241,82 @@ interface ReportsTabProps {
 
 const ReportsTab: React.FC<ReportsTabProps> = ({ sales, purchases, expenses, suppliers, users, language }) => {
     const [isSummaryOpen, setIsSummaryOpen] = React.useState(true);
-    const totalSales = React.useMemo(() => sales.reduce((sum, sale) => sum + sale.finalTotal, 0), [sales]);
-    const totalPurchases = React.useMemo(() => purchases.reduce((sum, purchase) => sum + purchase.total, 0), [purchases]);
-    const totalExpenses = React.useMemo(() => expenses.reduce((sum, expense) => sum + expense.amount, 0), [expenses]);
-    const totalDiscounts = React.useMemo(() => sales.reduce((sum, sale) => sum + sale.totalDiscountValue, 0), [sales]);
+    const [date, setDate] = React.useState<DateRange | undefined>()
+
+    const { filteredSales, filteredPurchases, filteredExpenses } = React.useMemo(() => {
+        if (!date || !date.from) {
+            return { filteredSales: sales, filteredPurchases: purchases, filteredExpenses: expenses };
+        }
+
+        const from = date.from;
+        const to = date.to ? new Date(date.to.setHours(23, 59, 59, 999)) : new Date(from.setHours(23, 59, 59, 999));
+
+        const fs = sales.filter(s => {
+            const saleDate = new Date(s.createdAt);
+            return saleDate >= from && saleDate <= to;
+        });
+
+        const fp = purchases.filter(p => {
+            const purchaseDate = new Date(p.createdAt);
+            return purchaseDate >= from && purchaseDate <= to;
+        });
+
+        const fe = expenses.filter(e => {
+            const expenseDate = new Date(e.createdAt);
+            return expenseDate >= from && expenseDate <= to;
+        });
+
+        return { filteredSales: fs, filteredPurchases: fp, filteredExpenses: fe };
+    }, [date, sales, purchases, expenses]);
+
+
+    const totalSales = React.useMemo(() => filteredSales.reduce((sum, sale) => sum + sale.finalTotal, 0), [filteredSales]);
+    const totalPurchases = React.useMemo(() => filteredPurchases.reduce((sum, purchase) => sum + purchase.total, 0), [filteredPurchases]);
+    const totalExpenses = React.useMemo(() => filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0), [filteredExpenses]);
+    const totalDiscounts = React.useMemo(() => filteredSales.reduce((sum, sale) => sum + sale.totalDiscountValue, 0), [filteredSales]);
     const netProfit = totalSales - totalExpenses - totalPurchases;
 
     return (
         <div className='space-y-6 flex flex-col'>
             <Card>
-                <CardHeader>
-                    <CardTitle>{UI_TEXT.reports[language]}</CardTitle>
-                    <CardDescription>{UI_TEXT.detailedReports[language]}</CardDescription>
+                <CardHeader className="flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>{UI_TEXT.reports[language]}</CardTitle>
+                        <CardDescription>{UI_TEXT.detailedReports[language]}</CardDescription>
+                    </div>
+                     <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                id="date"
+                                variant={"outline"}
+                                className={cn("w-[300px] justify-start text-left font-normal", !date && "text-muted-foreground")}
+                            >
+                                <CalendarIcon className="me-2 h-4 w-4" />
+                                {date?.from ? (
+                                date.to ? (
+                                    <>
+                                    {format(date.from, "LLL dd, y")} -{" "}
+                                    {format(date.to, "LLL dd, y")}
+                                    </>
+                                ) : (
+                                    format(date.from, "LLL dd, y")
+                                )
+                                ) : (
+                                <span>{UI_TEXT.pickDate[language]}</span>
+                                )}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="end">
+                            <Calendar
+                                initialFocus
+                                mode="range"
+                                defaultMonth={date?.from}
+                                selected={date}
+                                onSelect={setDate}
+                                numberOfMonths={2}
+                            />
+                        </PopoverContent>
+                    </Popover>
                 </CardHeader>
                 <CardContent>
                     <Collapsible open={isSummaryOpen} onOpenChange={setIsSummaryOpen}>
@@ -312,16 +382,16 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ sales, purchases, expenses, sup
                 </TabsList>
                 <div className="mt-4 rounded-md border flex-1 overflow-auto">
                     <TabsContent value="sales" className="m-0 h-full">
-                        <SalesReport sales={sales} users={users} language={language} />
+                        <SalesReport sales={filteredSales} users={users} language={language} />
                     </TabsContent>
                     <TabsContent value="purchases" className="m-0 h-full">
-                        <PurchasesReport purchases={purchases} suppliers={suppliers} language={language} />
+                        <PurchasesReport purchases={filteredPurchases} suppliers={suppliers} language={language} />
                     </TabsContent>
                       <TabsContent value="expenses" className="m-0 h-full">
-                        <ExpensesReport expenses={expenses} language={language} />
+                        <ExpensesReport expenses={filteredExpenses} language={language} />
                     </TabsContent>
                       <TabsContent value="discounts" className="m-0 h-full">
-                        <DiscountsReport sales={sales} language={language} />
+                        <DiscountsReport sales={filteredSales} language={language} />
                     </TabsContent>
                 </div>
             </Tabs>
