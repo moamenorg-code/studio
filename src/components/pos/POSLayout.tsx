@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
-import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, AppData, FirestoreStatus, Permission } from '@/lib/types';
+import { collection, onSnapshot, DocumentData, QueryDocumentSnapshot, writeBatch, doc } from 'firebase/firestore';
+import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, AppData, FirestoreStatus, Permission, Purchase } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -28,7 +28,7 @@ import HeldOrdersDialog from './HeldOrdersDialog';
 import SplitBillDialog from './SplitBillDialog';
 import LoginScreen from './LoginScreen';
 import BarcodeScanner from './BarcodeScanner';
-import { customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles, purchases as initialPurchases, sales as initialSales } from "@/lib/data";
+import { customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles, purchases as initialPurchases, sales as initialSales, products as initialProducts } from "@/lib/data";
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '../ui/button';
 
@@ -44,7 +44,7 @@ const hasPermission = (permission: Permission, user: User | null, roles: Role[])
 const POSLayout: React.FC = () => {
   const [language, setLanguage] = React.useState<Language>("ar");
   const [sales, setSales] = React.useState<Sale[]>(initialSales);
-  const [products, setProducts] = React.useState<Product[]>([]);
+  const [products, setProducts] = React.useState<Product[]>(initialProducts);
   const [customers, setCustomers] = React.useState<Customer[]>(initialCustomers);
   const [deliveryReps, setDeliveryReps] = React.useState<DeliveryRep[]>(initialDeliveryReps);
   const [suppliers, setSuppliers] = React.useState<Supplier[]>(initialSuppliers);
@@ -197,8 +197,10 @@ const POSLayout: React.FC = () => {
     document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
   }, [language]);
   
-    const handleSetActiveView = React.useCallback((view: ActiveView) => {
+  const handleSetActiveView = React.useCallback((view: ActiveView) => {
     const viewOption = VIEW_OPTIONS.find(v => v.value === view);
+    if (!currentUser) return; // Should not happen if logged in
+    
     if (viewOption?.permission) {
       if (hasPermission(viewOption.permission, currentUser, roles)) {
         setActiveView(view);
@@ -515,6 +517,13 @@ const handleHoldOrder = () => {
     setBarcodeScannerOpen(true);
   };
 
+  const handleBarcodeDetect = (barcode: string) => {
+    if (barcodeScannerCallback) {
+        barcodeScannerCallback(barcode);
+    }
+    setBarcodeScannerOpen(false);
+  }
+
   const handleRestore = (data: AppData) => {
       setProducts(data.products);
       setCategories(data.categories);
@@ -679,7 +688,7 @@ const handleHoldOrder = () => {
                   users={users}
                   onUsersChange={handleUsersUpdate}
                   roles={roles}
-                  onRolesChange={handleRolesChange}
+                  onRolesChange={handleRolesUpdate}
                   language={language}
                   getAppData={getAppData}
                   onRestore={handleRestore}
