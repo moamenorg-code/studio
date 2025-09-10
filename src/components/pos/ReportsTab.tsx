@@ -4,7 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, ShoppingCart, Truck, Percent, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { FileText, ShoppingCart, Truck, Percent, TrendingUp, TrendingDown, DollarSign, ChevronsUpDown } from 'lucide-react';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
+
 
 type Language = 'en' | 'ar';
 
@@ -33,6 +37,8 @@ const UI_TEXT: Record<string, Record<Language, string>> = {
     totalExpenses: { en: 'Total Expenses', ar: 'إجمالي المصروفات' },
     netProfit: { en: 'Net Profit', ar: 'صافي الربح' },
     totalDiscounts: { en: 'Total Discounts', ar: 'إجمالي الخصومات' },
+    summary: { en: 'Summary', ar: 'الملخص' },
+    toggleSummary: { en: 'Toggle Summary', ar: 'إظهار/إخفاء الملخص' },
 };
 
 const SalesReport: React.FC<{ sales: Sale[], language: Language }> = ({ sales, language }) => (
@@ -159,6 +165,7 @@ interface ReportsTabProps {
 }
 
 const ReportsTab: React.FC<ReportsTabProps> = ({ sales, purchases, expenses, suppliers, language }) => {
+    const [isSummaryOpen, setIsSummaryOpen] = React.useState(true);
     const totalSales = React.useMemo(() => sales.reduce((sum, sale) => sum + sale.finalTotal, 0), [sales]);
     const totalExpenses = React.useMemo(() => expenses.reduce((sum, expense) => sum + expense.amount, 0), [expenses]);
     const totalPurchases = React.useMemo(() => purchases.reduce((sum, purchase) => sum + purchase.total, 0), [purchases]);
@@ -172,45 +179,58 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ sales, purchases, expenses, sup
                     <CardTitle>{UI_TEXT.reports[language]}</CardTitle>
                     <CardDescription>{UI_TEXT.detailedReports[language]}</CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">{UI_TEXT.totalSales[language]}</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-muted-foreground text-green-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{totalSales.toFixed(2)}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">{UI_TEXT.totalExpenses[language]}</CardTitle>
-                            <TrendingDown className="h-4 w-4 text-muted-foreground text-red-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{totalExpenses.toFixed(2)}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">{UI_TEXT.netProfit[language]}</CardTitle>
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {netProfit.toFixed(2)}
+                <CardContent>
+                    <Collapsible open={isSummaryOpen} onOpenChange={setIsSummaryOpen}>
+                        <CollapsibleTrigger asChild>
+                            <Button variant="ghost" className="w-full justify-between mb-4 text-lg font-semibold">
+                                {UI_TEXT.summary[language]}
+                                <ChevronsUpDown className="h-4 w-4" />
+                                <span className="sr-only">{UI_TEXT.toggleSummary[language]}</span>
+                            </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up overflow-hidden">
+                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">{UI_TEXT.totalSales[language]}</CardTitle>
+                                        <TrendingUp className="h-4 w-4 text-muted-foreground text-green-500" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{totalSales.toFixed(2)}</div>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">{UI_TEXT.totalExpenses[language]}</CardTitle>
+                                        <TrendingDown className="h-4 w-4 text-muted-foreground text-red-500" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{totalExpenses.toFixed(2)}</div>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">{UI_TEXT.netProfit[language]}</CardTitle>
+                                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {netProfit.toFixed(2)}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">{UI_TEXT.totalDiscounts[language]}</CardTitle>
+                                        <Percent className="h-4 w-4 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{totalDiscounts.toFixed(2)}</div>
+                                    </CardContent>
+                                </Card>
                             </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">{UI_TEXT.totalDiscounts[language]}</CardTitle>
-                            <Percent className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{totalDiscounts.toFixed(2)}</div>
-                        </CardContent>
-                    </Card>
+                        </CollapsibleContent>
+                    </Collapsible>
                 </CardContent>
             </Card>
 
@@ -222,7 +242,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ sales, purchases, expenses, sup
                     <TabsTrigger value="discounts"><Percent className="w-4 h-4 me-2" />{UI_TEXT.discounts[language]}</TabsTrigger>
                 </TabsList>
                 <div className="mt-4 rounded-md border">
-                    <ScrollArea className="h-[calc(100vh-32rem)]">
+                    <ScrollArea className={cn("transition-all duration-300", isSummaryOpen ? "h-[calc(100vh-42rem)]" : "h-[calc(100vh-28rem)]")}>
                         <TabsContent value="sales" className="m-0">
                             <SalesReport sales={sales} language={language} />
                         </TabsContent>
