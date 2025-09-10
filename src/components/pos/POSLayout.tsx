@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
-import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, AppData, FirestoreStatus, Purchase, Permission } from '@/lib/types';
+import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, AppData, FirestoreStatus, Permission } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -194,22 +194,35 @@ const POSLayout: React.FC = () => {
     return userRole.permissions[permission] || false;
   }, [currentUser, roles]);
 
-  const handleSetActiveView = React.useCallback((view: ActiveView) => {
+  const handleSetActiveView = (view: ActiveView) => {
     const viewOption = VIEW_OPTIONS.find(v => v.value === view);
-    if (!currentUser || (viewOption?.permission && !hasPermission(viewOption.permission, currentUser))) {
-        setActiveView('unauthorized');
-    } else {
+    if (!viewOption) return;
+
+    if (!viewOption.permission || hasPermission(viewOption.permission)) {
         setActiveView(view);
+    } else {
+        setActiveView('unauthorized');
     }
-  }, [currentUser, hasPermission]);
+  };
+  
+  React.useEffect(() => {
+    if(currentUser) {
+        const viewOption = VIEW_OPTIONS.find(v => v.value === activeView);
+        if (viewOption?.permission && !hasPermission(viewOption.permission, currentUser)) {
+            setActiveView('unauthorized');
+        }
+    }
+  }, [currentUser, roles, activeView, hasPermission]);
 
 
   const handleLogin = React.useCallback((pin: string) => {
     const user = users.find(u => u.pin === pin);
     if (user) {
       setCurrentUser(user);
-      const shiftsViewPermitted = hasPermission('access_shifts', user);
-      setActiveView(shiftsViewPermitted ? 'shifts' : 'sales');
+      // Determine initial view based on permissions
+      const userRole = roles.find(r => r.id === user.roleId);
+      const canAccessShifts = userRole?.permissions['access_shifts'];
+      setActiveView(canAccessShifts ? 'shifts' : 'sales');
     } else {
       toast({
         title: UI_TEXT.loginFailed[language],
@@ -217,7 +230,7 @@ const POSLayout: React.FC = () => {
         variant: "destructive",
       });
     }
-  }, [users, hasPermission, language, toast]);
+  }, [users, roles, language, toast]);
   
   const handleLogout = () => {
       setCurrentUser(null);
