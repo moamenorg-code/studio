@@ -54,6 +54,7 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, r
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const [editingProduct, setEditingProduct] = React.useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [selectedRowId, setSelectedRowId] = React.useState<string | null>(null);
   const { toast } = useToast();
 
   const handleAddProduct = () => {
@@ -174,7 +175,11 @@ const ProductManagementTab: React.FC<ProductManagementTabProps> = ({ products, r
             <TableBody>
               {filteredProducts.length > 0 ? (
                 filteredProducts.map(product => (
-                  <TableRow key={product.id}>
+                  <TableRow 
+                    key={product.id}
+                    data-state={selectedRowId === product.id ? 'selected' : 'none'}
+                    onClick={() => setSelectedRowId(product.id)}
+                  >
                     <TableCell className="font-medium">{language === 'ar' ? product.nameAr : product.name}</TableCell>
                     <TableCell>{product.price.toFixed(2)}</TableCell>
                     <TableCell>

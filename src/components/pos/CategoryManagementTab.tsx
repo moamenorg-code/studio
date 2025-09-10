@@ -35,6 +35,7 @@ interface CategoryManagementTabProps {
 const CategoryManagementTab: React.FC<CategoryManagementTabProps> = ({ categories, onCategoriesChange, language }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const [editingCategory, setEditingCategory] = React.useState<Category | null>(null);
+  const [selectedRowId, setSelectedRowId] = React.useState<number | null>(null);
 
   const handleAdd = () => {
     setEditingCategory(null);
@@ -88,7 +89,11 @@ const CategoryManagementTab: React.FC<CategoryManagementTabProps> = ({ categorie
             <TableBody>
               {categories.length > 0 ? (
                 categories.map(category => (
-                  <TableRow key={category.id}>
+                  <TableRow 
+                    key={category.id}
+                    data-state={selectedRowId === category.id ? 'selected' : 'none'}
+                    onClick={() => setSelectedRowId(category.id)}
+                  >
                     <TableCell className="font-medium">{language === 'ar' ? category.nameAr : category.name}</TableCell>
                     <TableCell>
                       <DropdownMenu>

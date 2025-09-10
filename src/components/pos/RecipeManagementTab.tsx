@@ -38,6 +38,7 @@ interface RecipeManagementTabProps {
 const RecipeManagementTab: React.FC<RecipeManagementTabProps> = ({ recipes, onRecipesChange, rawMaterials, language }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const [editingRecipe, setEditingRecipe] = React.useState<Recipe | null>(null);
+  const [selectedRowId, setSelectedRowId] = React.useState<number | null>(null);
 
   const handleAddRecipe = () => {
     setEditingRecipe(null);
@@ -98,7 +99,11 @@ const RecipeManagementTab: React.FC<RecipeManagementTabProps> = ({ recipes, onRe
             <TableBody>
               {recipes.length > 0 ? (
                 recipes.map(recipe => (
-                  <TableRow key={recipe.id}>
+                  <TableRow 
+                    key={recipe.id}
+                    data-state={selectedRowId === recipe.id ? 'selected' : 'none'}
+                    onClick={() => setSelectedRowId(recipe.id)}
+                  >
                     <TableCell className="font-medium">{recipe.name}</TableCell>
                     <TableCell>
                         <div className="flex flex-wrap gap-1">
