@@ -78,6 +78,8 @@ const UserManagement: React.FC<UserManagementProps> = ({
   const [isRoleDialogOpen, setRoleDialogOpen] = React.useState(false);
   const [editingUser, setEditingUser] = React.useState<User | null>(null);
   const [editingRole, setEditingRole] = React.useState<Role | null>(null);
+  const [selectedUserRowId, setSelectedUserRowId] = React.useState<number | null>(null);
+  const [selectedRoleRowId, setSelectedRoleRowId] = React.useState<number | null>(null);
   const { toast } = useToast();
 
   const getRoleName = (roleId: number) => {
@@ -168,7 +170,11 @@ const UserManagement: React.FC<UserManagementProps> = ({
                 <TableBody>
                 {users.length > 0 ? (
                     users.map(user => (
-                    <TableRow key={user.id}>
+                    <TableRow 
+                      key={user.id}
+                      data-state={selectedUserRowId === user.id ? 'selected' : 'none'}
+                      onClick={() => setSelectedUserRowId(user.id)}
+                    >
                         <TableCell className="font-medium">{user.name}</TableCell>
                         <TableCell><Badge variant="secondary">{getRoleName(user.roleId)}</Badge></TableCell>
                         <TableCell>****</TableCell>
@@ -235,7 +241,11 @@ const UserManagement: React.FC<UserManagementProps> = ({
                 <TableBody>
                 {roles.length > 0 ? (
                     roles.map(role => (
-                    <TableRow key={role.id}>
+                    <TableRow 
+                      key={role.id}
+                      data-state={selectedRoleRowId === role.id ? 'selected' : 'none'}
+                      onClick={() => setSelectedRoleRowId(role.id)}
+                    >
                         <TableCell className="font-medium">{role.name}</TableCell>
                         <TableCell>{Object.values(role.permissions).filter(Boolean).length}</TableCell>
                         <TableCell>

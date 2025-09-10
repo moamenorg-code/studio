@@ -35,6 +35,7 @@ interface PurchaseManagementTabProps {
 const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers, rawMaterials, onRawMaterialsChange, language, purchases, onPurchasesChange, onOpenBarcodeScanner, products }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [selectedRowId, setSelectedRowId] = React.useState<string | null>(null);
 
   const handleAddPurchase = () => {
     setDialogOpen(true);
@@ -115,7 +116,11 @@ const PurchaseManagementTab: React.FC<PurchaseManagementTabProps> = ({ suppliers
             <TableBody>
               {filteredPurchases.length > 0 ? (
                 filteredPurchases.map(purchase => (
-                  <TableRow key={purchase.id}>
+                  <TableRow 
+                    key={purchase.id}
+                    data-state={selectedRowId === purchase.id ? 'selected' : 'none'}
+                    onClick={() => setSelectedRowId(purchase.id)}
+                  >
                     <TableCell className="font-medium">{purchase.id}</TableCell>
                     <TableCell>{getSupplierName(purchase.supplierId)}</TableCell>
                     <TableCell>

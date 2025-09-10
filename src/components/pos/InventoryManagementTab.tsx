@@ -55,6 +55,7 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filter, setFilter] = React.useState('all');
   const [isSummaryOpen, setIsSummaryOpen] = React.useState(true);
+  const [selectedRowId, setSelectedRowId] = React.useState<number | null>(null);
 
   const handleAdd = () => {
     setEditingRawMaterial(null);
@@ -204,7 +205,11 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
                   filteredRawMaterials.map(material => {
                     const isLowStock = material.stock <= material.lowStockThreshold;
                     return (
-                        <TableRow key={material.id} className={cn(isLowStock && "bg-destructive/10 hover:bg-destructive/20")}>
+                        <TableRow 
+                          key={material.id}
+                          data-state={selectedRowId === material.id ? 'selected' : 'none'}
+                          onClick={() => setSelectedRowId(material.id)}
+                        >
                           <TableCell className="font-medium">{language === 'ar' ? material.nameAr : material.name}</TableCell>
                           <TableCell className={cn("text-center", isLowStock && "font-bold text-destructive")}>{material.stock}</TableCell>
                           <TableCell className="text-center">{material.unit}</TableCell>

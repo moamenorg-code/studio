@@ -37,6 +37,7 @@ interface SupplierManagementTabProps {
 const SupplierManagementTab: React.FC<SupplierManagementTabProps> = ({ suppliers, onSuppliersChange, language }) => {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const [editingSupplier, setEditingSupplier] = React.useState<Supplier | null>(null);
+  const [selectedRowId, setSelectedRowId] = React.useState<number | null>(null);
 
   const handleAddSupplier = () => {
     setEditingSupplier(null);
@@ -93,7 +94,11 @@ const SupplierManagementTab: React.FC<SupplierManagementTabProps> = ({ suppliers
             <TableBody>
               {suppliers.length > 0 ? (
                 suppliers.map(supplier => (
-                  <TableRow key={supplier.id}>
+                  <TableRow 
+                    key={supplier.id}
+                    data-state={selectedRowId === supplier.id ? 'selected' : 'none'}
+                    onClick={() => setSelectedRowId(supplier.id)}
+                  >
                     <TableCell className="font-medium">{supplier.name}</TableCell>
                     <TableCell dir="ltr">{supplier.phone}</TableCell>
                     <TableCell className="hidden md:table-cell">{supplier.address}</TableCell>
