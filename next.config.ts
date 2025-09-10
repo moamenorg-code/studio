@@ -18,6 +18,20 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    // This is to prevent the server-only packages from being bundled in the client-side code.
+    if (!isServer) {
+        config.externals = [
+            ...(config.externals || []),
+            '@google-cloud/functions-framework',
+            'firebase-functions',
+            'express',
+            'handlebars',
+            'dotprompt',
+        ];
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
