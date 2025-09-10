@@ -32,6 +32,12 @@ import { customers as initialCustomers, suppliers as initialSuppliers, rawMateri
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '../ui/button';
 
+const hasPermission = (permission: Permission, user: User | null, roles: Role[]): boolean => {
+    if (!user) return false;
+    const userRole = roles.find(r => r.id === user.roleId);
+    if (!userRole) return false;
+    return userRole.permissions[permission] || false;
+};
 
 const POSLayout: React.FC = () => {
   const [language, setLanguage] = React.useState<Language>("ar");
@@ -186,36 +192,26 @@ const POSLayout: React.FC = () => {
     document.documentElement.lang = language;
     document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
   }, [language]);
-
-  const hasPermission = React.useCallback((permission: Permission, user: User | null): boolean => {
-    if (!user) return false;
-    const userRole = roles.find(r => r.id === user.roleId);
-    if (!userRole) return false;
-    return userRole.permissions[permission] || false;
-  }, [roles]);
-
+  
   const handleSetActiveView = React.useCallback((view: ActiveView) => {
     const viewOption = VIEW_OPTIONS.find(v => v.value === view);
     if (!viewOption) return;
 
-    if (!viewOption.permission || hasPermission(viewOption.permission, currentUser)) {
+    if (!viewOption.permission || hasPermission(viewOption.permission, currentUser, roles)) {
         setActiveView(view);
     } else {
         setActiveView('unauthorized');
     }
-  }, [currentUser, hasPermission]);
+  }, [currentUser, roles]);
   
   React.useEffect(() => {
-    if(currentUser) {
-        const viewOption = VIEW_OPTIONS.find(v => v.value === activeView);
-        if (viewOption?.permission && !hasPermission(viewOption.permission, currentUser)) {
-            setActiveView('unauthorized');
-        }
+    const viewOption = VIEW_OPTIONS.find(v => v.value === activeView);
+    if (currentUser && viewOption?.permission && !hasPermission(viewOption.permission, currentUser, roles)) {
+        setActiveView('unauthorized');
     }
-  }, [currentUser, activeView, hasPermission]);
+  }, [currentUser, activeView, roles]);
 
-
-  const handleLogin = React.useCallback((pin: string) => {
+  const handleLogin = (pin: string) => {
     const user = users.find(u => u.pin === pin);
     if (user) {
       setCurrentUser(user);
@@ -229,7 +225,7 @@ const POSLayout: React.FC = () => {
         variant: "destructive",
       });
     }
-  }, [users, roles, language, toast]);
+  };
   
   const handleLogout = () => {
       setCurrentUser(null);
@@ -676,8 +672,8 @@ const handleHoldOrder = () => {
               activeTableId={activeOrder?.type === 'dine-in' ? activeOrder.id : null}
               onSelectTable={handleSelectTable}
               isFullScreen={true}
-              language={language}
               onOpenCart={() => setCartSheetOpen(true)}
+              language={language}
            />
          );
       case 'settings':
@@ -731,7 +727,7 @@ const handleHoldOrder = () => {
         setActiveView={handleSetActiveView}
         enableTables={settings.enableTables}
         isShiftOpen={!!activeShift}
-        hasPermission={(p) => hasPermission(p, currentUser)}
+        hasPermission={(p) => hasPermission(p, currentUser, roles)}
         firestoreStatus={firestoreStatus}
       />
       <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
