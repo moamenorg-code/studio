@@ -1,13 +1,13 @@
 import * as React from 'react';
 import type { Sale, Purchase, Expense, Language, Supplier } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, ShoppingCart, Truck, Percent, TrendingUp, TrendingDown, DollarSign, ChevronsUpDown } from 'lucide-react';
+import { FileText, ShoppingCart, Truck, Percent, TrendingUp, TrendingDown, DollarSign, ChevronsUpDown, Table as TableIcon, Bike, Package } from 'lucide-react';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
+import { Badge } from '../ui/badge';
 
 
 type Language = 'en' | 'ar';
@@ -39,35 +39,76 @@ const UI_TEXT: Record<string, Record<Language, string>> = {
     totalDiscounts: { en: 'Total Discounts', ar: 'إجمالي الخصومات' },
     summary: { en: 'Summary', ar: 'الملخص' },
     toggleSummary: { en: 'Toggle Summary', ar: 'إظهار/إخفاء الملخص' },
+    subtotal: { en: 'Subtotal', ar: 'المجموع الفرعي' },
+    serviceCharge: { en: 'Service Charge', ar: 'رسوم الخدمة' },
+    orderType: { en: 'Order Type', ar: 'نوع الطلب' },
+    paymentMethod: { en: 'Payment', ar: 'الدفع' },
+    shiftId: { en: 'Shift ID', ar: 'معرف الشفت' },
+    cash: { en: 'Cash', ar: 'نقدي' },
+    card: { en: 'Card', ar: 'بطاقة' },
+    'dine-in': { en: 'Dine-in', ar: 'طاولة' },
+    takeaway: { en: 'Takeaway', ar: 'سفري' },
+    delivery: { en: 'Delivery', ar: 'توصيل' },
+};
+
+const OrderTypeBadge: React.FC<{ type: Sale['orderType'], orderId: number, language: Language }> = ({ type, orderId, language }) => {
+    let icon = <Package size={14} />;
+    let text = UI_TEXT[type][language];
+    
+    if (type === 'dine-in') {
+      icon = <TableIcon size={14} />;
+      text = `${text} ${orderId}`;
+    } else if (type === 'delivery') {
+      icon = <Bike size={14} />;
+    }
+    
+    return (
+      <Badge variant="outline" className="flex items-center gap-1 w-fit">
+        {icon}
+        {text}
+      </Badge>
+    );
 };
 
 const SalesReport: React.FC<{ sales: Sale[], language: Language }> = ({ sales, language }) => (
-    <Table>
-        <TableHeader>
-            <TableRow>
-                <TableHead>{UI_TEXT.transactionId[language]}</TableHead>
-                <TableHead>{UI_TEXT.date[language]}</TableHead>
-                <TableHead>{UI_TEXT.customer[language]}</TableHead>
-                <TableHead>{UI_TEXT.items[language]}</TableHead>
-                <TableHead className="text-right">{UI_TEXT.total[language]}</TableHead>
-            </TableRow>
-        </TableHeader>
-        <TableBody>
-            {sales.length > 0 ? sales.map(sale => (
-                <TableRow key={sale.id}>
-                    <TableCell className="font-medium">{sale.id}</TableCell>
-                    <TableCell>{new Date(sale.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell>{sale.customer?.name || UI_TEXT.walkIn[language]}</TableCell>
-                    <TableCell>{sale.items.reduce((acc, item) => acc + item.quantity, 0)}</TableCell>
-                    <TableCell className="text-right">{sale.finalTotal.toFixed(2)}</TableCell>
-                </TableRow>
-            )) : (
+    <div className="overflow-x-auto">
+        <Table className="min-w-max">
+            <TableHeader>
                 <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">{UI_TEXT.noSales[language]}</TableCell>
+                    <TableHead>{UI_TEXT.transactionId[language]}</TableHead>
+                    <TableHead>{UI_TEXT.date[language]}</TableHead>
+                    <TableHead>{UI_TEXT.customer[language]}</TableHead>
+                    <TableHead>{UI_TEXT.items[language]}</TableHead>
+                    <TableHead>{UI_TEXT.orderType[language]}</TableHead>
+                    <TableHead>{UI_TEXT.paymentMethod[language]}</TableHead>
+                    <TableHead className="text-right">{UI_TEXT.subtotal[language]}</TableHead>
+                    <TableHead className="text-right">{UI_TEXT.discount[language]}</TableHead>
+                    <TableHead className="text-right">{UI_TEXT.serviceCharge[language]}</TableHead>
+                    <TableHead className="text-right font-bold">{UI_TEXT.total[language]}</TableHead>
                 </TableRow>
-            )}
-        </TableBody>
-    </Table>
+            </TableHeader>
+            <TableBody>
+                {sales.length > 0 ? sales.map(sale => (
+                    <TableRow key={sale.id}>
+                        <TableCell className="font-medium">{sale.id}</TableCell>
+                        <TableCell>{new Date(sale.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>{sale.customer?.name || UI_TEXT.walkIn[language]}</TableCell>
+                        <TableCell>{sale.items.reduce((acc, item) => acc + item.quantity, 0)}</TableCell>
+                        <TableCell><OrderTypeBadge type={sale.orderType} orderId={sale.orderId} language={language}/></TableCell>
+                        <TableCell><Badge variant={sale.paymentMethod === 'cash' ? 'secondary' : 'default'}>{UI_TEXT[sale.paymentMethod][language]}</Badge></TableCell>
+                        <TableCell className="text-right">{sale.subtotal.toFixed(2)}</TableCell>
+                        <TableCell className="text-right text-red-600">{sale.totalDiscountValue.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">{sale.serviceCharge.toFixed(2)}</TableCell>
+                        <TableCell className="text-right font-bold">{sale.finalTotal.toFixed(2)}</TableCell>
+                    </TableRow>
+                )) : (
+                    <TableRow>
+                        <TableCell colSpan={10} className="h-24 text-center">{UI_TEXT.noSales[language]}</TableCell>
+                    </TableRow>
+                )}
+            </TableBody>
+        </Table>
+    </div>
 );
 
 const PurchasesReport: React.FC<{ purchases: Purchase[], suppliers: Supplier[], language: Language }> = ({ purchases, suppliers, language }) => {
@@ -76,83 +117,95 @@ const PurchasesReport: React.FC<{ purchases: Purchase[], suppliers: Supplier[], 
     };
 
     return (
-     <Table>
-        <TableHeader>
-            <TableRow>
-                <TableHead>{UI_TEXT.transactionId[language]}</TableHead>
-                <TableHead>{UI_TEXT.date[language]}</TableHead>
-                <TableHead>{UI_TEXT.supplier[language]}</TableHead>
-                <TableHead className="text-right">{UI_TEXT.total[language]}</TableHead>
-            </TableRow>
-        </TableHeader>
-        <TableBody>
-            {purchases.length > 0 ? purchases.map(purchase => (
-                <TableRow key={purchase.id}>
-                    <TableCell className="font-medium">{purchase.id}</TableCell>
-                    <TableCell>{new Date(purchase.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell>{getSupplierName(purchase.supplierId)}</TableCell>
-                    <TableCell className="text-right">{purchase.total.toFixed(2)}</TableCell>
-                </TableRow>
-            )) : (
-                <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">{UI_TEXT.noPurchases[language]}</TableCell>
-                </TableRow>
-            )}
-        </TableBody>
-    </Table>
-    );
-};
-
-const ExpensesReport: React.FC<{ expenses: Expense[], language: Language }> = ({ expenses, language }) => (
-    <Table>
-       <TableHeader>
-           <TableRow>
-               <TableHead>{UI_TEXT.date[language]}</TableHead>
-               <TableHead>{UI_TEXT.description[language]}</TableHead>
-               <TableHead className="text-right">{UI_TEXT.amount[language]}</TableHead>
-           </TableRow>
-       </TableHeader>
-       <TableBody>
-           {expenses.length > 0 ? expenses.map(expense => (
-               <TableRow key={expense.id}>
-                   <TableCell>{new Date(expense.createdAt).toLocaleDateString()}</TableCell>
-                   <TableCell>{expense.description}</TableCell>
-                   <TableCell className="text-right">{expense.amount.toFixed(2)}</TableCell>
-               </TableRow>
-           )) : (
-               <TableRow>
-                   <TableCell colSpan={3} className="h-24 text-center">{UI_TEXT.noExpenses[language]}</TableCell>
-               </TableRow>
-           )}
-       </TableBody>
-   </Table>
-);
-
-const DiscountsReport: React.FC<{ sales: Sale[], language: Language }> = ({ sales, language }) => {
-    const salesWithDiscount = sales.filter(s => s.totalDiscountValue > 0);
-    return (
+     <div className="overflow-x-auto">
         <Table>
             <TableHeader>
                 <TableRow>
                     <TableHead>{UI_TEXT.transactionId[language]}</TableHead>
                     <TableHead>{UI_TEXT.date[language]}</TableHead>
-                    <TableHead className="text-right">{UI_TEXT.discount[language]}</TableHead>
+                    <TableHead>{UI_TEXT.supplier[language]}</TableHead>
+                    <TableHead className="text-center">{UI_TEXT.items[language]}</TableHead>
+                    <TableHead className="text-right">{UI_TEXT.total[language]}</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {salesWithDiscount.length > 0 ? salesWithDiscount.map(sale => (
-                    <TableRow key={sale.id}>
-                        <TableCell>{sale.id}</TableCell>
-                        <TableCell>{new Date(sale.createdAt).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-right">{sale.totalDiscountValue.toFixed(2)}</TableCell>
+                {purchases.length > 0 ? purchases.map(purchase => (
+                    <TableRow key={purchase.id}>
+                        <TableCell className="font-medium">{purchase.id}</TableCell>
+                        <TableCell>{new Date(purchase.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>{getSupplierName(purchase.supplierId)}</TableCell>
+                        <TableCell className="text-center">{purchase.items.length}</TableCell>
+                        <TableCell className="text-right">{purchase.total.toFixed(2)}</TableCell>
                     </TableRow>
                 )) : (
                     <TableRow>
-                        <TableCell colSpan={3} className="h-24 text-center">{UI_TEXT.noDiscounts[language]}</TableCell>
+                        <TableCell colSpan={5} className="h-24 text-center">{UI_TEXT.noPurchases[language]}</TableCell>
                     </TableRow>
                 )}
             </TableBody>
         </Table>
+     </div>
+    );
+};
+
+const ExpensesReport: React.FC<{ expenses: Expense[], language: Language }> = ({ expenses, language }) => (
+    <div className="overflow-x-auto">
+        <Table>
+        <TableHeader>
+            <TableRow>
+                <TableHead>{UI_TEXT.date[language]}</TableHead>
+                <TableHead>{UI_TEXT.shiftId[language]}</TableHead>
+                <TableHead>{UI_TEXT.description[language]}</TableHead>
+                <TableHead className="text-right">{UI_TEXT.amount[language]}</TableHead>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            {expenses.length > 0 ? expenses.map(expense => (
+                <TableRow key={expense.id}>
+                    <TableCell>{new Date(expense.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>{expense.shiftId}</TableCell>
+                    <TableCell>{expense.description}</TableCell>
+                    <TableCell className="text-right">{expense.amount.toFixed(2)}</TableCell>
+                </TableRow>
+            )) : (
+                <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">{UI_TEXT.noExpenses[language]}</TableCell>
+                </TableRow>
+            )}
+        </TableBody>
+    </Table>
+    </div>
+);
+
+const DiscountsReport: React.FC<{ sales: Sale[], language: Language }> = ({ sales, language }) => {
+    const salesWithDiscount = sales.filter(s => s.totalDiscountValue > 0);
+    return (
+       <div className="overflow-x-auto">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>{UI_TEXT.transactionId[language]}</TableHead>
+                        <TableHead>{UI_TEXT.date[language]}</TableHead>
+                        <TableHead>{UI_TEXT.customer[language]}</TableHead>
+                        <TableHead className="text-right">{UI_TEXT.discount[language]}</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {salesWithDiscount.length > 0 ? salesWithDiscount.map(sale => (
+                        <TableRow key={sale.id}>
+                            <TableCell>{sale.id}</TableCell>
+                            <TableCell>{new Date(sale.createdAt).toLocaleDateString()}</TableCell>
+                            <TableCell>{sale.customer?.name || UI_TEXT.walkIn[language]}</TableCell>
+                            <TableCell className="text-right">{sale.totalDiscountValue.toFixed(2)}</TableCell>
+                        </TableRow>
+                    )) : (
+                        <TableRow>
+                            <TableCell colSpan={4} className="h-24 text-center">{UI_TEXT.noDiscounts[language]}</TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+       </div>
     );
 }
 
@@ -167,8 +220,8 @@ interface ReportsTabProps {
 const ReportsTab: React.FC<ReportsTabProps> = ({ sales, purchases, expenses, suppliers, language }) => {
     const [isSummaryOpen, setIsSummaryOpen] = React.useState(true);
     const totalSales = React.useMemo(() => sales.reduce((sum, sale) => sum + sale.finalTotal, 0), [sales]);
-    const totalExpenses = React.useMemo(() => expenses.reduce((sum, expense) => sum + expense.amount, 0), [expenses]);
     const totalPurchases = React.useMemo(() => purchases.reduce((sum, purchase) => sum + purchase.total, 0), [purchases]);
+    const totalExpenses = React.useMemo(() => expenses.reduce((sum, expense) => sum + expense.amount, 0), [expenses]);
     const totalDiscounts = React.useMemo(() => sales.reduce((sum, sale) => sum + sale.totalDiscountValue, 0), [sales]);
     const netProfit = totalSales - totalExpenses - totalPurchases;
 
@@ -242,7 +295,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ sales, purchases, expenses, sup
                     <TabsTrigger value="discounts"><Percent className="w-4 h-4 me-2" />{UI_TEXT.discounts[language]}</TabsTrigger>
                 </TabsList>
                 <div className="mt-4 rounded-md border">
-                    <ScrollArea className={cn("transition-all duration-300", isSummaryOpen ? "h-[calc(100vh-42rem)]" : "h-[calc(100vh-28rem)]")}>
+                    <div className={cn("transition-all duration-300", isSummaryOpen ? "h-[calc(100vh-42rem)]" : "h-[calc(100vh-28rem)]")}>
                         <TabsContent value="sales" className="m-0">
                             <SalesReport sales={sales} language={language} />
                         </TabsContent>
@@ -255,7 +308,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ sales, purchases, expenses, sup
                          <TabsContent value="discounts" className="m-0">
                             <DiscountsReport sales={sales} language={language} />
                         </TabsContent>
-                    </ScrollArea>
+                    </div>
                 </div>
             </Tabs>
         </div>
