@@ -28,6 +28,7 @@ import HeldOrdersDialog from './HeldOrdersDialog';
 import SplitBillDialog from './SplitBillDialog';
 import LoginScreen from './LoginScreen';
 import BarcodeScanner from './BarcodeScanner';
+import ReportsTab from './ReportsTab';
 import { customers as initialCustomers, suppliers as initialSuppliers, rawMaterials as initialRawMaterials, shifts as initialShifts, expenses as initialExpenses, cashDrawerEntries as initialCashDrawerEntries, recipes as initialRecipes, categories as initialCategories, tables as initialTables, deliveryReps as initialDeliveryReps, users as initialUsers, roles as initialRoles, purchases as initialPurchases, sales as initialSales } from "@/lib/data";
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '../ui/button';
@@ -598,6 +599,15 @@ const handleHoldOrder = () => {
                 />;
       case 'dashboard':
         return <DashboardTab sales={sales} language={language} />;
+      case 'reports':
+        return <ReportsTab
+                  sales={sales}
+                  products={products}
+                  categories={categories}
+                  recipes={recipes}
+                  rawMaterials={rawMaterials}
+                  language={language}
+                />;
       case 'history':
         return <SalesHistoryTab sales={sales} language={language} />;
       case 'products':

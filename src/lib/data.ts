@@ -150,6 +150,7 @@ export const roles: Role[] = [
             access_shifts: true,
             access_settings: true,
             access_tables: true,
+            access_reports: true,
         }
     },
     {
@@ -166,6 +167,7 @@ export const roles: Role[] = [
             access_shifts: true,
             access_settings: false,
             access_tables: true,
+            access_reports: false,
         }
     }
 ];

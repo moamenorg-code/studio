@@ -10,6 +10,7 @@ import {
   NotebookText,
   Briefcase,
   Settings as SettingsIcon,
+  FileText,
 } from 'lucide-react';
 import type { ActiveView, Permission } from './types';
 
@@ -17,6 +18,7 @@ export const UI_TEXT = {
   sales: { en: "Sales", ar: "المبيعات" },
   salesHistory: { en: "Sales History", ar: "سجل المبيعات" },
   dashboard: { en: "Dashboard", ar: "لوحة التحكم" },
+  reports: { en: "Reports", ar: "التقارير" },
   products: { en: "Products", ar: "المنتجات" },
   productsAndRecipes: { en: "Products & Recipes", ar: "المنتجات والوصفات" },
   customers: { en: "Customers", ar: "العملاء" },
@@ -57,6 +59,7 @@ export const UI_TEXT = {
 export const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; icon: React.ElementType, permission?: Permission }[] = [
     { value: 'sales', label: 'sales', icon: ShoppingBag },
     { value: 'dashboard', label: 'dashboard', icon: AreaChart, permission: 'access_dashboard' },
+    { value: 'reports', label: 'reports', icon: FileText, permission: 'access_reports' },
     { value: 'history', label: 'salesHistory', icon: History, permission: 'access_sales_history' },
     { value: 'products', label: 'productsAndRecipes', icon: ClipboardList, permission: 'access_products' },
     { value: 'inventory', label: 'inventory', icon: Archive, permission: 'access_inventory' },
@@ -70,6 +73,7 @@ export const VIEW_OPTIONS: { value: ActiveView; label: keyof typeof UI_TEXT; ico
 
 export const PERMISSIONS_LIST: { key: Permission, text: { en: string, ar: string }}[] = [
   { key: 'access_dashboard', text: { en: 'Access Dashboard', ar: 'الوصول إلى لوحة التحكم' } },
+  { key: 'access_reports', text: { en: 'Access Reports', ar: 'الوصول إلى التقارير' } },
   { key: 'access_sales_history', text: { en: 'Access Sales History', ar: 'الوصول إلى سجل المبيعات' } },
   { key: 'access_products', text: { en: 'Manage Products & Recipes', ar: 'إدارة المنتجات والوصفات' } },
   { key: 'access_inventory', text: { en: 'Manage Inventory', ar: 'إدارة المخزون' } },

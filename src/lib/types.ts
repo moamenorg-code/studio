@@ -170,7 +170,8 @@ export type Permission =
     | 'access_delivery'
     | 'access_shifts'
     | 'access_settings'
-    | 'access_tables';
+    | 'access_tables'
+    | 'access_reports';
 
 export interface Role {
     id: number;
@@ -187,7 +188,7 @@ export interface User {
 
 
 export type Language = "en" | "ar";
-export type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings" | "tables" | "deliveryReps" | "unauthorized";
+export type ActiveView = "sales" | "dashboard" | "history" | "products" | "customers" | "purchases" | "inventory" | "shifts" | "settings" | "tables" | "deliveryReps" | "unauthorized" | "reports";
 
 export interface ActiveOrder {
   type: OrderType;
