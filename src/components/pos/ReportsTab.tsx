@@ -1,10 +1,10 @@
 import * as React from 'react';
-import type { Sale, Product, Category, Recipe, User, OrderType, Language } from '@/lib/types';
+import type { Sale, Product, Category, Recipe, User, OrderType, Language, RawMaterial } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { DollarSign, ShoppingCart, Users, Receipt, CalendarIcon } from 'lucide-react';
+import { DollarSign, Receipt, Users, ShoppingBag, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -53,7 +53,7 @@ interface ReportsTabProps {
     products: Product[];
     categories: Category[];
     recipes: Recipe[];
-    rawMaterials: any[];
+    rawMaterials: RawMaterial[];
     users: User[];
     language: Language;
 }
@@ -88,28 +88,32 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ sales, products, categories, re
         
         return dateFiltered;
     }, [sales, customDateRange, orderTypeFilter]);
+    
+    const getCostOfSale = React.useCallback((sale: Sale): number => {
+        return sale.items.reduce((totalCost, saleItem) => {
+            const product = products.find(p => p.id === saleItem.id);
+            if (!product || !product.recipeId) return totalCost;
 
-    const getCostOfProduct = (product: Product): number => {
-        if (!product.recipeId) return 0;
-        const recipe = recipes.find(r => r.id === product.recipeId);
-        if (!recipe) return 0;
+            const recipe = recipes.find(r => r.id === product.recipeId);
+            if (!recipe) return totalCost;
 
-        return recipe.items.reduce((cost, item) => {
-            const material = rawMaterials.find(m => m.id === item.rawMaterialId);
-            const materialCostPerUnit = 0; // Simplified - needs real cost data
-            return cost + (item.quantity * materialCostPerUnit);
+            const productCost = recipe.items.reduce((recipeCost, recipeItem) => {
+                const material = rawMaterials.find(m => m.id === recipeItem.rawMaterialId);
+                const materialCost = material?.cost || 0;
+                return recipeCost + (recipeItem.quantity * materialCost);
+            }, 0);
+
+            return totalCost + (productCost * saleItem.quantity);
         }, 0);
-    };
+    }, [products, recipes, rawMaterials]);
+
 
     const calculatedMetrics = React.useMemo(() => {
         const totalRevenue = filteredSales.reduce((acc, sale) => acc + sale.finalTotal, 0);
         const totalOrders = filteredSales.length;
 
         const totalCost = filteredSales.reduce((sum, sale) => {
-            return sum + sale.items.reduce((itemSum, item) => {
-                const product = products.find(p => p.id === item.id);
-                return itemSum + (product ? getCostOfProduct(product) * item.quantity : 0);
-            }, 0);
+            return sum + getCostOfSale(sale);
         }, 0);
         const netProfit = totalRevenue - totalCost;
 
@@ -119,7 +123,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ sales, products, categories, re
         }, {} as Record<'cash' | 'card', number>);
 
         return { totalRevenue, totalOrders, netProfit, paymentMethodData };
-    }, [filteredSales, products, recipes, rawMaterials]);
+    }, [filteredSales, getCostOfSale]);
 
     const salesOverTime = React.useMemo(() => {
         const grouped: Record<string, { sales: number; profit: number }> = {};
@@ -127,16 +131,13 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ sales, products, categories, re
             const date = format(new Date(sale.createdAt), 'yyyy-MM-dd');
             if (!grouped[date]) grouped[date] = { sales: 0, profit: 0 };
             
-            const cost = sale.items.reduce((itemSum, item) => {
-                const product = products.find(p => p.id === item.id);
-                return itemSum + (product ? getCostOfProduct(product) * item.quantity : 0);
-            }, 0);
+            const cost = getCostOfSale(sale);
 
             grouped[date].sales += sale.finalTotal;
             grouped[date].profit += sale.finalTotal - cost;
         });
         return Object.entries(grouped).map(([date, values]) => ({ date, ...values })).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }, [filteredSales, products, recipes, rawMaterials]);
+    }, [filteredSales, getCostOfSale]);
 
     const topProducts = React.useMemo(() => {
         const productSales: Record<string, { name: string, nameAr: string, revenue: number, quantity: number }> = {};

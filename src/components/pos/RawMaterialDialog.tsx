@@ -22,6 +22,7 @@ const UI_TEXT = {
   nameAr: { en: 'Name (Arabic)', ar: 'الاسم (العربية)' },
   stock: { en: 'Stock', ar: 'الكمية' },
   unit: { en: 'Unit', ar: 'الوحدة' },
+  cost: { en: 'Cost', ar: 'التكلفة' },
   barcode: { en: 'Barcode', ar: 'الباركود' },
   cancel: { en: 'Cancel', ar: 'إلغاء' },
   save: { en: 'Save', ar: 'حفظ' },
@@ -49,6 +50,7 @@ const RawMaterialDialog: React.FC<RawMaterialDialogProps> = ({ isOpen, onOpenCha
             stock: 0,
             unit: '',
             barcode: '',
+            cost: 0,
           });
         }
     }
@@ -95,9 +97,15 @@ const RawMaterialDialog: React.FC<RawMaterialDialogProps> = ({ isOpen, onOpenCha
                 <Input id="unit" name="unit" value={formData.unit || ''} onChange={handleChange} />
             </div>
           </div>
-           <div className="space-y-2">
-                <Label htmlFor="barcode">{UI_TEXT.barcode[language]}</Label>
-                <Input id="barcode" name="barcode" value={formData.barcode || ''} onChange={handleChange} dir="ltr" />
+           <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="cost">{UI_TEXT.cost[language]}</Label>
+                <Input id="cost" name="cost" type="number" value={formData.cost || ''} onChange={handleChange} dir="ltr" />
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="barcode">{UI_TEXT.barcode[language]}</Label>
+                  <Input id="barcode" name="barcode" value={formData.barcode || ''} onChange={handleChange} dir="ltr" />
+              </div>
             </div>
         </div>
         <DialogFooter>

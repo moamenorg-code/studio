@@ -111,13 +111,13 @@ export const suppliers: Supplier[] = [
 ];
 
 export const rawMaterials: RawMaterial[] = [
-    { id: 1, name: 'Coffee Beans', nameAr: 'حبوب البن', unit: 'kg', stock: 50, barcode: 'RM001' },
-    { id: 2, name: 'Milk', nameAr: 'حليب', unit: 'liter', stock: 100, barcode: 'RM002' },
-    { id: 3, name: 'Sugar', nameAr: 'سكر', unit: 'kg', stock: 200, barcode: 'RM003' },
-    { id: 4, name: 'Flour', nameAr: 'دقيق', unit: 'kg', stock: 150, barcode: 'RM004' },
-    { id: 5, name: 'Butter', nameAr: 'زبدة', unit: 'kg', stock: 40, barcode: 'RM005' },
-    { id: 6, name: 'Eggs', nameAr: 'بيض', unit: 'piece', stock: 300, barcode: 'RM006' },
-    { id: 7, name: 'Dough', nameAr: 'عجينة', unit: 'piece', stock: 50, barcode: 'RM007' },
+    { id: 1, name: 'Coffee Beans', nameAr: 'حبوب البن', unit: 'kg', stock: 50, barcode: 'RM001', cost: 80 },
+    { id: 2, name: 'Milk', nameAr: 'حليب', unit: 'liter', stock: 100, barcode: 'RM002', cost: 4 },
+    { id: 3, name: 'Sugar', nameAr: 'سكر', unit: 'kg', stock: 200, barcode: 'RM003', cost: 5 },
+    { id: 4, name: 'Flour', nameAr: 'دقيق', unit: 'kg', stock: 150, barcode: 'RM004', cost: 3 },
+    { id: 5, name: 'Butter', nameAr: 'زبدة', unit: 'kg', stock: 40, barcode: 'RM005', cost: 25 },
+    { id: 6, name: 'Eggs', nameAr: 'بيض', unit: 'piece', stock: 300, barcode: 'RM006', cost: 0.5 },
+    { id: 7, name: 'Dough', nameAr: 'عجينة', unit: 'piece', stock: 50, barcode: 'RM007', cost: 2 },
 ];
 
 export const recipes: Recipe[] = [
@@ -191,6 +191,7 @@ export const sales: Sale[] = [
         customer: customers[0],
         orderType: "dine-in",
         orderId: 1,
+        userId: 1,
     },
     {
         id: "SALE-1700000001000",
@@ -205,6 +206,7 @@ export const sales: Sale[] = [
         orderType: "delivery",
         orderId: 101,
         deliveryRepId: 1,
+        userId: 2,
     },
      {
         id: "SALE-1700000002000",
@@ -217,6 +219,7 @@ export const sales: Sale[] = [
         createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
         orderType: "takeaway",
         orderId: 201,
+        userId: 1,
     },
     {
         id: "SALE-1700000003000",
@@ -230,6 +233,7 @@ export const sales: Sale[] = [
         customer: customers[2],
         orderType: "dine-in",
         orderId: 3,
+        userId: 2,
     }
 ];
 
