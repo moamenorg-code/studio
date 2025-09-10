@@ -187,23 +187,23 @@ const POSLayout: React.FC = () => {
     document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
   }, [language]);
 
-  const hasPermission = React.useCallback((permission: Permission, user: User | null = currentUser): boolean => {
+  const hasPermission = React.useCallback((permission: Permission, user: User | null): boolean => {
     if (!user) return false;
     const userRole = roles.find(r => r.id === user.roleId);
     if (!userRole) return false;
     return userRole.permissions[permission] || false;
-  }, [currentUser, roles]);
+  }, [roles]);
 
-  const handleSetActiveView = (view: ActiveView) => {
+  const handleSetActiveView = React.useCallback((view: ActiveView) => {
     const viewOption = VIEW_OPTIONS.find(v => v.value === view);
     if (!viewOption) return;
 
-    if (!viewOption.permission || hasPermission(viewOption.permission)) {
+    if (!viewOption.permission || hasPermission(viewOption.permission, currentUser)) {
         setActiveView(view);
     } else {
         setActiveView('unauthorized');
     }
-  };
+  }, [currentUser, hasPermission]);
   
   React.useEffect(() => {
     if(currentUser) {
@@ -212,14 +212,13 @@ const POSLayout: React.FC = () => {
             setActiveView('unauthorized');
         }
     }
-  }, [currentUser, roles, activeView, hasPermission]);
+  }, [currentUser, activeView, hasPermission]);
 
 
   const handleLogin = React.useCallback((pin: string) => {
     const user = users.find(u => u.pin === pin);
     if (user) {
       setCurrentUser(user);
-      // Determine initial view based on permissions
       const userRole = roles.find(r => r.id === user.roleId);
       const canAccessShifts = userRole?.permissions['access_shifts'];
       setActiveView(canAccessShifts ? 'shifts' : 'sales');
@@ -732,7 +731,7 @@ const handleHoldOrder = () => {
         setActiveView={handleSetActiveView}
         enableTables={settings.enableTables}
         isShiftOpen={!!activeShift}
-        hasPermission={hasPermission}
+        hasPermission={(p) => hasPermission(p, currentUser)}
         firestoreStatus={firestoreStatus}
       />
       <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6">
