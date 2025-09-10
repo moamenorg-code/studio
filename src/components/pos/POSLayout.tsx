@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
-import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, AppData, FirestoreStatus, Purchase } from '@/lib/types';
+import type { ActiveView, Language, Settings, ActiveOrder, CartItem, Customer, DeliveryRep, HeldOrder, Table, Shift, Product, Sale, Supplier, RawMaterial, Recipe, Category, Expense, CashDrawerEntry, User, Role, AppData, FirestoreStatus, Purchase, Permission } from '@/lib/types';
 import { UI_TEXT, VIEW_OPTIONS } from '@/lib/constants';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
@@ -195,17 +195,16 @@ const POSLayout: React.FC = () => {
   }, [currentUser, roles]);
 
   const handleSetActiveView = React.useCallback((view: ActiveView) => {
-    if (currentUser) {
-        const viewOption = VIEW_OPTIONS.find(v => v.value === view);
-        if (viewOption?.permission && !hasPermission(viewOption.permission, currentUser)) {
-            setActiveView('unauthorized');
-        } else {
-            setActiveView(view);
-        }
+    const viewOption = VIEW_OPTIONS.find(v => v.value === view);
+    if (!currentUser || (viewOption?.permission && !hasPermission(viewOption.permission, currentUser))) {
+        setActiveView('unauthorized');
+    } else {
+        setActiveView(view);
     }
   }, [currentUser, hasPermission]);
 
-  const handleLogin = (pin: string) => {
+
+  const handleLogin = React.useCallback((pin: string) => {
     const user = users.find(u => u.pin === pin);
     if (user) {
       setCurrentUser(user);
@@ -218,7 +217,7 @@ const POSLayout: React.FC = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [users, hasPermission, language, toast]);
   
   const handleLogout = () => {
       setCurrentUser(null);
