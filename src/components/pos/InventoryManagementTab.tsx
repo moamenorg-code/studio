@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { MoreHorizontal, PlusCircle, Search, Archive, Package, AlertCircle, DollarSign } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Search, Archive, Package, AlertCircle, DollarSign, ChevronsUpDown } from 'lucide-react';
 import type { RawMaterial } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import RawMaterialDialog from './RawMaterialDialog';
 import { Input } from '../ui/input';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 
 type Language = 'en' | 'ar';
@@ -39,6 +40,8 @@ const UI_TEXT = {
   lowStockItems: { en: 'Low Stock Items', ar: 'أصناف منخفضة المخزون' },
   allItems: { en: 'All Items', ar: 'كل الأصناف' },
   lowStock: { en: 'Low Stock', ar: 'مخزون منخفض' },
+  summary: { en: 'Summary', ar: 'الملخص' },
+  toggleSummary: { en: 'Toggle Summary', ar: 'إظهار/إخفاء الملخص' },
 };
 
 interface InventoryManagementTabProps {
@@ -52,6 +55,7 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
   const [editingRawMaterial, setEditingRawMaterial] = React.useState<RawMaterial | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filter, setFilter] = React.useState('all');
+  const [isSummaryOpen, setIsSummaryOpen] = React.useState(true);
 
   const handleAdd = () => {
     setEditingRawMaterial(null);
@@ -115,35 +119,46 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
         </CardHeader>
         <CardContent>
             {/* Summary Cards */}
-            <div className="grid gap-4 md:grid-cols-3 mb-6">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{UI_TEXT.totalValue[language]}</CardTitle>
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{summaryStats.totalValue.toFixed(2)}</div>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{UI_TEXT.totalItems[language]}</CardTitle>
-                        <Archive className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{summaryStats.totalItems}</div>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{UI_TEXT.lowStockItems[language]}</CardTitle>
-                        <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className={cn("text-2xl font-bold", summaryStats.lowStockItems > 0 ? "text-destructive" : "")}>{summaryStats.lowStockItems}</div>
-                    </CardContent>
-                </Card>
-            </div>
+            <Collapsible open={isSummaryOpen} onOpenChange={setIsSummaryOpen}>
+                 <CollapsibleTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-between mb-4 text-lg font-semibold">
+                         {UI_TEXT.summary[language]}
+                        <ChevronsUpDown className="h-4 w-4" />
+                        <span className="sr-only">{UI_TEXT.toggleSummary[language]}</span>
+                    </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up overflow-hidden">
+                     <div className="grid gap-4 md:grid-cols-3 mb-6">
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">{UI_TEXT.totalValue[language]}</CardTitle>
+                                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{summaryStats.totalValue.toFixed(2)}</div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">{UI_TEXT.totalItems[language]}</CardTitle>
+                                <Archive className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{summaryStats.totalItems}</div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">{UI_TEXT.lowStockItems[language]}</CardTitle>
+                                <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className={cn("text-2xl font-bold", summaryStats.lowStockItems > 0 ? "text-destructive" : "")}>{summaryStats.lowStockItems}</div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </CollapsibleContent>
+            </Collapsible>
             
             {/* Actions and Filters */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
@@ -173,7 +188,7 @@ const InventoryManagementTab: React.FC<InventoryManagementTabProps> = ({ rawMate
                 </Button>
             </div>
             
-          <ScrollArea className="h-[calc(100vh-32rem)]">
+          <ScrollArea className={cn("transition-all duration-300", isSummaryOpen ? "h-[calc(100vh-36rem)]" : "h-[calc(100vh-25rem)]")}>
             <Table>
               <TableHeader>
                 <TableRow>
