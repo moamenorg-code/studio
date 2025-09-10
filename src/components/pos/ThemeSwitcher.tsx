@@ -21,11 +21,10 @@ const THEMES = [
 ];
 
 const COLORS = [
-  { name: 'default', label: {en: 'Default', ar: 'افتراضي'}, color: 'hsl(221.2 83.2% 53.3%)' },
+  { name: 'blue', label: {en: 'Google', ar: 'جوجل'}, color: 'hsl(217.2 91.2% 59.8%)' },
   { name: 'rose', label: {en: 'Rose', ar: 'وردي'}, color: 'hsl(346.8 77.2% 49.8%)' },
   { name: 'green', label: {en: 'Green', ar: 'أخضر'}, color: 'hsl(142.1 76.2% 36.3%)' },
   { name: 'orange', label: {en: 'Orange', ar: 'برتقالي'}, color: 'hsl(24.6 95% 53.1%)' },
-  { name: 'blue', label: {en: 'Blue', ar: 'أزرق'}, color: 'hsl(217.2 91.2% 59.8%)' },
 ];
 
 const UI_TEXT = {
@@ -40,19 +39,16 @@ const UI_TEXT = {
 const ThemeSwitcher: React.FC<{ language: Language }> = ({ language }) => {
   const { theme, setTheme, resolvedTheme } = useTheme();
 
-  const [currentColor, colorTheme] = theme?.split('-') || ['default', 'light'];
-
   const handleColorChange = (newColor: string) => {
-    const newTheme = `${newColor}-${resolvedTheme === 'dark' ? 'dark' : 'light'}`;
-    document.body.classList.forEach(className => {
+      document.body.classList.forEach(className => {
         if (className.startsWith('theme-')) {
           document.body.classList.remove(className);
         }
       });
-      if (newColor !== 'default') {
+      if (newColor !== 'blue') {
         document.body.classList.add(`theme-${newColor}`);
       }
-      setTheme(newColor === 'default' ? (resolvedTheme || 'light') : newColor);
+      setTheme(newColor);
   };
   
   const handleModeChange = (mode: string) => {
@@ -77,7 +73,7 @@ const ThemeSwitcher: React.FC<{ language: Language }> = ({ language }) => {
               onClick={() => handleColorChange(c.name)}
               className={cn(
                 'justify-start',
-                (theme === c.name || (theme === 'light' || theme === 'dark' || theme === 'system') && c.name === 'default') && 'border-2 border-primary'
+                (theme === c.name || (theme === 'light' || theme === 'dark' || theme === 'system') && c.name === 'blue') && 'border-2 border-primary'
               )}
               style={{ '--theme-primary': c.color } as React.CSSProperties}
             >
@@ -85,7 +81,7 @@ const ThemeSwitcher: React.FC<{ language: Language }> = ({ language }) => {
                 className="mr-2 rounded-full h-5 w-5 flex items-center justify-center"
                 style={{ backgroundColor: c.color }}
               >
-               {(theme === c.name || (theme === 'light' || theme === 'dark' || theme === 'system') && c.name === 'default') && <Check className="h-4 w-4 text-white" />}
+               {(theme === c.name || (theme === 'light' || theme === 'dark' || theme === 'system') && c.name === 'blue') && <Check className="h-4 w-4 text-white" />}
               </span>
               {c.label[language]}
             </Button>
@@ -129,19 +125,15 @@ const ThemeSwitcher: React.FC<{ language: Language }> = ({ language }) => {
                 <DropdownMenuSeparator/>
                 {COLORS.map((c) => (
                     <DropdownMenuItem key={c.name} onSelect={() => {
-                       const currentMode = resolvedTheme === 'dark' ? 'dark' : 'light';
                        document.body.classList.forEach(className => {
                           if (className.startsWith('theme-')) {
                             document.body.classList.remove(className);
                           }
                         });
-                        if (c.name !== 'default') {
+                        if (c.name !== 'blue') {
                            document.body.classList.add(`theme-${c.name}`);
-                           setTheme(c.name);
-                        } else {
-                           setTheme(currentMode);
                         }
-
+                       setTheme(c.name);
                     }}>
                          <div className="w-4 h-4 mr-2 rounded-full" style={{backgroundColor: c.color}} />
                         <span>{c.label[language]}</span>
