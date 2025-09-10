@@ -741,7 +741,7 @@ const handleHoldOrder = () => {
         <div className="flex flex-none items-center gap-4">
            {showSearchBar() ? (
             <TooltipProvider>
-             <div className="flex flex-1 items-center gap-2">
+             <div className="flex w-full items-center gap-2">
                 <div className="relative flex-1">
                     <Search className={`absolute ${language === 'ar' ? 'right-10' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
                     <Input
